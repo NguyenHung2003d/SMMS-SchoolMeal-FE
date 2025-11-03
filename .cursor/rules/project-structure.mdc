@@ -1,0 +1,46 @@
+---
+alwaysApply: true
+---
+# Project Structure and Entry Points
+
+This project is a Next.js App Router application. Start exploring from the app directory and shared components.
+
+- App shell and global styles:
+  - [app/layout.tsx](mdc:app/layout.tsx)
+  - [app/page.tsx](mdc:app/page.tsx)
+  - [app/globals.css](mdc:app/globals.css)
+
+- Components and layout building blocks:
+  - [components/layouts/Navbar.tsx](mdc:components/layouts/Navbar.tsx)
+  - [components/layouts/MainContent.tsx](mdc:components/layouts/MainContent.tsx)
+  - [components/layouts/Footer.tsx](mdc:components/layouts/Footer.tsx)
+  - [components/sections/HeroSection.tsx](mdc:components/sections/HeroSection.tsx)
+  - [components/sections/FeatureSection.tsx](mdc:components/sections/FeatureSection.tsx)
+  - [components/sections/CTASection.tsx](mdc:components/sections/CTASection.tsx)
+  - [components/sections/FoodCarousel.tsx](mdc:components/sections/FoodCarousel.tsx)
+  - [components/sections/TeamSection.tsx](mdc:components/sections/TeamSection.tsx)
+  - [components/Loader.tsx](mdc:components/Loader.tsx)
+
+- UI primitives and types:
+  - [components/ui/button.tsx](mdc:components/ui/button.tsx)
+  - [components/ui/card.tsx](mdc:components/ui/card.tsx)
+  - [components/ui/carousel.tsx](mdc:components/ui/carousel.tsx)
+  - [components/types/index.ts](mdc:components/types/index.ts)
+
+- Data and utilities:
+  - [data/constants.ts](mdc:data/constants.ts)
+  - [lib/utils.ts](mdc:lib/utils.ts)
+
+- Configuration:
+  - [next.config.ts](mdc:next.config.ts)
+  - [tsconfig.json](mdc:tsconfig.json)
+  - [postcss.config.mjs](mdc:postcss.config.mjs)
+  - [components.json](mdc:components.json)
+
+- Public assets:
+  - [public/fptschool.jpg](mdc:public/fptschool.jpg)
+  - [public/\u1ef1c \u0111\u01a1n.png](mdc:public/Thfc \u0111a\u0199n.png)
+
+Navigation:
+- The main landing page is defined in [app/page.tsx](mdc:app/page.tsx) and composes section components from `components/sections`.
+- Shared layout and metadata live in [app/layout.tsx](mdc:app/layout.tsx).

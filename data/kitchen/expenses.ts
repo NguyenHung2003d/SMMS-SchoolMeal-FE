@@ -1,0 +1,65 @@
+export const shoppingExpenses = [
+  {
+    id: "EXP-001",
+    date: "05/11/2023",
+    amount: 1200000,
+    category: "groceries",
+    vendor: "Chợ Bến Thành",
+    responsible: "Nguyễn Thị Lan",
+    status: "completed",
+  },
+  {
+    id: "EXP-002",
+    date: "08/11/2023",
+    amount: 850000,
+    category: "groceries",
+    vendor: "Siêu thị Co.opmart",
+    responsible: "Trần Văn Hùng",
+    status: "completed",
+  },
+  {
+    id: "EXP-003",
+    date: "12/11/2023",
+    amount: 950000,
+    category: "groceries",
+    vendor: "Chợ đầu mối Bình Điền",
+    responsible: "Nguyễn Thị Lan",
+    status: "completed",
+  },
+  {
+    id: "EXP-004",
+    date: "18/11/2023",
+    amount: 1100000,
+    category: "groceries",
+    vendor: "Chợ Bến Thành",
+    responsible: "Trần Văn Hùng",
+    status: "completed",
+  },
+];
+
+export const kitchenPurchases = [
+  {
+    id: 1,
+    date: "15/11/2023",
+    supplier: "Công ty Thực phẩm Sạch",
+    amount: 5800000,
+    status: "completed",
+    items: 24,
+  },
+  {
+    id: 2,
+    date: "10/11/2023",
+    supplier: "Chợ đầu mối Bình Điền",
+    amount: 3200000,
+    status: "completed",
+    items: 18,
+  },
+  {
+    id: 3,
+    date: "05/11/2023",
+    supplier: "Công ty TNHH Nông sản Việt",
+    amount: 4500000,
+    status: "pending",
+    items: 32,
+  },
+];

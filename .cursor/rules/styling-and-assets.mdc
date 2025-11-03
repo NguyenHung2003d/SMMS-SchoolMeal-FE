@@ -1,0 +1,10 @@
+---
+description: Styling, Tailwind, and public asset usage
+---
+# Styling and Assets
+
+- Global CSS lives in [app/globals.css](mdc:app/globals.css). Keep base resets, CSS variables, and Tailwind layers here.
+- Prefer Tailwind utility classes for styling. Extract repeated patterns into components rather than custom CSS when possible.
+- Use images and static assets from `public/` with `next/image` where applicable.
+- Keep asset paths stable; reference with `/...` from the web root, e.g. `/fptschool.jpg`.
+- For carousels and media-heavy sections, ensure responsive dimensions and lazy loading where possible.

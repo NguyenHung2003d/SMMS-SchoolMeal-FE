@@ -1,0 +1,9 @@
+---
+description: Guidance for data constants and utility helpers
+---
+# Data and Utilities
+
+- Centralize shared constants in [data/constants.ts](mdc:data/constants.ts). Import from this file instead of duplicating literals.
+- Place generic helpers in [lib/utils.ts](mdc:lib/utils.ts). Keep them pure and well-typed.
+- Avoid business logic in UI components. Derive values in helpers/selectors and pass results to components as props.
+- Co-locate types with utilities or export common types from [components/types/index.ts](mdc:components/types/index.ts) when reused across UI.

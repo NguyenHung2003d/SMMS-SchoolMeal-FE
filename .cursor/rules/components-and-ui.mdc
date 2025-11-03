@@ -1,0 +1,12 @@
+---
+globs: components/**
+description: Usage patterns for components, layouts, sections, ui primitives
+---
+# Components, Layouts, Sections, and UI Primitives
+
+- Keep layout scaffolding in `components/layouts/*` and assemble them in `app/layout.tsx` or pages.
+- Section components in `components/sections/*` should be presentational and accept props where appropriate. Avoid fetching data directly in sections.
+- Use UI primitives from `components/ui/*` (e.g., [components/ui/button.tsx](mdc:components/ui/button.tsx), [components/ui/card.tsx](mdc:components/ui/card.tsx), [components/ui/carousel.tsx](mdc:components/ui/carousel.tsx)) to ensure consistent styling and interactions.
+- Reuse shared types from [components/types/index.ts](mdc:components/types/index.ts). Export and import types explicitly.
+- Client components must include `"use client"` at the top. Prefer server components otherwise.
+- Keep components small and focused. Extract subcomponents when JSX grows beyond ~100 lines.

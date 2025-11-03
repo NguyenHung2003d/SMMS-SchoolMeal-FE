@@ -1,0 +1,53 @@
+export const notifications = [
+  {
+    id: 1,
+    title: "Thông báo lịch họp phụ huynh học kỳ I",
+    content:
+      "Trường sẽ tổ chức họp phụ huynh vào ngày 15/11/2023 từ 8:00 đến 11:30.",
+    type: "announcement",
+    recipients: "parents",
+    sentTo: 450,
+    read: 380,
+    date: "10/11/2023",
+    time: "09:30",
+    status: "sent",
+  },
+  {
+    id: 2,
+    title: "Thông báo lịch thi học kỳ I",
+    content: "Lịch thi học kỳ I sẽ diễn ra từ ngày 20/12/2023 đến 25/12/2023.",
+    type: "academic",
+    recipients: "all",
+    sentTo: 480,
+    read: 420,
+    date: "05/11/2023",
+    time: "14:15",
+    status: "sent",
+  },
+  {
+    id: 3,
+    title: "Thông báo nghỉ lễ 20/11",
+    content:
+      "Trường sẽ nghỉ lễ ngày Nhà giáo Việt Nam 20/11 và học sinh sẽ quay lại trường vào ngày 21/11.",
+    type: "announcement",
+    recipients: "all",
+    sentTo: 480,
+    read: 450,
+    date: "15/11/2023",
+    time: "10:00",
+    status: "scheduled",
+  },
+  {
+    id: 4,
+    title: "Thông báo về hoạt động ngoại khóa",
+    content:
+      "Trường sẽ tổ chức hoạt động ngoại khóa tham quan Bảo tàng Lịch sử vào ngày 25/11/2023.",
+    type: "event",
+    recipients: "class",
+    sentTo: 60,
+    read: 45,
+    date: "12/11/2023",
+    time: "16:30",
+    status: "sent",
+  },
+];

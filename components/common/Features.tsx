@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
-import { features } from "@/data";
+import { features } from "@/data/homepage/features";
 
 gsap.registerPlugin(ScrollTrigger)
 

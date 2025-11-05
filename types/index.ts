@@ -109,9 +109,8 @@ export type ClassItem = {
   id: number;
   name: string;
   grade: number;
-  teacherName: string;
-  room: string;
   year: string;
+  teacherId: string;
 };
 
 export type WeekKey = "week1" | "week2";

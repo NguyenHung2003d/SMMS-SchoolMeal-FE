@@ -6,17 +6,11 @@ import {
   Filter,
   Calendar,
   Download,
-  CheckCircle,
-  FileSpreadsheet,
-  ArrowRight,
-  Clock,
   ShoppingCart,
   TrendingUp,
   TrendingDown,
   Eye,
   X,
-  Info,
-  FileText,
   Printer,
   Mail,
 } from "lucide-react";
@@ -49,7 +43,6 @@ ChartJS.register(
 );
 
 export default function ManagerBilling() {
-  /** ========== State ========== */
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("11");

@@ -14,7 +14,7 @@ import {
 } from "firebase/auth";
 
 interface LoginFormProps {
-  mode?: "login" | "reset"; // ✅ Thêm mode
+  mode?: "login" | "reset";
 }
 
 export default function LoginForm({ mode = "login" }: LoginFormProps) {
@@ -27,7 +27,7 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // ✅ Setup reCAPTCHA
+  /** 🧩 Setup reCAPTCHA */
   const setupRecaptcha = () => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
@@ -42,7 +42,7 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
     return window.recaptchaVerifier;
   };
 
-  // ✅ Gửi OTP cho cả login & reset password
+  /** 📨 Gửi OTP (dùng cho cả login & reset) */
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phoneNumber) return toast.error("Vui lòng nhập số điện thoại");
@@ -70,7 +70,7 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
     }
   };
 
-  // ✅ Xác minh OTP cho cả 2 mode
+  /** ✅ Xác minh OTP */
   const handleVerifyOtp = async () => {
     if (!confirmationResult || !otp) {
       toast.error("Vui lòng nhập mã OTP");
@@ -100,8 +100,14 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
     }
   };
 
+  /** 🔁 Chuyển chế độ login/reset */
+  const handleSwitchMode = () => {
+    router.push(mode === "login" ? "/forgot-password" : "/login");
+  };
+
   return (
-    <div className="w-full max-w-md mx-auto mt-16 p-8 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl shadow-lg border border-orange-100">
+    <div className="w-full max-w-md mx-auto mt-16 pt-8 pb-8 bg-linear-to-br from-orange-50 to-yellow-50 rounded-2xl shadow-lg border border-orange-100">
+      {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-block p-3 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-full mb-4 shadow-md animate-bounce">
           <span className="text-3xl">{mode === "login" ? "🍱" : "🔐"}</span>
@@ -109,7 +115,7 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-yellow-600 bg-clip-text text-transparent mb-2">
           {mode === "login" ? "Đăng nhập" : "Quên mật khẩu"}
         </h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 leading-relaxed">
           {!isOtpStep
             ? mode === "login"
               ? "Nhập số điện thoại và mật khẩu để nhận mã OTP"
@@ -120,13 +126,16 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
 
       <div id="recaptcha-container"></div>
 
-      {/* Bước nhập số điện thoại */}
+      {/* 🔹 Form nhập thông tin */}
       {!isOtpStep && (
-        <form onSubmit={handleSendOtp} className="space-y-5">
-          <div>
+        <form
+          onSubmit={handleSendOtp}
+          className="space-y-6 bg-white/60 p-6 rounded-xl backdrop-blur-sm shadow-inner"
+        >
+          <div className="space-y-2">
             <Label
               htmlFor="phone"
-              className="text-sm font-semibold text-gray-700 mb-2 block"
+              className="text-sm font-semibold text-gray-700"
             >
               Số điện thoại
             </Label>
@@ -136,55 +145,77 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
               placeholder="+84xxxxxxxxx"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg bg-white"
+              className="h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg"
             />
           </div>
 
           {mode === "login" && (
-            <>
-              <div>
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-semibold text-gray-700 mb-2 block"
-                >
-                  Mật khẩu
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg bg-white"
-                />
-              </div>
-              <div>
-                
-              </div>
-            </>
+            <div className="space-y-2">
+              <Label
+                htmlFor="password"
+                className="text-sm font-semibold text-gray-700"
+              >
+                Mật khẩu
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg"
+              />
+            </div>
           )}
 
-          <Button
-            type="submit"
-            disabled={isSendingOtp}
-            className="w-full h-12 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
-          >
-            {isSendingOtp
-              ? "Đang gửi OTP..."
-              : mode === "login"
-              ? "Đăng nhập"
-              : "Gửi mã OTP"}
-          </Button>
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={isSendingOtp}
+              className="w-full h-12 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
+              {isSendingOtp
+                ? "Đang gửi OTP..."
+                : mode === "login"
+                ? "Đăng nhập"
+                : "Gửi mã OTP"}
+            </Button>
+          </div>
+
+          <p className="text-center text-sm text-gray-500 pt-2">
+            {mode === "login" ? (
+              <>
+                Quên mật khẩu?{" "}
+                <button
+                  type="button"
+                  onClick={handleSwitchMode}
+                  className="text-orange-600 hover:text-orange-700 font-semibold"
+                >
+                  Đặt lại mật khẩu
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSwitchMode}
+                  className="text-orange-600 hover:text-orange-700 font-semibold"
+                >
+                  Quay lại đăng nhập
+                </button>
+              </>
+            )}
+          </p>
         </form>
       )}
 
-      {/* Bước OTP */}
+      {/* 🔹 Form OTP */}
       {isOtpStep && (
-        <div className="space-y-5">
-          <div>
+        <div className="space-y-6 bg-white/60 p-6 rounded-xl backdrop-blur-sm shadow-inner">
+          <div className="space-y-2">
             <Label
               htmlFor="otp"
-              className="text-sm font-semibold text-gray-700 mb-2 block"
+              className="text-sm font-semibold text-gray-700"
             >
               Nhập mã OTP
             </Label>
@@ -194,7 +225,7 @@ export default function LoginForm({ mode = "login" }: LoginFormProps) {
               placeholder="Mã gồm 6 số"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className="w-full h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg bg-white"
+              className="h-12 border-2 border-orange-200 focus:border-orange-400 rounded-lg"
             />
           </div>
 

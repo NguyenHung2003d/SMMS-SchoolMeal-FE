@@ -3,7 +3,6 @@ import { useLogoutMutation } from "./useLogoutMutation";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@/types/auth";
 import { AxiosError } from "axios";
-import { authService } from "@/services/authService";
 
 export const USER_QUERY_KEY = ["user"] as const;
 

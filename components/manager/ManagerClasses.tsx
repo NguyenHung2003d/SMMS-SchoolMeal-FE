@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { Search, Plus, Edit, Trash, Users, X, Save } from "lucide-react";
-import { teachers } from "@/data/school/teachers";
 import { initialClasses } from "@/data/school/classes";
 import { initialStudents } from "@/data/school/students";
+import { teachers } from "@/data/school/teachers";
 
 export default function ManagerClasses() {
   const [classes, setClasses] = useState(initialClasses);
@@ -16,12 +16,14 @@ export default function ManagerClasses() {
   const [editingClass, setEditingClass] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [currentClassId, setCurrentClassId] = useState(null);
+
+  // Updated classForm state to match API spec
   const [classForm, setClassForm] = useState({
-    name: "",
-    grade: "",
-    room: "",
-    teacherName: "",
+    className: "", // Was 'name'
+    yearId: "", // Was 'grade', corresponds to 'yearId'
+    teacherId: "", // Was 'teacherName'
   });
+
   const [studentForm, setStudentForm] = useState({
     name: "",
     gender: "Nam",
@@ -38,69 +40,102 @@ export default function ManagerClasses() {
     students.filter((s) => s.classId === classId);
   const getCurrentClass = () => classes.find((c) => c.id === currentClassId);
 
+  // Helper to get teacher name from ID for display
+  const getTeacherName = (teacherId: number) => {
+    const teacher = teachers.find((t) => t.id === teacherId);
+    return teacher ? teacher.name : "N/A";
+  };
+
+  // Updated to build payload matching the API spec
   const handleAddClass = () => {
-    if (
-      !classForm.name ||
-      !classForm.grade ||
-      !classForm.room ||
-      !classForm.teacherName
-    ) {
+    if (!classForm.className || !classForm.yearId || !classForm.teacherId) {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    const newClass = {
-      id: Math.max(...classes.map((c) => c.id), 0) + 1,
-      ...classForm,
-      grade: parseInt(classForm.grade),
-      year: "2023-2024",
+
+    // This is the payload you would send to your API
+    const newClassPayload = {
+      className: classForm.className,
+      schoolId: "4B9B86C9-620E-455A-9884-120B91B5FE9F", // Hardcoded from example
+      yearId: parseInt(classForm.yearId),
+      teacherId: classForm.teacherId,
+      createdBy: "CFB2CDF0-646B-48C1-86D6-5882A0C41E85", // Hardcoded from example
     };
-    setClasses([...classes, newClass]);
-    setClassForm({ name: "", grade: "", room: "", teacherName: "" });
+
+    const newClassForState = {
+      id: Math.max(...classes.map((c) => c.id), 0) + 1,
+      name: newClassPayload.className, // Map 'className' to 'name' for UI
+      grade: newClassPayload.yearId, // Map 'yearId' to 'grade' for UI
+      year: "2023-2024", // Default year
+      teacherId: newClassPayload.teacherId,
+    };
+
+    setClasses([...classes, newClassForState]);
+
+    setClassForm({ className: "", yearId: "", teacherId: "" });
     setShowAddClassModal(false);
   };
 
+  // Updated to build payload matching the API spec
   const handleUpdateClass = () => {
-    if (
-      !classForm.name ||
-      !classForm.grade ||
-      !classForm.room ||
-      !classForm.teacherName
-    ) {
+    if (!classForm.className || !classForm.yearId || !classForm.teacherId) {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
+
+    // This is the payload you would send to your API
+    const updateClassPayload = {
+      className: classForm.className,
+      // Assuming you'd get these from the `editingClass` object
+      schoolId: editingClass.schoolId || "4B9B86C9-620E-455A-9884-120B91B5FE9F",
+      yearId: parseInt(classForm.yearId),
+      teacherId: classForm.teacherId,
+      createdBy:
+        editingClass.createdBy || "CFB2CDF0-646B-48C1-86D6-5882A0C41E85",
+    };
+
+    // console.log("Update Class API Payload:", updateClassPayload);
+
+    // --- For Demo: Update local state ---
     setClasses(
       classes.map((c) =>
         c.id === editingClass.id
           ? {
               ...c,
-              name: classForm.name,
-              grade: parseInt(classForm.grade),
-              room: classForm.room,
-              teacherName: classForm.teacherName,
+              name: updateClassPayload.className,
+              grade: updateClassPayload.yearId,
+              teacherId: updateClassPayload.teacherId,
             }
           : c
       )
     );
+    // --- End Demo ---
+
     setEditingClass(null);
-    setClassForm({ name: "", grade: "", room: "", teacherName: "" });
+    setClassForm({ className: "", yearId: "", teacherId: "" });
     setShowEditClassModal(false);
   };
 
   const handleDeleteClass = (id: any) => {
-    if (confirm("Bạn có chắc muốn xóa lớp học này?")) {
+    // Note: In a real app, you'd send a DELETE request to your API
+    if (window.confirm("Bạn có chắc muốn xóa lớp học này?")) {
       setClasses(classes.filter((c) => c.id !== id));
       setStudents(students.filter((s) => s.classId !== id));
     }
   };
 
+  // Updated to populate form based on new API structure
   const openEditClassModal = (cls: any) => {
     setEditingClass(cls);
-    setClassForm(cls);
+    setClassForm({
+      className: cls.name, // Map 'name' back to 'className'
+      yearId: cls.grade.toString(), // Map 'grade' back to 'yearId'
+      teacherId: cls.teacherId,
+    });
     setShowEditClassModal(true);
   };
 
-  // Student functions
+  // --- Student functions (unchanged, but use window.confirm) ---
   const handleEditStudent = (student: any) => {
     setEditingStudent(student);
     setStudentForm({
@@ -132,7 +167,7 @@ export default function ManagerClasses() {
   };
 
   const handleDeleteStudent = (id: any) => {
-    if (confirm("Bạn có chắc muốn xóa học sinh này?")) {
+    if (window.confirm("Bạn có chắc muốn xóa học sinh này?")) {
       setStudents(students.filter((s) => s.id !== id));
     }
   };
@@ -140,6 +175,12 @@ export default function ManagerClasses() {
   const handleViewStudents = (cls: any) => {
     setCurrentClassId(cls.id);
     setShowStudentsModal(true);
+  };
+
+  // Helper function to reset the modal form
+  const resetClassForm = () => {
+    setEditingClass(null);
+    setClassForm({ className: "", yearId: "", teacherId: "" });
   };
 
   return (
@@ -151,8 +192,8 @@ export default function ManagerClasses() {
         </div>
         <button
           onClick={() => {
+            resetClassForm();
             setShowAddClassModal(true);
-            setClassForm({ name: "", grade: "", room: "", teacherName: "" });
           }}
           className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center"
         >
@@ -196,8 +237,8 @@ export default function ManagerClasses() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div
           onClick={() => {
+            resetClassForm();
             setShowAddClassModal(true);
-            setClassForm({ name: "", grade: "", room: "", teacherName: "" });
           }}
           className="bg-white rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 h-64 hover:border-orange-400 transition-colors cursor-pointer"
         >
@@ -218,7 +259,10 @@ export default function ManagerClasses() {
                   <h3 className="font-bold text-lg text-gray-800">
                     Lớp {cls.name}
                   </h3>
-                  <p className="text-sm text-gray-600">{cls.teacherName}</p>
+                  {/* Updated to find name by ID */}
+                  <p className="text-sm text-gray-600">
+                    {getTeacherName(cls.teacherId)}
+                  </p>
                 </div>
                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   Khối {cls.grade}
@@ -226,16 +270,14 @@ export default function ManagerClasses() {
               </div>
             </div>
             <div className="p-4">
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                {" "}
+                {/* Removed 'room' column */}
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-xs text-gray-500">Học sinh</p>
                   <p className="font-bold text-lg">
                     {getClassStudents(cls.id).length}
                   </p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Phòng</p>
-                  <p className="font-bold text-lg">{cls.room}</p>
                 </div>
               </div>
               <div className="flex gap-2 mb-4">
@@ -279,13 +321,7 @@ export default function ManagerClasses() {
                   onClick={() => {
                     setShowAddClassModal(false);
                     setShowEditClassModal(false);
-                    setEditingClass(null);
-                    setClassForm({
-                      name: "",
-                      grade: "",
-                      room: "",
-                      teacherName: "",
-                    });
+                    resetClassForm();
                   }}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -300,22 +336,22 @@ export default function ManagerClasses() {
                   <input
                     type="text"
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={classForm.name}
+                    value={classForm.className}
                     onChange={(e) =>
-                      setClassForm({ ...classForm, name: e.target.value })
+                      setClassForm({ ...classForm, className: e.target.value })
                     }
                     placeholder="Ví dụ: 1A, 2B"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Khối
+                    Khối (Năm học)
                   </label>
                   <select
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={classForm.grade}
+                    value={classForm.yearId}
                     onChange={(e) =>
-                      setClassForm({ ...classForm, grade: e.target.value })
+                      setClassForm({ ...classForm, yearId: e.target.value })
                     }
                   >
                     <option value="">Chọn khối</option>
@@ -328,52 +364,35 @@ export default function ManagerClasses() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phòng học
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={classForm.room}
-                    onChange={(e) =>
-                      setClassForm({ ...classForm, room: e.target.value })
-                    }
-                    placeholder="101, 102"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Giáo viên
                   </label>
                   <select
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={classForm.teacherName}
+                    value={classForm.teacherId}
                     onChange={(e) =>
                       setClassForm({
                         ...classForm,
-                        teacherName: e.target.value,
+                        teacherId: e.target.value,
                       })
                     }
                   >
                     <option value="">Chọn giáo viên</option>
                     {teachers.map((t) => (
-                      <option key={t.id} value={t.name}>
+                      <option key={t.id} value={t.id}>
+                        {" "}
+                        {/* Value is now t.id */}
                         {t.name}
                       </option>
                     ))}
                   </select>
                 </div>
+                {/* 'room' field removed */}
                 <div className="flex gap-2 pt-4">
                   <button
                     onClick={() => {
                       setShowAddClassModal(false);
                       setShowEditClassModal(false);
-                      setEditingClass(null);
-                      setClassForm({
-                        name: "",
-                        grade: "",
-                        room: "",
-                        teacherName: "",
-                      });
+                      resetClassForm();
                     }}
                     className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
@@ -392,6 +411,7 @@ export default function ManagerClasses() {
         </div>
       )}
 
+      {/* Student Modal (Largely unchanged) */}
       {showStudentsModal && getCurrentClass() && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">

@@ -1,16 +1,21 @@
-'use client'
+"use client";
 import { useState } from "react";
 import {
   Bell,
   Plus,
   Edit,
   Trash2,
-  Send,
+  X,
   Calendar,
   Users,
   School,
+  Send,
+  Clock,
+  CheckCircle2,
+  FileText,
 } from "lucide-react";
 import { FormData, Notification, NotificationStatus } from "@/types";
+import toast from "react-hot-toast";
 
 export default function NotificationManagement() {
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -57,7 +62,6 @@ export default function NotificationManagement() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-
   const [formData, setFormData] = useState<FormData>({
     title: "",
     content: "",
@@ -72,7 +76,6 @@ export default function NotificationManagement() {
     file: null,
   });
 
-  // Mở form
   const openForm = (notification: Notification | null = null) => {
     if (notification) {
       setEditingId(notification.id);
@@ -108,63 +111,43 @@ export default function NotificationManagement() {
     setShowForm(true);
   };
 
-  // Submit
-  const handleSubmit = () => {
-    if (editingId) {
-      setNotifications(
-        notifications.map((n) =>
-          n.id === editingId
-            ? {
-                ...n,
-                ...formData,
-                updatedDate: new Date().toLocaleDateString("vi-VN"),
-              }
-            : n
-        )
-      );
-      alert("Đã cập nhật thông báo thành công!");
-    } else {
-      const newNotification: Notification = {
-        id: notifications.length + 1,
-        ...formData,
-        schedule:
-          formData.scheduleType === "now"
-            ? "Đã gửi"
-            : `${formData.scheduleDate} ${formData.scheduleTime}`,
-        status: formData.scheduleType === "now" ? "sent" : "scheduled",
-        sent: 0,
-        read: 0,
-        createdDate: new Date().toLocaleDateString("vi-VN"),
-      };
-      setNotifications([newNotification, ...notifications]);
-      alert(
-        `Thông báo đã được ${
-          formData.scheduleType === "now" ? "gửi" : "lên lịch"
-        } thành công!`
-      );
-    }
+  const closeForm = () => {
     setShowForm(false);
+    setEditingId(null);
   };
 
-  // Xoá
   const deleteNotification = (id: number) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa thông báo này?")) {
       setNotifications(notifications.filter((n) => n.id !== id));
-      alert("Đã xóa thông báo!");
+      toast.success("Đã xóa thông báo!");
     }
   };
 
-  // CSS theo trạng thái
-  const getStatusColor = (status: NotificationStatus): string => {
-    const colors: Record<NotificationStatus, string> = {
-      sent: "bg-green-100 text-green-700",
-      scheduled: "bg-blue-100 text-blue-700",
-      draft: "bg-gray-100 text-gray-700",
+  const getStatusInfo = (status: NotificationStatus) => {
+    const statusMap: Record<
+      NotificationStatus,
+      { bg: string; text: string; icon: any }
+    > = {
+      sent: {
+        bg: "bg-green-50 border-green-200",
+        text: "text-green-700",
+        icon: CheckCircle2,
+      },
+      scheduled: {
+        bg: "bg-blue-50 border-blue-200",
+        text: "text-blue-700",
+        icon: Clock,
+      },
+      draft: {
+        bg: "bg-gray-50 border-gray-200",
+        text: "text-gray-700",
+        icon: FileText,
+      },
     };
-    return colors[status];
+    return statusMap[status];
   };
 
-  const getStatusText = (status: NotificationStatus): string => {
+  const getStatusLabel = (status: NotificationStatus): string => {
     const texts: Record<NotificationStatus, string> = {
       sent: "Đã gửi",
       scheduled: "Đã lên lịch",
@@ -173,141 +156,323 @@ export default function NotificationManagement() {
     return texts[status];
   };
 
+  const getTypeInfo = (type: string) => {
+    return type === "immediate"
+      ? { bg: "bg-red-50", text: "text-red-700", label: "🚨 Tức thời" }
+      : { bg: "bg-purple-50", text: "text-purple-700", label: "📅 Định kỳ" };
+  };
+
+  const getReadPercentage = (read: number, sent: number): number => {
+    return sent > 0 ? Math.round((read / sent) * 100) : 0;
+  };
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý Thông báo</h1>
-        <button
-          onClick={() => openForm()}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          <Plus size={18} />
-          <span>Tạo thông báo mới</span>
-        </button>
-      </div>
-
-      {/* Form */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl m-4">
-            <h2 className="text-xl font-bold mb-4">
-              {editingId ? "Chỉnh sửa thông báo" : "Tạo thông báo mới"}
-            </h2>
-            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-              {/* Tiêu đề */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Tiêu đề *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500"
-                  placeholder="VD: Thực đơn tuần 40"
-                />
-              </div>
-
-              {/* Nội dung */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Nội dung *
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500"
-                  rows={4}
-                  placeholder="Nhập nội dung thông báo..."
-                />
-              </div>
-              {/* ... (các input khác giữ nguyên, chỉ sửa rows -> number, event -> typed) */}
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+              <Bell size={32} className="text-orange-500" />
+              Quản lý Thông báo
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Tạo và quản lý các thông báo cho phụ huynh, giáo viên và học sinh
+            </p>
           </div>
-        </div>
-      )}
-
-      {/* Danh sách thông báo */}
-      <div className="grid gap-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="bg-white rounded-lg shadow-sm p-5 border-l-4 border-orange-500"
+          <button
+            onClick={() => openForm()}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
           >
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <h3 className="font-bold text-lg">{notification.title}</h3>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      notification.status
-                    )}`}
-                  >
-                    {getStatusText(notification.status)}
-                  </span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      notification.type === "immediate"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-purple-100 text-purple-700"
-                    }`}
-                  >
-                    {notification.type === "immediate" ? "Tức thời" : "Định kỳ"}
-                  </span>
+            <Plus size={20} />
+            <span className="font-medium">Tạo thông báo mới</span>
+          </button>
+        </div>
+
+        {showForm && (
+          <div className="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-orange-50 to-orange-100 p-6 border-b border-orange-200 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingId
+                    ? "✏️ Chỉnh sửa thông báo"
+                    : "📝 Tạo thông báo mới"}
+                </h2>
+                <button
+                  onClick={closeForm}
+                  className="text-gray-400 hover:text-gray-600 p-2 hover:bg-white rounded-lg transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Tiêu đề <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition"
+                    placeholder="VD: Thực đơn tuần 40"
+                  />
                 </div>
-                <p className="text-gray-600 text-sm mb-3">
-                  {notification.content}
-                </p>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Nội dung <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition resize-none"
+                    rows={5}
+                    placeholder="Nhập nội dung thông báo chi tiết..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Loại thông báo
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          type: e.target.value as "immediate" | "periodic",
+                        })
+                      }
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:border-orange-500 transition"
+                    >
+                      <option value="immediate">Tức thời</option>
+                      <option value="periodic">Định kỳ</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Đối tượng nhận
+                    </label>
+                    <select
+                      value={formData.target}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          target: e.target.value,
+                        })
+                      }
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:border-orange-500 transition"
+                    >
+                      <option value="all">Tất cả</option>
+                      <option value="parents">Phụ huynh</option>
+                      <option value="teachers">Giáo viên</option>
+                      <option value="students">Học sinh</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex space-x-2">
+              {/* Modal Footer */}
+              <div className="bg-gray-50 p-6 border-t border-gray-200 flex justify-end gap-3">
                 <button
-                  onClick={() => openForm(notification)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  onClick={closeForm}
+                  className="px-6 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition"
                 >
-                  <Edit size={18} />
+                  Hủy
                 </button>
                 <button
-                  onClick={() => deleteNotification(notification.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  onClick={() => {
+                    if (!formData.title || !formData.content) {
+                      toast.error("Vui lòng nhập đầy đủ tiêu đề và nội dung!");
+                      return;
+                    }
+
+                    if (editingId) {
+                      // Cập nhật
+                      setNotifications(
+                        notifications.map((n) =>
+                          n.id === editingId ? { ...n, ...formData } : n
+                        )
+                      );
+                      toast.success("Cập nhật thông báo thành công!");
+                    } else {
+                      const newNotification: Notification = {
+                        id: Date.now(),
+                        title: formData.title,
+                        content: formData.content,
+                        type: formData.type,
+                        target: formData.target,
+                        schools: formData.schools,
+                        schedule: "Đã gửi",
+                        status: "sent",
+                        sent: 100,
+                        read: 0,
+                        createdDate: new Date().toLocaleDateString("vi-VN"),
+                      };
+                      setNotifications([...notifications, newNotification]);
+                      toast.success("Tạo thông báo mới thành công!");
+                    }
+
+                    closeForm();
+                  }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2"
                 >
-                  <Trash2 size={18} />
+                  <Send size={18} />
+                  {editingId ? "Cập nhật" : "Tạo"}
                 </button>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="flex items-center space-x-2">
-                <Users size={16} className="text-gray-400" />
-                <span className="text-gray-600">{notification.target}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <School size={16} className="text-gray-400" />
-                <span className="text-gray-600">
-                  {notification.schools.length} trường
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Calendar size={16} className="text-gray-400" />
-                <span className="text-gray-600">{notification.schedule}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Bell size={16} className="text-gray-400" />
-                <span className="text-gray-600">
-                  {notification.sent} gửi / {notification.read} đọc
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-3 pt-3 border-t text-xs text-gray-500">
-              Tạo ngày: {notification.createdDate}
             </div>
           </div>
-        ))}
+        )}
+
+        {/* Notifications List */}
+        <div className="grid gap-5">
+          {notifications.map((notification) => {
+            const statusInfo = getStatusInfo(notification.status);
+            const StatusIcon = statusInfo.icon;
+            const typeInfo = getTypeInfo(notification.type);
+            const readPercent = getReadPercentage(
+              notification.read,
+              notification.sent
+            );
+
+            return (
+              <div
+                key={notification.id}
+                className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 ${
+                  notification.status === "sent"
+                    ? "border-green-500"
+                    : "border-blue-500"
+                } overflow-hidden`}
+              >
+                <div className="p-6">
+                  {/* Top Section */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-bold text-gray-800">
+                          {notification.title}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${statusInfo.text} ${statusInfo.bg}`}
+                        >
+                          <StatusIcon size={14} />
+                          {getStatusLabel(notification.status)}
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${typeInfo.text} ${typeInfo.bg}`}
+                        >
+                          {typeInfo.label}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {notification.content}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => openForm(notification)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Chỉnh sửa"
+                      >
+                        <Edit size={20} />
+                      </button>
+                      <button
+                        onClick={() => deleteNotification(notification.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Xóa"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 py-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} className="text-orange-500" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Đối tượng</p>
+                        <p className="font-semibold text-gray-700">
+                          {notification.target}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <School size={16} className="text-orange-500" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Trường</p>
+                        <p className="font-semibold text-gray-700">
+                          {notification.schools.length} trường
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} className="text-orange-500" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Lịch</p>
+                        <p className="font-semibold text-gray-700">
+                          {notification.schedule}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Send size={16} className="text-orange-500" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Gửi</p>
+                        <p className="font-semibold text-gray-700">
+                          {notification.sent}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={16} className="text-green-500" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Đã đọc</p>
+                        <p className="font-semibold text-gray-700">
+                          {notification.read} ({readPercent}%)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mt-4 text-xs text-gray-400">
+                    Tạo ngày: {notification.createdDate}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Empty State */}
+        {notifications.length === 0 && (
+          <div className="bg-white rounded-xl p-12 text-center">
+            <Bell size={48} className="text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600 text-lg">Không có thông báo nào</p>
+            <button
+              onClick={() => openForm()}
+              className="mt-4 text-orange-600 font-semibold hover:text-orange-700"
+            >
+              Tạo thông báo đầu tiên
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

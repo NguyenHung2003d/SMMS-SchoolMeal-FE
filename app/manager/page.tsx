@@ -262,26 +262,6 @@ export default function ManagerDashboardPage() {
               <ArrowUpRight size={16} className="ml-1" />
             </button>
           </Link>
-          <Link
-            href="/manager/finance"
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="bg-orange-100 p-3 rounded-lg mr-4">
-                <Download size={24} className="text-orange-500" />
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-800">Báo cáo tài chính</h3>
-                <p className="text-xs text-gray-500">
-                  Xuất báo cáo tài chính chi tiết
-                </p>
-              </div>
-            </div>
-            <button className="w-full py-2 text-blue-500 hover:text-blue-600 font-medium flex items-center justify-center">
-              <span>Xuất báo cáo</span>
-              <ArrowUpRight size={16} className="ml-1" />
-            </button>
-          </Link>
         </div>
       </div>
       {/* Kitchen Purchase Report */}

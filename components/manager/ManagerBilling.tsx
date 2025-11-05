@@ -1,14 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import {
-  DollarSign,
   Search,
-  Filter,
   Calendar,
   Download,
   ShoppingCart,
   TrendingUp,
-  TrendingDown,
   Eye,
   X,
   Printer,
@@ -29,8 +26,11 @@ import {
 import { Bar, Pie } from "react-chartjs-2";
 import { shoppingExpenses } from "@/data/kitchen/expenses";
 import { Button } from "../ui/button";
-import { bills } from "@/data";
 import { invoices } from "@/data/billing/invoices";
+import { Invoice } from "@/types";
+import { formatCurrency } from "@/utils";
+import { mockShoppingOrders, mockOrderDetails } from "@/data/billing/orders";
+import ShoppingOrdersModal from "@/components/ShoppingOrdersModal"; // ← Thêm import này
 
 ChartJS.register(
   CategoryScale,
@@ -45,14 +45,12 @@ ChartJS.register(
 export default function ManagerBilling() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedClass, setSelectedClass] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("11");
   const [selectedYear, setSelectedYear] = useState("2023");
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-
-  /** ========== Helper functions ========== */
-  const formatCurrency = (amount: number) =>
-    amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND";
+  const [showShoppingModal, setShowShoppingModal] = useState(false);
 
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -82,33 +80,32 @@ export default function ManagerBilling() {
     }
   };
 
-  /** ========== Thống kê tổng quan ========== */
-  const totalAmount = bills.reduce((sum, b) => sum + b.amount, 0);
-  const paidAmount = bills
+  const uniqueClasses = Array.from(
+    new Set(invoices.map((inv) => inv.class).filter(Boolean))
+  ).sort();
+
+  const totalAmount = invoices.reduce((sum, b) => sum + b.amount, 0);
+  const paidAmount = invoices
     .filter((b) => b.status === "paid")
     .reduce((s, b) => s + b.amount, 0);
-  const pendingAmount = bills
-    .filter((b) => b.status !== "paid")
-    .reduce((s, b) => s + b.amount, 0);
-  const totalShoppingExpenses = shoppingExpenses.reduce(
-    (s, e) => s + e.amount,
+  const totalShoppingExpenses = mockShoppingOrders.reduce(
+    (s, e) => s + e.totalAmount,
     0
   );
 
-  /** ========== Biểu đồ thu nhập / chi phí ========== */
   const incomeChartData: ChartData<"bar"> = {
     labels: ["Tiền ăn"],
     datasets: [
       {
         label: "Thu nhập (triệu VND)",
         data: [
-          bills
+          invoices
             .filter((b) => b.type === "tuition")
             .reduce((s, b) => s + b.amount, 0) / 1_000_000,
-          bills
+          invoices
             .filter((b) => b.type === "meal")
             .reduce((s, b) => s + b.amount, 0) / 1_000_000,
-          bills
+          invoices
             .filter((b) => b.type === "activity")
             .reduce((s, b) => s + b.amount, 0) / 1_000_000,
         ],
@@ -136,13 +133,13 @@ export default function ManagerBilling() {
     ],
   };
 
-  /** ========== Lọc hóa đơn ========== */
   const filteredInvoices = invoices.filter(
     (inv) =>
       (inv.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.parent.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.id.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (selectedStatus === "all" || inv.status === selectedStatus)
+      (selectedStatus === "all" || inv.status === selectedStatus) &&
+      (selectedClass === "all" || inv.class === selectedClass)
   );
 
   const handleViewInvoice = (invoice: Invoice) => {
@@ -150,7 +147,6 @@ export default function ManagerBilling() {
     setShowInvoiceModal(true);
   };
 
-  /** ========== JSX ========== */
   return (
     <div className="p-6">
       {/* Header */}
@@ -227,26 +223,42 @@ export default function ManagerBilling() {
             {formatCurrency(paidAmount)}
           </h3>
         </div>
-        <div className="bg-white p-6 rounded-xl border shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Chưa thanh toán</p>
-          <h3 className="text-2xl font-bold text-yellow-600">
-            {formatCurrency(pendingAmount)}
+        <div
+          className="bg-white p-6 rounded-xl border shadow-sm cursor-pointer hover:shadow-md transition"
+          onClick={() => setShowShoppingModal(true)}
+        >
+          <p className="text-sm text-gray-500 mb-1">Chi phí đi chợ</p>
+          <h3 className="text-2xl font-bold text-orange-600">
+            {formatCurrency(totalShoppingExpenses)}
           </h3>
+          <p className="text-xs text-gray-400 mt-2">Click để xem chi tiết</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg border p-4 mb-6 shadow-sm flex flex-col md:flex-row justify-between gap-4">
-        <div className="relative max-w-md flex-grow">
+        <div className="relative max-w-md grow">
           <input
             type="text"
-            placeholder="Tìm kiếm hóa đơn..."
+            placeholder="Tìm kiếm theo tên, phụ huynh, mã hóa đơn..."
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
         </div>
+        <select
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          value={selectedClass}
+          onChange={(e) => setSelectedClass(e.target.value)}
+        >
+          <option value="all">Tất cả lớp</option>
+          {uniqueClasses.map((cls) => (
+            <option key={cls} value={cls}>
+              {cls}
+            </option>
+          ))}
+        </select>
         <select
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           value={selectedStatus}
@@ -265,6 +277,7 @@ export default function ManagerBilling() {
           <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase">
             <tr>
               <th className="py-3 px-4">Mã</th>
+              <th className="py-3 px-4">Lớp</th>
               <th className="py-3 px-4">Loại</th>
               <th className="py-3 px-4">Học sinh</th>
               <th className="py-3 px-4">Phụ huynh</th>
@@ -280,6 +293,7 @@ export default function ManagerBilling() {
               return (
                 <tr key={invoice.id} className="hover:bg-gray-50">
                   <td className="py-3 px-4">{invoice.id}</td>
+                  <td className="py-3 px-4 font-medium">{invoice.class}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${typeInfo.className}`}
@@ -370,6 +384,15 @@ export default function ManagerBilling() {
           </div>
         </div>
       )}
+
+      <ShoppingOrdersModal
+        isOpen={showShoppingModal}
+        onClose={() => setShowShoppingModal(false)}
+        orders={mockShoppingOrders}
+        orderDetails={mockOrderDetails}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+      />
     </div>
   );
 }

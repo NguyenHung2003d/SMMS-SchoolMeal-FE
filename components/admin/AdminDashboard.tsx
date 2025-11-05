@@ -1,6 +1,27 @@
 "use client";
 import {
-  BarChart3,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+import {
   School,
   Users,
   Utensils,
@@ -13,9 +34,8 @@ import {
   AlertCircle,
   FilePlus,
 } from "lucide-react";
-import DashboardCharts from "./DashboardCharts";
+import { Bar, Line } from "react-chartjs-2";
 
-// === 1. Dashboard stats cards ===
 function DashboardStats() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -55,7 +75,6 @@ function DashboardStats() {
   );
 }
 
-// === 3. Hoạt động gần đây ===
 function RecentActivities() {
   const activities = [
     {
@@ -88,7 +107,7 @@ function RecentActivities() {
       <div className="p-4 space-y-4">
         {activities.map((a, i) => (
           <div key={i} className="flex items-start space-x-3">
-            <div className="bg-orange-500 p-1.5 rounded-md text-white flex-shrink-0">
+            <div className="bg-orange-500 p-1.5 rounded-md text-white shrink-0">
               {a.icon}
             </div>
             <div>
@@ -102,7 +121,62 @@ function RecentActivities() {
   );
 }
 
-// === 4. Công việc cần làm + Thao tác nhanh ===
+function DashboardCharts() {
+  const revenueData = {
+    labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"],
+    datasets: [
+      {
+        label: "Doanh thu (VNĐ)",
+        data: [3.2, 3.8, 4.5, 5.1, 5.8, 6.3],
+        borderColor: "#f97316",
+        backgroundColor: "rgba(249, 115, 22, 0.4)",
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const userGrowthData = {
+    labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"],
+    datasets: [
+      {
+        label: "Người dùng mới",
+        data: [300, 450, 600, 700, 800, 1000],
+        backgroundColor: "rgba(59, 130, 246, 0.5)",
+      },
+    ],
+  };
+
+  const incidentData = {
+    labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+    datasets: [
+      {
+        label: "Sự cố hệ thống",
+        data: [5, 3, 8, 2],
+        backgroundColor: "rgba(239, 68, 68, 0.5)",
+      },
+    ],
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <div className="bg-white p-4 rounded-lg shadow-md border">
+        <h3 className="font-bold mb-4">Doanh thu theo tháng</h3>
+        <Line data={revenueData} />
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow-md border">
+        <h3 className="font-bold mb-4">Tăng trưởng người dùng</h3>
+        <Bar data={userGrowthData} />
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow-md border">
+        <h3 className="font-bold mb-4">Số lượng sự cố</h3>
+        <Bar data={incidentData} />
+      </div>
+    </div>
+  );
+}
+
 function TasksAndActions() {
   const tasks = [
     {
@@ -164,7 +238,6 @@ function TasksAndActions() {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-      {/* Công việc cần làm */}
       <div className="xl:col-span-2 bg-white rounded-lg shadow-sm border p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-lg">Công việc cần làm</h2>
@@ -188,7 +261,6 @@ function TasksAndActions() {
         </ul>
       </div>
 
-      {/* Thao tác nhanh */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h2 className="font-semibold text-lg mb-4">Thao tác nhanh</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -207,11 +279,9 @@ function TasksAndActions() {
   );
 }
 
-// === 5. Main dashboard ===
 export default function AdminDashboard() {
   return (
     <div>
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Tổng quan hệ thống</h1>
         <button className="flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition">
@@ -219,10 +289,8 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* Cards */}
       <DashboardStats />
 
-      {/* Chart + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <DashboardCharts />
@@ -232,7 +300,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Tasks + Quick actions */}
       <TasksAndActions />
     </div>
   );

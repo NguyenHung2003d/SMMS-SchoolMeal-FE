@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Plus,
 } from "lucide-react";
-import { schools } from "@/data";
+import { schools } from "@/data/school/schools";
 
 export default function SchoolManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +29,6 @@ export default function SchoolManagement() {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Quản lý trường học</h1>
@@ -70,14 +69,12 @@ export default function SchoolManagement() {
         </div>
       </div>
 
-      {/* Grid of cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredSchools.map((school) => (
           <div
             key={school.id}
             className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition p-5 relative"
           >
-            {/* Status */}
             <span
               className={`absolute top-4 right-4 text-xs font-medium px-3 py-1 rounded-full ${
                 school.status === "active"
@@ -111,7 +108,6 @@ export default function SchoolManagement() {
               </button>
             </div>
 
-            {/* Students */}
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm flex items-center text-gray-600">
                 <Users size={16} className="mr-2 text-orange-500" />
@@ -125,7 +121,6 @@ export default function SchoolManagement() {
         ))}
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between mt-6 text-sm text-gray-500">
         <p>
           Hiển thị {filteredSchools.length} / {schools.length} trường

@@ -370,3 +370,57 @@ export type RecentActivity = {
 };
 
 export type RecentActivities = RecentActivity[];
+
+export interface Invoice {
+  id: string;
+  type: "meal" | "tuition" | "activity";
+  student: string;
+  parent: string;
+  amount: number;
+  status: "paid" | "pending" | "overdue";
+  dueDate: string;
+  items: InvoiceItem[];
+}
+
+export interface InvoiceItem {
+  description: string;
+  amount: number;
+}
+
+export interface OrderLine {
+  lineId: number;
+  ingredientId: number;
+  quantityGram: number;
+  unitPrice: number;
+  batchNo: string;
+  origin: string;
+  expiryDate: string;
+  totalPrice: number;
+}
+
+export interface OrderDetail {
+  lines: OrderLine[];
+}
+
+export interface ShoppingOrder {
+  orderId: number;
+  orderDate: string;
+  supplierName: string;
+  purchaseOrderStatus: string;
+  note: string;
+  totalAmount: number;
+}
+
+export interface ShoppingOrdersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  orders?: ShoppingOrder[];
+  orderDetails?: Record<number, OrderDetail>;
+  selectedMonth: string;
+  selectedYear: string;
+}
+
+export interface StatusInfo {
+  text: string;
+  className: string;
+}

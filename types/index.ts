@@ -50,13 +50,6 @@ export type FoodMenuItem = {
   needed: number;
 };
 
-export type StockItem = {
-  name: string;
-  current: number;
-  minimum: number;
-  unit: string;
-};
-
 export interface MenuItem {
   day: string;
   date: string;
@@ -99,20 +92,6 @@ export type Teacher = {
   status: "active" | "inactive" | "onLeave";
 };
 
-export type ClassStudent = {
-  classId: number;
-  className: string;
-  students: Student[];
-};
-
-export type ClassItem = {
-  id: number;
-  name: string;
-  grade: number;
-  year: string;
-  teacherId: string;
-};
-
 export type WeekKey = "week1" | "week2";
 
 export interface DayMenu {
@@ -151,61 +130,6 @@ export interface WeeklyMenu {
   weekId: string;
   period: string;
   days: MenuDay[];
-}
-
-// ============= CHILD & PARENT =============
-
-export type Child = {
-  id: number;
-  name: string;
-  class: string;
-  avatar: LucideIcon;
-  birthdate: string;
-  gender: "Nam" | "Nữ";
-  bloodType:
-    | "A+"
-    | "A-"
-    | "B+"
-    | "B-"
-    | "AB+"
-    | "AB-"
-    | "O+"
-    | "O-"
-    | "Không biết";
-  allergies: string[]; // VD: ["Đậu phộng", "Sữa", "Khác: mít"]
-  healthNotes: string;
-  emergencyContact: string;
-};
-
-export type ParentInfo = {
-  fullName: string;
-  email: string;
-  phone: string;
-  address: string;
-  idNumber: string;
-  relationship: "Cha" | "Mẹ" | "Ông" | "Bà" | "Khác";
-  emergencyContact: string;
-};
-
-export interface ChildrenListProps {
-  children: Child[];
-  selectedChild: Child | null;
-  setSelectedChild: (child: Child) => void;
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-}
-
-export interface SectionProps {
-  selectedChild: Child | null;
-}
-
-export interface TabContentProps {
-  activeTab: string;
-  selectedChild: Child | null; // ✅ Thêm type cụ thể
-}
-
-export interface RegisterMealProps {
-  selectedChild: Child | null; // ✅ Thêm type cụ thể
 }
 
 // ============= NOTIFICATIONS =============
@@ -248,42 +172,6 @@ export interface HealthRecord {
   height: number;
   weight: number;
   bmi: number;
-}
-
-export interface Student {
-  id: number;
-  name: string;
-  avatar: string;
-  gender: string;
-  birthdate: string;
-  class: string;
-  parent: {
-    name: string;
-    phone: string;
-    email: string;
-    hasAccount: boolean;
-  };
-  status: "active" | "inactive";
-  note?: string;
-}
-
-// ============= ANALYTICS & REPORTS =============
-export interface MealData {
-  date: string;
-  registered: number;
-  actual: number;
-  missed: number;
-}
-
-export interface RevenueData {
-  month: string;
-  revenue: number;
-}
-
-export interface SchoolDistribution {
-  name: string;
-  value: number;
-  color: string;
 }
 
 export interface UserStat {
@@ -348,15 +236,6 @@ export interface ParentFeedback {
   feedback: string;
 }
 
-// ============= MISC =============
-export type MissionItem = {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-};
-
-export type EditMode = "system" | `school-${number}` | null;
-
 export interface LoadingContextType {
   loading: boolean;
   setLoading: (value: boolean) => void;
@@ -368,59 +247,3 @@ export type RecentActivity = {
   time: string;
   color: string;
 };
-
-export type RecentActivities = RecentActivity[];
-
-export interface Invoice {
-  id: string;
-  type: "meal" | "tuition" | "activity";
-  student: string;
-  parent: string;
-  amount: number;
-  status: "paid" | "pending" | "overdue";
-  dueDate: string;
-  items: InvoiceItem[];
-}
-
-export interface InvoiceItem {
-  description: string;
-  amount: number;
-}
-
-export interface OrderLine {
-  lineId: number;
-  ingredientId: number;
-  quantityGram: number;
-  unitPrice: number;
-  batchNo: string;
-  origin: string;
-  expiryDate: string;
-  totalPrice: number;
-}
-
-export interface OrderDetail {
-  lines: OrderLine[];
-}
-
-export interface ShoppingOrder {
-  orderId: number;
-  orderDate: string;
-  supplierName: string;
-  purchaseOrderStatus: string;
-  note: string;
-  totalAmount: number;
-}
-
-export interface ShoppingOrdersModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  orders?: ShoppingOrder[];
-  orderDetails?: Record<number, OrderDetail>;
-  selectedMonth: string;
-  selectedYear: string;
-}
-
-export interface StatusInfo {
-  text: string;
-  className: string;
-}

@@ -4,16 +4,19 @@ import { AuthResponse, User } from "@/types/auth";
 
 export const authService = {
   login: async (data: LoginFormData): Promise<AuthResponse> => {
-    const res = await axiosInstance.post<AuthResponse>("/login", data);
+    const res = await axiosInstance.post<AuthResponse>("/Auth/login", data);
+    if (res.data.token) {
+      localStorage.setItem("accessToken", res.data.token);
+    }
     return res.data;
   },
 
-  // getCurrentUser: async (): Promise<User> => {
-  //   const res = await axiosInstance.get<AuthResponse>("/me");
-  //   return res.data.user;
-  // },
+  getCurrentUser: async (): Promise<User> => {
+    const res = await axiosInstance.get<User>("/ParentProfile/profile");
+    return res.data;
+  },
 
   logout: async (): Promise<void> => {
-    await axiosInstance.post("/logout");
+    await axiosInstance.post("/Auth/logout");
   },
 };

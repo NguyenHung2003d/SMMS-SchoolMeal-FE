@@ -3,15 +3,15 @@ import { useLogoutMutation } from "./useLogoutMutation";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@/types/auth";
 import { AxiosError } from "axios";
+import { authService } from "@/services/authService";
 
 export const USER_QUERY_KEY = ["user"] as const;
 
 export const useAuth = () => {
   const userQuery = useQuery<User, AxiosError>({
     queryKey: USER_QUERY_KEY,
-    queryFn: () => Promise.resolve(null),
-    // queryFn: authService.getCurrentUser,
-    staleTime: 5 * 60 * 1000,
+    queryFn: authService.getCurrentUser,
+    staleTime: 7 * 24 * 60 * 60 * 1000,
     retry: (failureCount, error) => {
       if (error?.response?.status === 401) {
         return false;

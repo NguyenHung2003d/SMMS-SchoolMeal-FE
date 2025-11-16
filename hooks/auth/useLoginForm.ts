@@ -6,7 +6,7 @@ export const useLoginForm = (options?: UseFormProps<LoginFormData>) => {
   return useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      phone: "",
+      PhoneOrEmail: "",
       password: "",
     },
     mode: "onChange", 

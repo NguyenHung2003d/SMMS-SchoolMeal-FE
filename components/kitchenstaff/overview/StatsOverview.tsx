@@ -1,6 +1,6 @@
 "use client";
 
-import { dashboardStats } from "@/data";
+import { dashboardStats } from "@/data/dashboard/stats";
 import { Utensils, MessageCircle, AlertCircle, Package } from "lucide-react";
 
 export default function StatsOverview() {

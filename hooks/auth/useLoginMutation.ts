@@ -18,14 +18,14 @@ export const useLoginMutation = (
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, AxiosError, LoginFormData>({
-    mutationFn: authService.login,
+    mutationFn: (loginData: LoginFormData) => authService.login(loginData),
     onSuccess: (data) => {
-      queryClient.setQueryData<User>(USER_QUERY_KEY, data.user);
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      const user: User = data.user;
+      queryClient.setQueryData<User>(USER_QUERY_KEY, user);
     },
     onError: (error) => {
       queryClient.removeQueries({ queryKey: USER_QUERY_KEY });
-      console.log(error);
+      console.error("Login failed:", error);
     },
     ...options,
   });

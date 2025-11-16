@@ -1,6 +1,6 @@
 "use client";
 
-import { allergyAlerts } from "@/data";
+import { allergyAlerts } from "@/data/nutrition/allergies";
 import { AlertCircle, ChevronRight } from "lucide-react";
 
 export default function AllergyAlerts() {
@@ -36,7 +36,7 @@ export default function AllergyAlerts() {
             <div className="bg-orange-50 rounded-lg p-3 text-sm">
               <p className="font-medium mb-1">Món ăn: {alert.dish}</p>
               <p className="text-red-500">
-                Dị ứng: {alert.allergies.join(", ")}
+                Dị ứng: {alert.allergies}
               </p>
             </div>
           </div>

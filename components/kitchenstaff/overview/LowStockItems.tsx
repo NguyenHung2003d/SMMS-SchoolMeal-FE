@@ -1,6 +1,6 @@
 "use client";
 
-import { lowStockItems } from "@/data";
+import { lowStockItems } from "@/data/kitchen/inventory";
 import { ChevronRight } from "lucide-react";
 
 export default function LowStockItems() {

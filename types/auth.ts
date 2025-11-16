@@ -1,26 +1,31 @@
-// Các role được hỗ trợ
+import { ParentAccountDto } from "./parent";
+import { Student } from "./student";
+
 export type Role = "admin" | "teacher" | "student" | "parent" | "kitchenstaff";
 
-// Thông tin user sau khi login
 export interface User {
-  id: string;
+  userId: string;
+  fullName: string;
+  phone: string;
+  email: string | null;
   role: Role;
-  name: string;
+  schoolId: string | null;
+  parentDetails: ParentAccountDto;
+  children: Student[];
 }
 
-// Response khi login thành công từ API
 export interface AuthResponse {
-  token: string;
-  user: User;
+  token: string | null;
+  user: User | null;
+  message: string;
+  requirePasswordReset?: boolean;
 }
 
-// Payload được encode trong JWT
 export interface TokenPayload {
   id: string;
   role: Role;
 }
 
-// Context Auth để dùng trong React Context
 export interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
@@ -29,8 +34,7 @@ export interface AuthContextProps {
   logout: () => void;
 }
 
-// Dữ liệu form login (client -> API)
 export interface LoginFormData {
-  phone: string;
+  PhoneOrEmail: string;
   password: string;
 }

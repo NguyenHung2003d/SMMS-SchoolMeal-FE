@@ -1,6 +1,6 @@
 "use client";
 
-import { upcomingMeals } from "@/data";
+import { upcomingMeals } from "@/data/menu/upcomingMenu";
 import { Calendar, Filter, Clock, ChevronRight } from "lucide-react";
 
 export default function UpcomingMeals() {

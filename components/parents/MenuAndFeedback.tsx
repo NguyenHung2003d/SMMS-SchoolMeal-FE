@@ -10,9 +10,9 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useSelectedChild } from "@/context/SelectedChildContext";
-import { menuDataWeeks } from "@/data"; // Mỗi tuần chứa 5 ngày
 import { MessageSquare } from "lucide-react";
 import { WeekKey } from "@/types";
+import { menuDataWeeks } from "@/data/menu/menuDataWeeks";
 
 export default function MenuAndFeedback() {
   const { selectedChild } = useSelectedChild();

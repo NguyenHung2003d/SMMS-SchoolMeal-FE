@@ -1,6 +1,5 @@
 import {
   FoodMenuItem,
-  NavigationMenuItem,
   ParentFeedback,
 } from "@/types";
 import {
@@ -8,7 +7,6 @@ import {
   User,
   Activity,
   FileText,
-  MessageSquare,
   Receipt,
   FileEdit,
 } from "lucide-react";
@@ -112,9 +110,6 @@ export const problems = [
   },
 ];
 
-/** ================== Constants ================== */
-// Ô đen – danh sách mặc định theo yêu cầu
-
 export const foodData: FoodMenuItem[] = [
   {
     id: "pho-bo",
@@ -138,7 +133,7 @@ export const foodData: FoodMenuItem[] = [
   },
 ];
 
-export const menuItems: NavigationMenuItem[] = [
+export const menuItems = [
   {
     id: "register",
     icon: Calendar,
@@ -175,242 +170,4 @@ export const menuItems: NavigationMenuItem[] = [
     label: "Đơn xin nghỉ",
     color: "text-pink-600",
   },
-];
-
-export const recentUpdates = [
-  {
-    time: "08:15",
-    message: "Đã hoàn thành chuẩn bị bữa sáng",
-    user: "Nguyễn Văn An",
-  },
-  {
-    time: "07:45",
-    message: "Cập nhật số lượng bánh mì trứng: 100/118",
-    user: "Trần Thị Bình",
-  },
-  {
-    time: "07:30",
-    message: "Phụ huynh hủy 3 suất ăn bữa trưa",
-    user: "Hệ thống",
-  },
-];
-
-export const staffMembers = [
-  {
-    id: 1,
-    name: "Nguyễn Thị Lan",
-    email: "nguyenthilan@gmail.com",
-    phone: "0912345678",
-    role: "teacher",
-    subject: "Toán",
-    status: "active",
-    joinDate: "15/08/2022",
-    avatar: "https://i.imgur.com/6YQ9Z3z.jpg",
-  },
-  {
-    id: 2,
-    name: "Trần Văn Minh",
-    email: "tranvanminh@gmail.com",
-    phone: "0923456789",
-    role: "teacher",
-    subject: "Tiếng Việt",
-    status: "active",
-    joinDate: "10/09/2022",
-    avatar: "https://i.imgur.com/F8QXfXh.jpg",
-  },
-  {
-    id: 3,
-    name: "Lê Thị Hương",
-    email: "lethihuong@gmail.com",
-    phone: "0934567890",
-    role: "teacher",
-    subject: "Tiếng Anh",
-    status: "active",
-    joinDate: "05/10/2022",
-    avatar: "https://i.imgur.com/KWaVOLR.jpg",
-  },
-  {
-    id: 4,
-    name: "Phạm Văn Đức",
-    email: "phamvanduc@gmail.com",
-    phone: "0945678901",
-    role: "teacher",
-    subject: "Khoa học",
-    status: "active",
-    joinDate: "20/07/2022",
-    avatar: "",
-  },
-  {
-    id: 5,
-    name: "Nguyễn Thị Thảo",
-    email: "nguyenthithao@gmail.com",
-    phone: "0956789012",
-    role: "kitchen",
-    subject: "",
-    status: "banned",
-    joinDate: "15/08/2022",
-    avatar: "",
-    banReason: "Vi phạm quy định vệ sinh an toàn thực phẩm",
-    banExpiry: "15/12/2023",
-  },
-  {
-    id: 6,
-    name: "Trần Văn Hùng",
-    email: "tranvanhung@gmail.com",
-    phone: "0967890123",
-    role: "support",
-    subject: "",
-    status: "active",
-    joinDate: "01/09/2022",
-    avatar: "",
-  },
-  {
-    id: 7,
-    name: "Lê Minh Tuấn",
-    email: "leminhtuan@gmail.com",
-    phone: "0978901234",
-    role: "teacher",
-    subject: "Thể dục",
-    status: "pending",
-    joinDate: "10/11/2023",
-    avatar: "",
-  },
-];
-
-export const mealSchedule = [
-  {
-    time: "11:30 - 12:00",
-    class: "1A",
-    students: 25,
-  },
-  {
-    time: "12:00 - 12:30",
-    class: "2B",
-    students: 24,
-  },
-  {
-    time: "12:30 - 13:00",
-    class: "3A",
-    students: 19,
-  },
-];
-
-export const studentAllergies = [
-  {
-    id: 1,
-    student: "Nguyễn Minh Anh",
-    class: "3A",
-    allergies: ["Sữa"],
-    severity: "Cao",
-    notes:
-      "Không được dùng sữa bò, sữa chua, phô mai, thay thế bằng sữa đậu nành",
-    image: "https://i.imgur.com/6YQ9Z3z.jpg",
-  },
-  {
-    id: 2,
-    student: "Trần Hoàng Nam",
-    class: "2B",
-    allergies: ["Đậu phộng"],
-    severity: "Trung bình",
-    notes: "Tránh các món có đậu phộng và dầu đậu phộng",
-    image: "https://i.imgur.com/wgJDypg.jpg",
-  },
-  {
-    id: 3,
-    student: "Phạm Tuấn Kiệt",
-    class: "3A",
-    allergies: ["Hải sản"],
-    severity: "Cao",
-    notes: "Dị ứng nặng với tôm, cua, ghẹ và các loại hải sản",
-    image: "https://i.imgur.com/F8QXfXh.jpg",
-  },
-  {
-    id: 4,
-    student: "Lê Thu Hà",
-    class: "1A",
-    allergies: ["Gluten"],
-    severity: "Trung bình",
-    notes: "Không dùng các món có bột mì, bánh mì",
-    image: "https://i.imgur.com/KWaVOLR.jpg",
-  },
-];
-
-export const dietaryRestrictions = [
-  {
-    id: 1,
-    student: "Lê Thu Hà",
-    class: "1A",
-    restriction: "Ăn kiêng đường",
-    notes: "Hạn chế đồ ngọt và đường tinh luyện",
-    image: "https://i.imgur.com/KWaVOLR.jpg",
-  },
-  {
-    id: 2,
-    student: "Vũ Hoàng Long",
-    class: "2B",
-    restriction: "Ăn chay",
-    notes: "Không ăn thịt, cá và các sản phẩm từ động vật",
-    image: "https://i.imgur.com/wgJDypg.jpg",
-  },
-];
-
-export const commonAllergens = [
-  {
-    name: "Sữa",
-    count: 1,
-  },
-  {
-    name: "Đậu phộng",
-    count: 1,
-  },
-  {
-    name: "Hải sản",
-    count: 1,
-  },
-  {
-    name: "Gluten",
-    count: 1,
-  },
-  {
-    name: "Trứng",
-    count: 0,
-  },
-  {
-    name: "Đậu nành",
-    count: 0,
-  },
-];
-
-export const menuLibrary = [
-  {
-    id: 1,
-    name: "Thực đơn tuần 42/2023",
-    description: "Thực đơn cân bằng dinh dưỡng với các món ăn phổ biến",
-    dishes: 10,
-    rating: 4.8,
-    lastUsed: "10/10/2023",
-  },
-  {
-    id: 2,
-    name: "Thực đơn mùa hè",
-    description: "Thực đơn nhẹ nhàng, tươi mát cho mùa hè",
-    dishes: 12,
-    rating: 4.5,
-    lastUsed: "15/07/2023",
-  },
-  {
-    id: 3,
-    name: "Thực đơn đặc biệt",
-    description: "Thực đơn cho các dịp lễ đặc biệt",
-    dishes: 8,
-    rating: 4.7,
-    lastUsed: "02/09/2023",
-  },
-];
-
-export const statsData = [
-  { value: 50, label: "Trường học", suffix: "+" },
-  { value: 5000, label: "Phụ huynh", suffix: "+" },
-  { value: 10000, label: "Bữa ăn/ngày", suffix: "+" },
-  { value: 99, label: "Hài lòng", suffix: "%" },
 ];

@@ -16,7 +16,7 @@ export interface Student {
   };
   status: "active" | "inactive";
   allergies: string[];
-  dateOfBirth: string
+  DateOfBirth: string
 }
 
 export type StudentsInfoProps = {

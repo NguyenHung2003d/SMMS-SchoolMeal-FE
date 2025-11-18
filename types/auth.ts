@@ -16,7 +16,7 @@ export interface User {
 
 export interface AuthResponse {
   token: string | null;
-  user: User | null;
+  user: User 
   message: string;
   requirePasswordReset?: boolean;
 }

@@ -1,8 +1,7 @@
 "use client";
-import { SectionProps } from "@/types";
 import React from "react";
 
-const LeaveApplication: React.FC<SectionProps> = ({ selectedChild }) => {
+const LeaveApplication: React.FC<SelectIconProps> = ({ selectedChild }) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Đơn xin nghỉ</h2>

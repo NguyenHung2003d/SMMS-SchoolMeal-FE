@@ -1,25 +1,28 @@
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AuthContextProps } from "@/types/auth";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-/*
-
-UI nhập phone + pass
-   -> gọi AuthContext.login()
-   -> AuthContext gọi useLoginMutation
-   -> service gọi API /auth/login
-   -> check DB -> trả token + user
-   -> server set token vào cookie HTTP-only
-   -> client React Query lưu user vào cache
-   -> AuthContext đọc user từ React Query
-   -> middleware kiểm tra token để redirect đúng role
-   -> UI render theo role
-
-*/
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+  const isLoggingOut = useRef(false);
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      if (isLoggingOut.current) {
+        return;
+      }
+      isLoggingOut.current = true;
+      console.log("AuthProvider received session-expired event. Logging out.");
+      toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      logout();
+    };
+    window.addEventListener("auth-session-expired", handleSessionExpired);
+    return () => {
+      window.removeEventListener("auth-session-expired", handleSessionExpired);
+    };
+  }, [logout]);
   return (
     <AuthContext
       value={{

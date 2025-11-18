@@ -8,7 +8,7 @@ import React, {
   useEffect,
   useTransition,
 } from "react";
-import { User } from "lucide-react";
+import { User, Loader2, AlertCircle } from "lucide-react";
 import { ParentAccountDto } from "@/types/parent";
 import { axiosInstance } from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
@@ -16,6 +16,8 @@ import { ParentInfoForm } from "./ParentInfoForm";
 import { StudentsInfo } from "./StudentsInfo";
 import { Student } from "@/types/student";
 import axios from "axios";
+import { ParentInfoDisplay } from "./ParentInfoDisplay";
+import { convertFileToBase64 } from "@/helpers";
 
 export default function ParentProfileUpdate() {
   const [parentInfo, setParentInfo] = useState<ParentAccountDto | null>(null);
@@ -24,10 +26,12 @@ export default function ParentProfileUpdate() {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"parent-info" | "students-info">(
     "parent-info"
   );
+  const [isEditingParent, setIsEditingParent] = useState(false);
 
   const otherAllergy = useMemo(() => {
     if (!selectedStudent) return "";
@@ -88,41 +92,64 @@ export default function ParentProfileUpdate() {
     setSelectedStudent({ ...selectedStudent, allergies: next });
   };
 
+  const handleParentAvatarChange = (file: File) => {
+    setParentAvatarFile(file);
+    setStudentAvatarFile(null);
+  };
+
   const handleStudentAvatarChange = (file: File) => {
     setStudentAvatarFile(file);
-    setParentAvatarFile(null); // Đảm bảo chỉ upload 1 ảnh 1 lần
+    setParentAvatarFile(null);
   };
 
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
+        setLoadError(null);
         const res = await axiosInstance.get("/ParentProfile/profile");
+        console.log("API Response:", res.data);
         const { children, ...parentData } = res.data;
-        if (parentData.dateOfBirth) {
-          parentData.dateOfBirth = new Date(parentData.dateOfBirth)
+        const rawParentDob = parentData.dateOfBirth || parentData.DateOfBirth;
+        if (rawParentDob) {
+          parentData.dateOfBirth = new Date(rawParentDob)
             .toISOString()
             .split("T")[0];
         }
 
         setParentInfo(parentData);
         setStudents(
-          children.map((child: any) => ({
-            ...child,
-            id: child.studentId,
-            name: child.fullName,
-            class: child.className,
-            allergies: child.allergyFoods ?? [],
-            avatar: User,
-            birthdate: child.birthdate ?? "",
-            gender: child.gender ?? "Nam",
-            bloodType: child.bloodType ?? "Không biết",
-            healthNotes: child.healthNotes ?? "",
-            emergencyContact: child.emergencyContact ?? "",
-          }))
+          children.map((child: any) => {
+            let formattedDateOfBirth = "";
+            const rawChildDob = child.dateOfBirth || child.DateOfBirth;
+            if (rawChildDob) {
+              formattedDateOfBirth = new Date(rawChildDob)
+                .toISOString()
+                .split("T")[0];
+            }
+            const rawGender = child.gender || child.Gender;
+            const genderValue = rawGender ? rawGender : "M";
+
+            return {
+              ...child,
+              id: child.studentId,
+              name: child.fullName,
+              class: child.className,
+              allergies: child.allergyFoods ?? [],
+              avatar: User,
+              DateOfBirth: formattedDateOfBirth,
+              gender: genderValue,
+            };
+          })
         );
       } catch (err) {
         console.error(err);
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+          window.location.href = "/login";
+          return;
+        }
+        setLoadError("Không thể tải dữ liệu hồ sơ. Vui lòng thử lại.");
         toast.error("Không thể tải dữ liệu hồ sơ.");
       } finally {
         setIsLoading(false);
@@ -142,28 +169,70 @@ export default function ParentProfileUpdate() {
       : students;
 
     setStudents(finalStudents);
-
-    const dtoSend = {
-      FullName: parentInfo.fullName,
-      Email: parentInfo.email,
-      Phone: parentInfo.phone,
-      AvatarUrl: parentInfo.avatarUrl,
-      DateOfBirth: parentInfo.dateOfBirth,
-
-      Children: finalStudents.map((s) => ({
-        StudentId: s.studentId,
-        Birthdate: s.dateOfBirth,
-        Gender: s.gender,
-        AllergyFoods: s.allergies,
-      })),
-    };
-
     startTransition(async () => {
       try {
+        let parentAvatarUrl = parentInfo.avatarUrl;
+        if (parentAvatarFile) {
+          const formData = new FormData();
+          formData.append("file", parentAvatarFile);
+          const uploadToast = toast.loading("Đang tải lên ảnh đại diện...");
+          const uploadRes = await axiosInstance.post(
+            "/ParentProfile/upload-avatar",
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+          );
+
+          parentAvatarUrl = uploadRes.data.avatarUrl;
+          toast.dismiss(uploadToast);
+        }
+        const childrenDto = await Promise.all(
+          finalStudents.map(async (s) => {
+            const childPayload: any = {
+              StudentId: s.studentId,
+              DateOfBirth: s.DateOfBirth,
+              Gender: s.gender,
+              AllergyFoods: s.allergies,
+            };
+            if (
+              selectedStudent &&
+              s.studentId === selectedStudent.studentId &&
+              studentAvatarFile
+            ) {
+              const base64Data = await convertFileToBase64(studentAvatarFile);
+              childPayload.AvatarFileName = studentAvatarFile.name;
+              childPayload.AvatarFileData = base64Data;
+            }
+            return childPayload;
+          })
+        );
+
+        const dtoSend = {
+          FullName: parentInfo.fullName,
+          Email: parentInfo.email,
+          Phone: parentInfo.phone,
+          AvatarUrl: parentAvatarUrl,
+          DateOfBirth: parentInfo.dateOfBirth,
+          Children: childrenDto,
+        };
+
         await axiosInstance.put("/ParentProfile/profile", dtoSend);
+
         toast.success("Đã lưu thông tin thành công!");
         console.log("Saved data:", dtoSend);
+        setParentInfo(
+          (pre) =>
+            ({
+              ...pre,
+              avatarUrl: parentAvatarUrl,
+            } as ParentAccountDto)
+        );
+        setStudentAvatarFile(null);
+        setParentAvatarFile(null);
+        setIsEditingParent(false);
       } catch (err) {
+        toast.dismiss();
         if (axios.isAxiosError(err) && err.response) {
           const errorMessage =
             err.response.data.message || "Lỗi không xác định";
@@ -176,72 +245,112 @@ export default function ParentProfileUpdate() {
     });
   };
 
-  if (isLoading) return <div className="p-6">Đang tải dữ liệu...</div>;
-  if (!parentInfo) return <div className="p-6">Không thể load dữ liệu.</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+        <p className="text-gray-600 font-medium">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
+  if (loadError || !parentInfo) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4 p-6 bg-red-50 rounded-lg border border-red-200 max-w-md mx-auto">
+        <AlertCircle className="w-10 h-10 text-red-500" />
+        <p className="text-red-700 font-medium text-center">
+          {loadError || "Không thể load dữ liệu."}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
+          Tải lại trang
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Cập nhật hồ sơ</h1>
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Quản lý hồ sơ cá nhân
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Cập nhật thông tin phụ huynh và học sinh
+        </p>
       </div>
 
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          onClick={() => setActiveTab("parent-info")}
-          className={`py-3 px-4 font-medium ${
-            activeTab === "parent-info"
-              ? "text-black border-b-2 border-black"
-              : "text-gray-600"
-          }`}
-        >
-          Thông tin phụ huynh
-        </button>
-        <button
-          onClick={() => setActiveTab("students-info")}
-          className={`py-3 px-4 font-medium ${
-            activeTab === "students-info"
-              ? "text-black border-b-2 border-black"
-              : "text-gray-600"
-          }`}
-        >
-          Thông tin học sinh
-        </button>
+      <div className="border-b border-gray-200 mb-8">
+        <div className="flex space-x-1">
+          <button
+            onClick={() => setActiveTab("parent-info")}
+            className={`py-4 px-6 font-semibold text-base border-b-2 transition-all ${
+              activeTab === "parent-info"
+                ? "text-blue-600 border-b-blue-600"
+                : "text-gray-600 border-b-transparent hover:text-gray-800"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <User size={20} />
+              Thông tin phụ huynh
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("students-info")}
+            className={`py-4 px-6 font-semibold text-base border-b-2 transition-all ${
+              activeTab === "students-info"
+                ? "text-blue-600 border-b-blue-600"
+                : "text-gray-600 border-b-transparent hover:text-gray-800"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <User size={20} />
+              Thông tin học sinh ({students.length})
+            </div>
+          </button>
+        </div>
       </div>
 
-      {activeTab === "parent-info" && (
-        <ParentInfoForm
-          parentInfo={parentInfo}
-          isSaving={isSaving}
-          onInfoChange={handleParentInfoChange}
-          onSubmit={handleSave}
-          onAvatarChange={(file) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setParentInfo((prev) =>
-                prev ? { ...prev, avatarUrl: reader.result as string } : prev
-              );
-            };
-            reader.readAsDataURL(file);
-          }}
-        />
-      )}
+      <div className="animate-fadeIn">
+        {activeTab === "parent-info" && (
+          <>
+            {isEditingParent ? (
+              <ParentInfoForm
+                parentInfo={parentInfo}
+                isSaving={isSaving}
+                onCancel={() => setIsEditingParent(false)}
+                onInfoChange={handleParentInfoChange}
+                onSubmit={handleSave}
+                onAvatarChange={handleParentAvatarChange}
+              />
+            ) : (
+              <ParentInfoDisplay
+                parentInfo={parentInfo}
+                onEditClick={() => setIsEditingParent(true)}
+              />
+            )}
+          </>
+        )}
 
-      {activeTab === "students-info" && (
-        <StudentsInfo
-          students={students}
-          selectedStudent={selectedStudent}
-          onSelectStudent={setSelectedStudent}
-          onStudentInfoChange={handleStudentInfoChange}
-          onToggleAllergy={handleToggleAllergy}
-          onToggleOther={handleToggleOther}
-          onOtherAllergyChange={handleOtherAllergyChange}
-          onSubmit={handleSave}
-          isSaving={isSaving}
-          otherAllergy={otherAllergy}
-          hasOtherChecked={hasOtherChecked}
-          onStudentAvatarChange={handleStudentAvatarChange}
-        />
-      )}
+        {activeTab === "students-info" && (
+          <StudentsInfo
+            students={students}
+            selectedStudent={selectedStudent}
+            onSelectStudent={setSelectedStudent}
+            onStudentInfoChange={handleStudentInfoChange}
+            onToggleAllergy={handleToggleAllergy}
+            onToggleOther={handleToggleOther}
+            onOtherAllergyChange={handleOtherAllergyChange}
+            onSubmit={handleSave}
+            isSaving={isSaving}
+            otherAllergy={otherAllergy}
+            hasOtherChecked={hasOtherChecked}
+            onStudentAvatarChange={handleStudentAvatarChange}
+          />
+        )}
+      </div>
     </div>
   );
 }

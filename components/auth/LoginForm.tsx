@@ -15,10 +15,7 @@ import { AxiosError } from "axios";
 export default function LoginForm() {
   const router = useRouter();
   const { login, isLoginLoading } = useAuth();
-  const {
-    register,
-    handleSubmit,
-  } = useLoginForm();
+  const { register, handleSubmit } = useLoginForm();
 
   const onLoginSubmit = (data: LoginFormData) => {
     login(data, {
@@ -28,16 +25,27 @@ export default function LoginForm() {
             "Bạn đang dùng mật khẩu mặc định, vui lòng đổi mật khẩu."
           );
           router.push(`/reset-password?phone=${data.PhoneOrEmail}`);
-        }
-        else if (res.token) {
+        } else {
           toast.success("Đăng nhập thành công!");
           router.push("/parent");
           router.refresh();
+          console.log(res)
         }
       },
       onError: (error: AxiosError<any>) => {
-        const errorMessage =
-          error.response?.data?.message || "SĐT hoặc mật khẩu không đúng.";
+        let errorMessage = "Đã xảy ra lỗi. Vui lòng thử lại.";
+
+        if (error.response) {
+          errorMessage =
+            error.response.data?.message ||
+            error.response.data?.error ||
+            `Lỗi server (${error.response.status})`;
+        } else if (error.request) {
+          errorMessage =
+            "Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.";
+        } else {
+          errorMessage = error.message || "Lỗi không xác định.";
+        }
         toast.error(errorMessage);
       },
     });

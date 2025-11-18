@@ -5,9 +5,6 @@ import { AuthResponse, User } from "@/types/auth";
 export const authService = {
   login: async (data: LoginFormData): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>("/Auth/login", data);
-    if (res.data.token) {
-      localStorage.setItem("accessToken", res.data.token);
-    }
     return res.data;
   },
 
@@ -17,6 +14,6 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    await axiosInstance.post("/Auth/logout");
+    await axiosInstance.post("/Auth/logout", {});
   },
 };

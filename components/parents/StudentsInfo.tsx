@@ -10,11 +10,10 @@ import {
   X,
   Edit,
   Save,
-  Heart,
 } from "lucide-react";
 import { ALLERGY_LIST } from "@/data/nutrition/allergies";
 import { StudentsInfoProps } from "@/types/student";
-import { AllergyPill } from "@/utils/AllergyPill";
+import { AllergyPill } from "@/helpers";
 import toast from "react-hot-toast";
 
 export function StudentsInfo({
@@ -77,7 +76,6 @@ export function StudentsInfo({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {students.map((st) => {
-              const Icon = st.avatar || User;
               return (
                 <div
                   key={st.studentId}
@@ -86,7 +84,15 @@ export function StudentsInfo({
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-md">
-                      <Icon className="w-8 h-8 text-white" />
+                      {st.avatarUrl ? (
+                        <img
+                          src={st.avatarUrl}
+                          alt={st.fullName}
+                          className="w-16 h-16 text-white"
+                        />
+                      ) : (
+                        <User className="w-8 h-8 text-white" />
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-slate-800">
@@ -130,7 +136,9 @@ export function StudentsInfo({
               <h2 className="text-3xl font-bold text-slate-800">
                 Cập nhật thông tin
               </h2>
-              <p className="text-slate-500 mt-1">Bé {selectedStudent.className}</p>
+              <p className="text-slate-500 mt-1">
+                Bé {selectedStudent.fullName}
+              </p>
             </div>
             <button
               onClick={handleClose}
@@ -172,7 +180,7 @@ export function StudentsInfo({
                   Họ và tên
                 </label>
                 <input
-                  value={selectedStudent.className}
+                  value={selectedStudent.fullName}
                   disabled
                   className="w-full pl-4 pr-4 py-3 bg-slate-100 border-2 border-slate-200 rounded-lg text-slate-700 cursor-not-allowed font-medium"
                 />
@@ -201,8 +209,8 @@ export function StudentsInfo({
                   />
                   <input
                     type="date"
-                    name="birthdate"
-                    value={selectedStudent.dateOfBirth}
+                    name="DateOfBirth"
+                    value={selectedStudent.DateOfBirth}
                     onChange={onStudentInfoChange}
                     className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
                   />
@@ -214,12 +222,15 @@ export function StudentsInfo({
                 </label>
                 <select
                   name="gender"
-                  value={selectedStudent.gender}
+                  value={selectedStudent.gender || ""}
                   onChange={onStudentInfoChange}
                   className="w-full py-3 px-4 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white font-medium"
                 >
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
+                  <option value="" disabled>
+                    Chọn giới tính
+                  </option>
+                  <option value="M">Nam</option>
+                  <option value="F">Nữ</option>
                 </select>
               </div>
             </div>

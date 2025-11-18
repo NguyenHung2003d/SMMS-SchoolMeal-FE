@@ -1,55 +1,49 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
-export const BASE_URL=process.env.NEXT_PUBLIC_URL_API;
+export const BASE_URL = process.env.NEXT_PUBLIC_URL_API;
 export const axiosInstance = axios.create({
   baseURL: `${BASE_URL}`,
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use(
-  (config: any) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 const extendToken = async () => {
   try {
     console.log("🔄 Attempting to extend token...");
-
-    const { data } = await axiosInstance.post(
-      `/auth/extendToken`,
-      {},
-      { withCredentials: true }
-    );
-
+    await axiosInstance.post("auth/extendToken");
     console.log("✅ Token extended successfully");
-    return data?.newAccessToken || null;
+    return true;
   } catch (error) {
     console.log("❌ Extend token failed:", error);
-    return null;
+    return false;
   }
 };
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token: string | null) => void;
+  resolve: (value: any) => void;
   reject: (error: any) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error);
     } else {
-      resolve(token);
+      resolve(null);
     }
   });
   failedQueue = [];
+};
+
+const handleSessionExpired = () => {
+  if (
+    typeof window !== "undefined" &&
+    !window.location.pathname.includes("/login")
+  ) {
+    toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+    window.location.href = "/login";
+  }
 };
 
 axiosInstance.interceptors.response.use(
@@ -65,52 +59,43 @@ axiosInstance.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (token) {
-              originalRequest.headers["Authorization"] = `Bearer ${token}`;
-              return axiosInstance(originalRequest);
-            }
-            return Promise.reject(error);
-          })
-          .catch((err) => Promise.reject(err));
+        }).then(() => {
+          return axiosInstance(originalRequest);
+        });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const newAccessToken = await extendToken();
-
-        if (newAccessToken) {
-          localStorage.setItem("accessToken", newAccessToken);
-          axiosInstance.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${newAccessToken}`;
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-
-          processQueue(null, newAccessToken);
-
-          console.log("🔄 Retrying original request with new token");
+        const didExtend = await extendToken();
+        if (didExtend) {
+          console.log("🔄 Retrying original request (cookie is updated)");
+          processQueue(null);
           return axiosInstance(originalRequest);
         } else {
-          console.log("🚪 Cannot extend token, redirecting to login");
-          localStorage.removeItem("accessToken");
-          processQueue(error, null);
+          console.log("🚪 Cannot extend token, triggering logout");
+          processQueue(error);
 
-          // Redirect to login
-          // window.location.href = "/auth/login";
-          // return Promise.reject(error);
+          handleSessionExpired();
+
+          return Promise.reject(error);
         }
-      } catch (err) {
-        console.error("💥 Token renewal process failed:", err);
-        processQueue(err, null);
-        localStorage.removeItem("accessToken");
-        // window.location.href = "/login";
-        // return Promise.reject(err);
+      } catch (error) {
+        console.error("💥 Token renewal process failed:", error);
+        processQueue(error);
+
+        handleSessionExpired();
+
+        return Promise.reject(error);
       } finally {
         isRefreshing = false;
       }
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+        window.location.href = "/login";
+      handleSessionExpired();
     }
 
     return Promise.reject(error);

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { ChangeEvent, useRef, useState } from "react";
-import { Camera, User, Mail, Phone, Save, Calendar } from "lucide-react";
-import { ParentInfoFormProps } from "@/types/parent";
+import { Camera, User, Mail, Phone, Save, Calendar, X } from "lucide-react";
+import { UpdatedParentInfoFormProps } from "@/types/parent";
 import { toast } from "react-hot-toast";
 
 export function ParentInfoForm({
@@ -11,7 +11,8 @@ export function ParentInfoForm({
   onInfoChange,
   onSubmit,
   onAvatarChange,
-}: ParentInfoFormProps) {
+  onCancel,
+}: UpdatedParentInfoFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +44,6 @@ export function ParentInfoForm({
       />
 
       <form onSubmit={onSubmit} className="space-y-8">
-        {/* HEADER & AVATAR */}
         <div className="flex flex-col items-center pb-8 border-b border-slate-200">
           <h2 className="text-3xl font-bold text-slate-800 mb-6">
             Thông tin cá nhân
@@ -95,7 +95,6 @@ export function ParentInfoForm({
             </div>
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-slate-700">
               Email
@@ -116,7 +115,6 @@ export function ParentInfoForm({
             </div>
           </div>
 
-          {/* Phone */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-slate-700">
               Số điện thoại
@@ -136,7 +134,6 @@ export function ParentInfoForm({
             </div>
           </div>
 
-          {/* Date of Birth */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-slate-700">
               Ngày sinh
@@ -157,8 +154,16 @@ export function ParentInfoForm({
           </div>
         </div>
 
-        {/* SUBMIT BUTTON */}
         <div className="flex justify-end pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+            className="flex items-center gap-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+          >
+            <X size={20} />
+            Hủy
+          </button>
           <button
             type="submit"
             disabled={isSaving}

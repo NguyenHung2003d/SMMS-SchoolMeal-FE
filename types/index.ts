@@ -11,21 +11,6 @@ export interface NavigationItem {
   href: string;
 }
 
-// ============= NAVIGATION MENU (cho Parent Dashboard tabs) =============
-export type NavigationMenuItem = {
-  id: string;
-  icon: LucideIcon;
-  label: string;
-  color: string;
-};
-
-// ✅ SỬA: NavigationTabsProps dùng NavigationMenuItem[] thay vì MenuItem[]
-export interface NavigationTabsProps {
-  menuItems: NavigationMenuItem[]; // ✅ ĐÃ SỬA
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
-
 // ============= FOOD MENU ITEM (cho món ăn) =============
 export type FoodMenuItem = {
   id: string;

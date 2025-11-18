@@ -24,3 +24,7 @@ export type ParentInfoFormProps = {
   onSubmit: (e: FormEvent) => void;
   onAvatarChange: (file: File) => void;
 };
+
+export type UpdatedParentInfoFormProps = ParentInfoFormProps & {
+  onCancel: () => void; 
+};

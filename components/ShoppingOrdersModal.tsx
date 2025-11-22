@@ -1,10 +1,10 @@
+import { formatCurrency } from "@/helpers";
 import {
   OrderLine,
   ShoppingOrder,
   ShoppingOrdersModalProps,
   StatusInfo,
 } from "@/types";
-import { formatCurrency } from "@/utils";
 import React, { useState } from "react";
 
 export default function ShoppingOrdersModal({

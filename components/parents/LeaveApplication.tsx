@@ -5,11 +5,8 @@ import {
   renderStatusBadge,
 } from "@/helpers";
 import { axiosInstance } from "@/lib/axiosInstance";
-import {
-  AttendanceRequestDto,
-  AttendanceResponseDto,
-  SelectIconProps,
-} from "@/types/attendance";
+import { AttendanceRequestDto, AttendanceResponseDto, SelectIconProps } from "@/types/parent";
+
 import {
   AlertCircle,
   Calendar,

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
-import { DayMenuDto, WeekMenuDto } from "@/types/menu";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 export function AllergyPill({
@@ -36,6 +35,10 @@ export function AllergyPill({
     </button>
   );
 }
+
+export const formatNumber = (num: number) => {
+  return num?.toLocaleString("vi-VN");
+};
 
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -92,26 +95,26 @@ export const getDayName = (dateString: string) => {
 };
 
 export const renderStatusBadge = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "approved":
-      case "đã duyệt":
-        return (
-          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-            <CheckCircle2 size={12} /> Đã duyệt
-          </span>
-        );
-      case "rejected":
-      case "từ chối":
-        return (
-          <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-            <AlertCircle size={12} /> Từ chối
-          </span>
-        );
-      default:
-        return (
-          <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-            <Clock size={12} /> Chờ duyệt
-          </span>
-        );
-    }
-  };
+  switch (status?.toLowerCase()) {
+    case "approved":
+    case "đã duyệt":
+      return (
+        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <CheckCircle2 size={12} /> Đã duyệt
+        </span>
+      );
+    case "rejected":
+    case "từ chối":
+      return (
+        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <AlertCircle size={12} /> Từ chối
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <Clock size={12} /> Chờ duyệt
+        </span>
+      );
+  }
+};

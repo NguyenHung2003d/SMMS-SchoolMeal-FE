@@ -14,7 +14,7 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const res = await axiosInstance.get<User>("/ParentProfile/profile");
+    const res = await axiosInstance.get<User>("/Auth/me");
     return res.data;
   },
 

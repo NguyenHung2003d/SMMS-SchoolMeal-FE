@@ -1,7 +1,7 @@
 import { ParentAccountDto } from "./parent";
 import { Student } from "./student";
 
-export type Role = "admin" | "teacher" | "student" | "parent" | "kitchenstaff";
+export type Role = "Admin" | "Manager" | "Warden" | "Parent" | "KitchenStaff";
 
 export interface User {
   userId: string;

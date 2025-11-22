@@ -13,11 +13,12 @@ export const useAuth = () => {
     queryFn: authService.getCurrentUser,
     staleTime: 7 * 24 * 60 * 60 * 1000,
     retry: (failureCount, error) => {
-      if (error?.response?.status === 401) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
         return false;
       }
-      return failureCount < 3;
+      return failureCount < 2;
     },
+    refetchOnWindowFocus: false,
   });
   const loginMutation = useLoginMutation();
   const logoutMutation = useLogoutMutation();

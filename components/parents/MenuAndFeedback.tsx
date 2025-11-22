@@ -17,16 +17,12 @@ import {
   ChevronRight,
   Info,
 } from "lucide-react";
-import {
-  WeekMenuDto,
-  WeekOptionDto,
-  DayMenuDto,
-  MenuFoodItemDto,
-} from "@/types/menu";
+
 import { axiosInstance } from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
 import { formatDateForInput, getDayName } from "@/helpers";
 import Image from "next/image";
+import { DayMenuDto, MenuFoodItemDto, WeekMenuDto, WeekOptionDto } from "@/types/parent";
 
 export default function MenuAndFeedback() {
   const { selectedChild } = useSelectedChild();

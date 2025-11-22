@@ -1,20 +1,16 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   BookOpen,
   Bell,
-  FileText,
   TrendingUp,
   ArrowUpRight,
   Plus,
   Calendar,
   CheckCircle,
-  Clock,
   UserPlus,
   School,
-  Utensils,
-  MessageSquare,
   BarChart3,
   Upload,
   Download,
@@ -22,18 +18,53 @@ import {
   ShoppingCart,
   Inbox,
   CreditCard,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { stats } from "@/data/dashboard/stats";
 import { kitchenPurchases } from "@/data/kitchen/expenses";
+import { ManagerOverviewDto, RecentPurchaseDto } from "@/types/manager";
+import { formatNumber } from "@/helpers";
+import { axiosInstance } from "@/lib/axiosInstance";
 
 export default function ManagerDashboardPage() {
-  // Format number with commas
-  const formatNumber = (num: number) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-  // Mock kitchen purchase data
+  const [overview, setOverview] = useState<ManagerOverviewDto | null>(null);
+  const [recentPurchases, setRecentPurchases] = useState<RecentPurchaseDto[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [overviewRes, purchasesRes] = await Promise.all([
+          axiosInstance.get<ManagerOverviewDto>("/ManagerHome/overview"),
+          axiosInstance.get<RecentPurchaseDto[]>(
+            "/ManagerHome/recent-purchases?take=5"
+          ),
+        ]);
+
+        setOverview(overviewRes.data);
+        setRecentPurchases(purchasesRes.data);
+      } catch (error) {
+        console.error("Lỗi tải dashboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -63,14 +94,13 @@ export default function ManagerDashboardPage() {
           </Button>
         </div>
       </div>
-      {/* Stats cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-        {/* Teachers */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">
-                Quản sinh
+                Quản sinh / GV
               </p>
               <h3 className="text-3xl font-bold text-gray-800">
                 {stats.teachers.total}
@@ -88,7 +118,6 @@ export default function ManagerDashboardPage() {
             </div>
           </div>
         </div>
-        {/* Students */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -109,7 +138,6 @@ export default function ManagerDashboardPage() {
             </div>
           </div>
         </div>
-        {/* Classes */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -129,7 +157,6 @@ export default function ManagerDashboardPage() {
             </div>
           </div>
         </div>
-        {/* Finance */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -150,7 +177,6 @@ export default function ManagerDashboardPage() {
           </div>
         </div>
       </div>
-      {/* Quick access */}
       <div className="mb-8">
         <h2 className="text-lg font-bold mb-4">Truy cập nhanh</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -218,7 +244,6 @@ export default function ManagerDashboardPage() {
           </Link>
         </div>
       </div>
-      {/* Reports section */}
       <div className="mb-8">
         <h2 className="text-lg font-bold mb-4">Báo cáo và thống kê</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -264,7 +289,6 @@ export default function ManagerDashboardPage() {
           </Link>
         </div>
       </div>
-      {/* Kitchen Purchase Report */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">Báo cáo thu mua bếp</h2>

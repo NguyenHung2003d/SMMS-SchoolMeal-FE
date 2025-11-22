@@ -22,16 +22,21 @@ export default function LoginForm() {
   const onLoginSubmit = (data: LoginFormData) => {
     login(data, {
       onSuccess: (res) => {
+        const userRole = res?.user?.role;
+        const normalizedRole = userRole ? userRole.toLowerCase() : "";
         if (res.requirePasswordReset) {
           toast.error(
             "Bạn đang dùng mật khẩu mặc định, vui lòng đổi mật khẩu."
           );
           router.push(`/reset-password?phone=${data.PhoneOrEmail}`);
+        } else if (normalizedRole === "manager" || normalizedRole === "admin") {
+          toast.success(`Xin chào quản lý: ${res?.user?.fullName}`);
+          router.push("/manager");
         } else {
           toast.success("Đăng nhập thành công!");
-          router.push("/parent");
-          router.refresh();
-          console.log(res);
+          setTimeout(() => {
+            router.push("/parent");
+          }, 500);
         }
       },
       onError: (error: AxiosError<any>) => {

@@ -11,9 +11,9 @@ import {
   Legend,
   LineController,
 } from "chart.js";
-import { HealthPoint, StudentBMIResultDto, TrackBMIProps } from "@/types/health";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { getBMIStatus } from "@/helpers";
+import { HealthPoint, StudentBMIResultDto, TrackBMIProps } from "@/types/parent";
 
 export default function TrackBMI({ selectedChild }: TrackBMIProps) {
   const [historyData, setHistoryData] = useState<HealthPoint[]>([]);

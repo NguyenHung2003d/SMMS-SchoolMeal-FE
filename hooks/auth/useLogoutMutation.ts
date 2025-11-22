@@ -17,19 +17,13 @@ export const useLogoutMutation = (
   return useMutation<void, AxiosError, void>({
     mutationFn: authService.logout,
     onSuccess: () => {
-      console.log("Logout success. Clearing cache and redirecting.");
       toast.success("Đăng xuất thành công!");
       queryClient.clear();
       router.push("/login");
     },
     onError: (error) => {
-      console.log(
-        "Logout API failed. Clearing cache and redirecting anyway.",
-        error.message
-      );
-      toast.error(
-        "Có lỗi khi đăng xuất, bạn đã được đưa về trang login."
-      );
+      console.log("Logout error:", error);
+      toast.success("Đăng xuất thành công!");
       queryClient.clear();
       router.push("/login");
     },

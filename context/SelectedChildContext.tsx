@@ -1,11 +1,17 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode } from "react";
-import { Child } from "@/types";
+import {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Student } from "@/types/student";
 
 interface SelectedChildContextType {
-  selectedChild: Child | null;
-  setSelectedChild: (child: Child | null) => void;
+  selectedChild: Student | null;
+  setSelectedChild: (child: Student | null) => void;
 }
 
 const SelectedChildContext = createContext<
@@ -13,12 +19,34 @@ const SelectedChildContext = createContext<
 >(undefined);
 
 export function SelectedChildProvider({ children }: { children: ReactNode }) {
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [selectedChild, setSelectedChild] = useState<Student | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedChild");
+    if (saved) {
+      try {
+        setSelectedChild(JSON.parse(saved));
+      } catch (e) {
+        console.error("Lỗi parse student từ storage", e);
+      }
+    }
+  }, []);
+
+  const handleSetSelectedChild = (child: Student | null) => {
+    setSelectedChild(child);
+    if (child) {
+      localStorage.setItem("selectedChild", JSON.stringify(child));
+    } else {
+      localStorage.removeItem("selectedChild");
+    }
+  };
 
   return (
-    <SelectedChildContext value={{ selectedChild, setSelectedChild }}>
+    <SelectedChildContext.Provider
+      value={{ selectedChild, setSelectedChild: handleSetSelectedChild }}
+    >
       {children}
-    </SelectedChildContext>
+    </SelectedChildContext.Provider>
   );
 }
 

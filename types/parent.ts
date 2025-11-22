@@ -10,7 +10,7 @@ export interface ChildDto {
 export interface ParentAccountDto {
   userId: string;
   fullName: string;
-  email: string | null;
+  email: string 
   phone: string;
   isActive: boolean;
   avatarUrl: string;
@@ -23,6 +23,10 @@ export type ParentInfoFormProps = {
   onInfoChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onSubmit: (e: FormEvent) => void;
   onAvatarChange: (file: File) => void;
+};
+export type ParentInfoDisplayProps = {
+  parentInfo: ParentAccountDto;
+  onEditClick: () => void;
 };
 
 export type UpdatedParentInfoFormProps = ParentInfoFormProps & {

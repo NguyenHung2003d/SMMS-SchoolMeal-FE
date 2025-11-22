@@ -1,5 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import { ChangeEvent, FormEvent } from "react";
 
 export interface Student {
   studentId: number;
@@ -16,21 +15,17 @@ export interface Student {
   };
   status: "active" | "inactive";
   allergies: string[];
-  DateOfBirth: string
+  dateOfBirth: string;
+  relation: string;
+  avatarFile?: File;
 }
 
 export type StudentsInfoProps = {
   students: Student[];
   selectedStudent: Student | null;
   onSelectStudent: (student: Student | null) => void;
-  onStudentInfoChange: (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => void;
-  onToggleAllergy: (item: string) => void;
-  onToggleOther: () => void;
-  onOtherAllergyChange: (value: string) => void;
-  onSubmit: (e: FormEvent) => void;
+  onUpdateStudent: (student: Student) => void;
+  onStudentAvatarChange: (file: File) => void;
+  onSubmit: (e: React.FormEvent) => void;
   isSaving: boolean;
-  otherAllergy: string;
-  hasOtherChecked: boolean;
 };

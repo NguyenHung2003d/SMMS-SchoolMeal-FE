@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Menu, X, Bell, User, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { SelectedChildProvider } from "@/context/SelectedChildContext";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { menuItems } from "@/data";
 import { useParentNavigation } from "@/hooks/layout/useParentNavigation";
 import { SidebarContent } from "@/components/layouts/parent/SidebarContent";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +23,12 @@ export default function ParentLayout({
   const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
   const { activeTab, handleTabClick } = useParentNavigation();
-  const router = useRouter();
+
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -34,12 +37,6 @@ export default function ParentLayout({
   if (!mounted) {
     return null;
   }
-
-  const handleLogout = () => {
-    if (logout) {
-      logout();
-    }
-  };
 
   return (
     <SelectedChildProvider>
@@ -97,14 +94,10 @@ export default function ParentLayout({
                 className="flex items-center space-x-4"
                 suppressHydrationWarning
               >
-                <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-                  <Bell className="w-6 h-6 text-gray-600" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-2 cursor-pointer"
                       suppressHydrationWarning
                     >
                       <div
@@ -115,7 +108,7 @@ export default function ParentLayout({
                           ? user.fullName.substring(0, 2).toUpperCase()
                           : "PH"}
                       </div>
-                      <div suppressHydrationWarning>
+                      <div suppressHydrationWarning className="hidden md:block">
                         <p className="font-semibold text-sm">
                           {user?.fullName || "Phụ huynh"}
                         </p>

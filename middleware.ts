@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
+const PROTECTED_ROOT = "/parent";
+const HOME_PAGE = "/parent/register-meal";
+const LOGIN_PAGE = "/login";
+
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
   const { pathname } = req.nextUrl;
 
-  const authRoutes = ["/login", "/register", "/forgot-password"];
-
-  if (authRoutes.some((route) => pathname.startsWith(route)) && token) {
-    return NextResponse.redirect(new URL("/parent/register-meal", req.url));
+  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (token) {
+      return NextResponse.redirect(new URL(HOME_PAGE, req.url));
+    }
+    return NextResponse.next();
   }
-  if (pathname.startsWith("/parent") && !token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+
+  if (pathname.startsWith(PROTECTED_ROOT)) {
+    if (!token) {
+      const loginUrl = new URL(LOGIN_PAGE, req.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return NextResponse.next();

@@ -73,9 +73,7 @@ export function ParentInfoForm({
           </p>
         </div>
 
-        {/* FORM FIELDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Full Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-slate-700">
               Họ và tên

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
-import { DayMenuDto, WeekMenuDto } from "@/types/menu";
+import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import Cookies from "js-cookie";
 
 export function AllergyPill({
   label,
@@ -36,6 +37,10 @@ export function AllergyPill({
   );
 }
 
+export const formatNumber = (num: number) => {
+  return num?.toLocaleString("vi-VN");
+};
+
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -68,6 +73,7 @@ export const getBMIStatus = (bmi: number) => {
 };
 
 export const formatCurrency = (amount: number) => {
+  if (amount === undefined || amount === null) return "Đang tính...";
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
@@ -87,4 +93,56 @@ export const getDayName = (dateString: string) => {
   } catch {
     return "";
   }
+};
+
+export const renderStatusBadge = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "approved":
+    case "đã duyệt":
+      return (
+        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <CheckCircle2 size={12} /> Đã duyệt
+        </span>
+      );
+    case "rejected":
+    case "từ chối":
+      return (
+        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <AlertCircle size={12} /> Từ chối
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+          <Clock size={12} /> Chờ duyệt
+        </span>
+      );
+  }
+};
+
+export const getRoleInfo = (role: string) => {
+  const r = role?.toLowerCase() || "";
+  if (r.includes("teacher") || r.includes("giáo viên"))
+    return { text: "Giáo viên", className: "bg-blue-100 text-blue-800" };
+  if (r.includes("kitchenstaff") || r.includes("kitchen"))
+    return { text: "Nhân viên bếp", className: "bg-green-100 text-green-800" };
+  if (r.includes("warden") || r.includes("quản sinh"))
+    return { text: "Quản sinh", className: "bg-purple-100 text-purple-800" };
+  if (r.includes("manager"))
+    return { text: "Quản lý", className: "bg-red-100 text-red-800" };
+  return { text: role, className: "bg-gray-100 text-gray-800" };
+};
+
+export const getHeaders = (isMultipart = false) => {
+  const token = Cookies.get("accessToken");
+
+  const headers: any = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (!isMultipart) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  return headers;
 };

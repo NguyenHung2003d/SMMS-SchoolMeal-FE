@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { AuthContextProps } from "@/types/auth";
 import { createContext, useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 

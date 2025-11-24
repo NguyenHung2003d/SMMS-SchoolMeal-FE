@@ -32,3 +32,149 @@ export type ParentInfoDisplayProps = {
 export type UpdatedParentInfoFormProps = ParentInfoFormProps & {
   onCancel: () => void; 
 };
+
+export interface AttendanceRequestDto {
+  studentId: string;
+  startDate: string;
+  endDate: string;
+  reason?: string;
+}
+
+export interface AttendanceResponseDto {
+  attendanceId: number;
+  studentId: string;
+  studentName: string;
+  absentDate: string;
+  reason: string;
+  notifiedBy: string;
+  createdAt: string;
+}
+
+export interface SelectIconProps {
+  selectedChild: {
+    studentId: string;
+    name: string;
+  } | null;
+}
+
+import { Student } from "./student";
+
+export type StudentBMIResultDto = {
+  studentId: string;
+  studentName: string;
+  academicYear: string;
+  heightCm: number;
+  weightKg: number;
+  bmi: number;
+  bmiStatus: string;
+  recordAt: string; // DateTime trả về chuỗi
+};
+
+export type HealthPoint = {
+  month: string; // "T6", "T7", ...
+  height: number; // cm
+  weight: number; // kg
+  bmi: number; // chỉ số BMI
+};
+
+export type TrackBMIProps = {
+  selectedChild: Student | null;
+};
+
+export interface WeekOptionDto {
+  scheduleMealId: number;
+  weekNo: number;
+  yearNo: number;
+  weekStart: string;
+  weekEnd: string;
+  status: string;
+
+  ScheduleMealId?: number;
+  WeekNo?: number;
+  YearNo?: number;
+  WeekStart?: string;
+  WeekEnd?: string;
+  Status?: string;
+}
+
+export interface MenuFoodItemDto {
+  foodId: number;
+  foodName: string;
+  foodType: string;
+  imageUrl: string;
+  foodDesc: string;
+  isAllergenic: boolean;
+  allergenicNames: string[];
+
+  FoodId?: number;
+  FoodName?: string;
+  FoodType?: string;
+  ImageUrl?: string;
+  FoodDesc?: string;
+  IsAllergenic?: boolean;
+  AllergenicNames?: string[];
+}
+
+export interface DayMenuDto {
+  dailyMealId: number;
+  mealDate: string; 
+  mealType: string;
+  notes: string;
+  
+  items?: MenuFoodItemDto[]; 
+  foods?: MenuFoodItemDto[]; 
+
+  DailyMealId?: number;
+  MealDate?: string;
+  MealType?: string;
+  Notes?: string;
+  Items?: MenuFoodItemDto[];
+  Foods?: MenuFoodItemDto[];
+
+  date?: string;
+}
+
+export interface WeekMenuDto {
+  schoolId: string;
+  weekNo: number;
+  yearNo: number;
+  weekStart: string;
+  weekEnd: string;
+  status: string;
+  notes: string;
+  days: DayMenuDto[];
+
+  SchoolId?: string;
+  WeekNo?: number;
+  YearNo?: number;
+  StartDate?: string;
+  EndDate?: string;
+  Status?: string;
+  Notes?: string;
+  Days?: DayMenuDto[]; 
+}
+export interface DailyMenuDto {
+  date: string;
+  dayOfWeek: string;
+}
+
+export interface HealthStatsProps {
+  currentHealth: StudentBMIResultDto | null;
+}
+
+export interface WeekSelectorProps {
+  availableWeeks: WeekOptionDto[];
+  selectedDateInWeek: string;
+  onSelectDate: (date: string) => void;
+}
+
+export interface DailyMenuCardProps {
+  date: string;
+  meal: DayMenuDto | undefined;
+  onOpenModal: (meal: DayMenuDto) => void;
+}
+
+export interface MealDetailModalProps {
+  selectedMeal: DayMenuDto;
+  onClose: () => void;
+}

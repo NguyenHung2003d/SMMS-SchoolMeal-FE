@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Building,
   Home,
@@ -11,20 +11,14 @@ import {
   Search,
   Menu,
   ChevronDown,
-  School,
   User,
   FileText,
-  Calendar,
   BarChart3,
-  MessageSquare,
-  DollarSign,
-  Upload,
   UserPlus,
-  Download,
-  ClipboardList,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 export default function ManagerLayout({
   children,
@@ -35,6 +29,30 @@ export default function ManagerLayout({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { user, logout, isLoading } = useAuth();
+
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    }
+  };
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user || user.role !== "Manager") {
+      router.push("/login");
+      return;
+    }
+  }, [user, isLoading, router]);
+
+  const getInitials = (name: string) => {
+    if (!name) return "MN";
+    const parts = name.split(" ");
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   const isActive = (href: string) => pathname.startsWith(href);
 
@@ -90,23 +108,6 @@ export default function ManagerLayout({
                 >
                   <Home size={20} />
                   {isSidebarOpen && <span className="ml-3">Trang chủ</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/manager/statistics"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/statistics")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <BarChart3 size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Thống kê nội bộ</span>
-                  )}
                 </Link>
               </li>
             </ul>
@@ -242,8 +243,7 @@ export default function ManagerLayout({
                   className={`flex items-center w-full ${
                     isSidebarOpen ? "justify-start px-4" : "justify-center"
                   } py-3 rounded-lg ${
-                    isActive("/manager/billing") ||
-                    isActive("/manager/invoices")
+                    isActive("/manager/billing")
                       ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
                       : "text-gray-600 hover:bg-orange-50"
                   }`}
@@ -275,16 +275,13 @@ export default function ManagerLayout({
           </div>
         </nav>
       </div>
-      {/* Main content */}
       <div
         className={`flex-1 ${
           isSidebarOpen ? "ml-64" : "ml-20"
         } transition-all duration-300`}
       >
-        {/* Header */}
         <header className="bg-white shadow-sm sticky top-0 z-20 border-b border-orange-100">
           <div className="px-6 py-4 flex justify-between items-center">
-            {/* Search Input */}
             <div className="flex-1">
               <div className="relative max-w-md">
                 <input
@@ -299,9 +296,7 @@ export default function ManagerLayout({
               </div>
             </div>
 
-            {/* Notification + User Icon */}
             <div className="flex items-center space-x-4">
-              {/* Notifications */}
               <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-2 text-orange-600 hover:from-orange-100 hover:to-amber-100 cursor-pointer transition-all">
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-md">
@@ -309,21 +304,21 @@ export default function ManagerLayout({
                 </span>
               </div>
 
-              {/* User Icon + Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                   className="flex items-center space-x-2 cursor-pointer"
                 >
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center shadow-sm">
-                    <span className="font-medium text-orange-600">NH</span>
+                    <span className="font-medium text-orange-600">
+                      {getInitials(user?.fullName || "MA")}
+                    </span>
                   </div>
                   {isSidebarOpen && (
                     <>
                       <div className="hidden md:block text-left">
-                        <p className="font-medium text-sm">Nguyễn Hoàng</p>
-                        <p className="text-xs text-gray-500">
-                          Trường Tiểu học A
+                        <p className="font-medium text-sm">
+                          {user?.fullName || "Đang tải..."}
                         </p>
                       </div>
                       <ChevronDown
@@ -334,27 +329,10 @@ export default function ManagerLayout({
                   )}
                 </button>
 
-                {/* Dropdown Menu */}
                 {showAccountMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-orange-100 z-50">
-                    <Link
-                      href="/manager/account"
-                      className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                    >
-                      <User size={16} className="mr-2" />
-                      Thông tin cá nhân
-                    </Link>
-                    <Link
-                      href="/manager/settings"
-                      className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                    >
-                      <Settings size={16} className="mr-2" />
-                      Cài đặt
-                    </Link>
                     <button
-                      onClick={() => {
-                        /* Logic đăng xuất */
-                      }}
+                      onClick={handleLogout}
                       className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <LogOut size={16} className="mr-2" />
@@ -366,7 +344,6 @@ export default function ManagerLayout({
             </div>
           </div>
         </header>
-        {/* Main content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

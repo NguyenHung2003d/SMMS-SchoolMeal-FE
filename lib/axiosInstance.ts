@@ -1,32 +1,16 @@
 import axios from "axios";
-import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 
-export const BASE_URL = process.env.NEXT_PUBLIC_URL_API;
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_URL_API || "https://localhost:7000/api";
 
 export const axiosInstance = axios.create({
-  baseURL: `${BASE_URL}`,
-  withCredentials: true,
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000,
 });
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("accessToken")
-        : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -34,67 +18,54 @@ let failedQueue: Array<{
   reject: (error: any) => void;
 }> = [];
 
-const processQueue = (error: any, token: any = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
     if (error) {
-      reject(error);
+      prom.reject(error);
     } else {
-      resolve(token);
+      prom.resolve(token);
     }
   });
   failedQueue = [];
 };
 
-const extendToken = async () => {
-  try {
-    console.log("🔄 Attempting to extend token...");
-    await axios.post(
-      `${BASE_URL}/Auth/refresh-token`,
-      {},
-      { withCredentials: true }
-    );
-
-    console.log("✅ Token extended successfully");
-    return true;
-  } catch (error) {
-    console.log("❌ Extend token failed:", error);
-    return false;
-  }
-};
-
-const handleSessionExpired = () => {
+const handleLogout = () => {
   if (typeof window !== "undefined") {
-    if (!window.location.pathname.includes("/login")) {
-      toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
-      window.location.href = "/login";
-    }
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    window.dispatchEvent(new Event("auth-session-expired"));
+    window.location.href = "/login";
   }
 };
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status !== 401) {
-      return Promise.reject(error);
-    }
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url?.includes("/Auth/refresh-token")) {
+        handleLogout();
+        return Promise.reject(error);
+      }
 
-    if (originalRequest.url?.toLowerCase().includes("/auth/refresh-token")) {
-      handleSessionExpired();
-      return Promise.reject(error);
-    }
-
-    if (!originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => {
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
             return axiosInstance(originalRequest);
           })
           .catch((err) => {
@@ -106,35 +77,41 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const success = await extendToken();
+        const refreshToken = Cookies.get("refreshToken");
 
-        if (success) {
-          processQueue(null);
-          return axiosInstance(originalRequest);
-        } else {
-          processQueue(error, null);
-          handleSessionExpired();
-          return Promise.reject(error);
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
         }
+
+        const { data } = await axios.post(`${BASE_URL}/Auth/refresh-token`, {
+          refreshToken: refreshToken,
+        });
+        const newToken = data.token || data.accessToken;
+        const newRefreshToken = data.refreshToken;
+
+        if (!newToken) throw new Error("Failed to receive new token");
+
+        Cookies.set("accessToken", newToken);
+        if (newRefreshToken) {
+          Cookies.set("refreshToken", newRefreshToken);
+        }
+
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${newToken}`;
+
+        processQueue(null, newToken);
+
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        handleSessionExpired();
+        handleLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
-
     return Promise.reject(error);
   }
 );
-
-export const fetchFromAPI = async (url: any) => {
-  try {
-    const { data } = await axiosInstance.get(url);
-    return data;
-  } catch (error) {
-    console.error("Error fetching from API:", error);
-    throw error;
-  }
-};

@@ -28,9 +28,9 @@ import { shoppingExpenses } from "@/data/kitchen/expenses";
 import { Button } from "../ui/button";
 import { invoices } from "@/data/billing/invoices";
 import { Invoice } from "@/types";
-import { formatCurrency } from "@/utils";
 import { mockShoppingOrders, mockOrderDetails } from "@/data/billing/orders";
 import ShoppingOrdersModal from "@/components/ShoppingOrdersModal"; // ← Thêm import này
+import { formatCurrency } from "@/helpers";
 
 ChartJS.register(
   CategoryScale,

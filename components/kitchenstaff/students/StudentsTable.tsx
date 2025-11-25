@@ -11,18 +11,18 @@ export default function StudentsTable({
   activeTab: string;
   selectedClass: string;
 }) {
-  const filtered = students
-    .filter((student) => {
-      if (activeTab === "all") return true;
-      if (activeTab === "special")
-        return student.allergies.length > 0 || student.specialRequests;
-      if (activeTab === "absent") return !student.present;
-      return true;
-    })
-    .filter((student) => {
-      if (selectedClass === "all") return true;
-      return student.class === selectedClass;
-    });
+  // const filtered = students
+  //   .filter((student) => {
+  //     if (activeTab === "all") return true;
+  //     if (activeTab === "special")
+  //       return student.allergies.length > 0 || student.specialRequests;
+  //     if (activeTab === "absent") return !student.present;
+  //     return true;
+  //   })
+  //   .filter((student) => {
+  //     if (selectedClass === "all") return true;
+  //     return student.class === selectedClass;
+  //   });
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -57,7 +57,7 @@ export default function StudentsTable({
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          {/* <tbody className="bg-white divide-y divide-gray-200">
             {filtered.map((student) => (
               <tr key={student.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -113,7 +113,7 @@ export default function StudentsTable({
                 </td>
               </tr>
             ))}
-          </tbody>
+          </tbody> */}
         </table>
       </div>
     </div>

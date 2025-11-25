@@ -20,7 +20,7 @@ export default function ClassesOverview({
         </h2>
       </div>
       <div className="p-4">
-        {classes.map((classItem, index) => (
+        {/* {classes.map((classItem, index) => (
           <div
             key={index}
             className={`p-3 rounded-lg cursor-pointer ${
@@ -53,7 +53,7 @@ export default function ClassesOverview({
               ></div>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

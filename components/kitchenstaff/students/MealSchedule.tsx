@@ -18,7 +18,7 @@ export default function MealSchedule({
         </h2>
       </div>
       <div className="p-4">
-        {mealSchedule.map((schedule, index) => (
+        {/* {mealSchedule.map((schedule, index) => (
           <div
             key={index}
             className={`p-3 rounded-lg ${
@@ -42,7 +42,7 @@ export default function MealSchedule({
               </div>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

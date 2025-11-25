@@ -1,11 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Printer, Download, Plus } from "lucide-react";
-import {
-  previousLists,
-  replacementSuggestions,
-  shoppingItems,
-} from "@/data";
 import StatsOverview from "./StatsOverview";
 import CurrentShoppingList from "./CurrentShoppingList";
 import PreviousShoppingLists from "./PreviousShoppingLists";
@@ -17,20 +12,6 @@ export function PurchasePlan() {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isReplacementModalOpen, setIsReplacementModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-
-  const totalEstimatedCost = shoppingItems.reduce(
-    (sum, i) => (i.status !== "purchased" ? sum + i.estimatedCost : sum),
-    0
-  );
-  const pendingCount = shoppingItems.filter(
-    (i) => i.status === "pending"
-  ).length;
-  const purchasedCount = shoppingItems.filter(
-    (i) => i.status === "purchased"
-  ).length;
-  const outOfStockCount = shoppingItems.filter(
-    (i) => i.status === "outOfStock"
-  ).length;
 
   const handleStatusChange = (id: number, status: string) => {
     console.log("Update", id, status);
@@ -68,10 +49,10 @@ export function PurchasePlan() {
       </div>
 
       <StatsOverview
-        totalEstimatedCost={totalEstimatedCost}
-        pendingCount={pendingCount}
-        purchasedCount={purchasedCount}
-        outOfStockCount={outOfStockCount}
+        // totalEstimatedCost={totalEstimatedCost}
+        // pendingCount={pendingCount}
+        // purchasedCount={purchasedCount}
+        // outOfStockCount={outOfStockCount}
       />
 
       {/* Tabs */}
@@ -102,7 +83,7 @@ export function PurchasePlan() {
 
       {activeTab === "current" && (
         <CurrentShoppingList
-          shoppingItems={shoppingItems}
+          // shoppingItems={shoppingItems}
           handleStatusChange={handleStatusChange}
           setSelectedItem={setSelectedItem}
           setIsReplacementModalOpen={setIsReplacementModalOpen}

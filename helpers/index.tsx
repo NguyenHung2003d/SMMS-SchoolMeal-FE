@@ -133,16 +133,28 @@ export const getRoleInfo = (role: string) => {
   return { text: role, className: "bg-gray-100 text-gray-800" };
 };
 
-export const getHeaders = (isMultipart = false) => {
-  const token = Cookies.get("accessToken");
-
-  const headers: any = {
-    Authorization: `Bearer ${token}`,
-  };
-
-  if (!isMultipart) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  return headers;
+export const getStatusInfo = (status: string) => {
+  const s = status.toLowerCase();
+  if (s === "paid" || s === "đã thanh toán")
+    return { text: "Đã thanh toán", className: "bg-green-100 text-green-800" };
+  if (s === "pending" || s === "chờ thanh toán")
+    return {
+      text: "Chờ thanh toán",
+      className: "bg-yellow-100 text-yellow-800",
+    };
+  if (s === "overdue" || s === "quá hạn")
+    return { text: "Quá hạn", className: "bg-red-100 text-red-800" };
+  return { text: status, className: "bg-gray-100 text-gray-800" };
 };
+
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem("accessToken");
+  return {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
+export const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `Tháng ${i + 1}` }));

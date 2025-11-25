@@ -239,18 +239,18 @@ export default function ManagerLayout({
             <ul className="space-y-1">
               <li>
                 <Link
-                  href="/manager/billing"
+                  href="/manager/finance"
                   className={`flex items-center w-full ${
                     isSidebarOpen ? "justify-start px-4" : "justify-center"
                   } py-3 rounded-lg ${
-                    isActive("/manager/billing")
+                    isActive("/manager/finance")
                       ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
                       : "text-gray-600 hover:bg-orange-50"
                   }`}
                 >
                   <FileText size={20} />
                   {isSidebarOpen && (
-                    <span className="ml-3">Quản lý hóa đơn</span>
+                    <span className="ml-3">Quản lý tài chính</span>
                   )}
                 </Link>
               </li>

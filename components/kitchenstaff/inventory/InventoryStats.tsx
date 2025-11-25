@@ -26,7 +26,7 @@ export default function InventoryStats({
             <p className="text-sm font-medium text-gray-500 mb-1">
               Tổng số nguyên liệu
             </p>
-            <h3 className="text-3xl font-bold text-gray-800">{items.length}</h3>
+            {/* <h3 className="text-3xl font-bold text-gray-800">{items.length}</h3> */}
             <p className="mt-2 text-sm flex items-center text-gray-500">
               <span className="text-green-500 flex items-center mr-1">
                 <ArrowUp size={14} className="mr-0.5" /> 2
@@ -46,9 +46,9 @@ export default function InventoryStats({
             <p className="text-sm font-medium text-gray-500 mb-1">
               Nguyên liệu sắp hết
             </p>
-            <h3 className="text-3xl font-bold text-gray-800">
+            {/* <h3 className="text-3xl font-bold text-gray-800">
               {items.filter((i) => i.status === "Thấp").length}
-            </h3>
+            </h3> */}
           </div>
           <div className="bg-yellow-100 p-3 rounded-lg">
             <AlertTriangle size={24} className="text-yellow-500" />
@@ -62,9 +62,9 @@ export default function InventoryStats({
             <p className="text-sm font-medium text-gray-500 mb-1">
               Sắp hết hạn
             </p>
-            <h3 className="text-3xl font-bold text-gray-800">
+            {/* <h3 className="text-3xl font-bold text-gray-800">
               {alerts.length}
-            </h3>
+            </h3> */}
           </div>
           <div className="bg-orange-100 p-3 rounded-lg">
             <Clock size={24} className="text-orange-500" />
@@ -78,9 +78,9 @@ export default function InventoryStats({
             <p className="text-sm font-medium text-gray-500 mb-1">
               Đơn đặt hàng
             </p>
-            <h3 className="text-3xl font-bold text-gray-800">
+            {/* <h3 className="text-3xl font-bold text-gray-800">
               {orders.length}
-            </h3>
+            </h3> */}
             <p className="mt-2 text-sm flex items-center text-gray-500">
               <RefreshCw size={14} className="mr-1 text-blue-500" /> Đang xử lý
             </p>

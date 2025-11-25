@@ -1,6 +1,5 @@
 "use client";
 
-import { upcomingMeals } from "@/data/menu/upcomingMenu";
 import { Calendar, Filter, Clock, ChevronRight } from "lucide-react";
 
 export default function UpcomingMeals() {
@@ -20,7 +19,7 @@ export default function UpcomingMeals() {
         </div>
       </div>
       <div className="p-6">
-        {upcomingMeals.map((meal, index) => (
+        {/* {upcomingMeals.map((meal, index) => (
           <div
             key={index}
             className={`flex flex-col md:flex-row md:items-center justify-between py-4 ${
@@ -75,7 +74,7 @@ export default function UpcomingMeals() {
               </button>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

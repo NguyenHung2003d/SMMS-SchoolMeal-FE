@@ -1,7 +1,5 @@
 "use client";
 
-import { recentUpdates } from "@/data";
-
 export default function RecentUpdates() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -9,7 +7,7 @@ export default function RecentUpdates() {
         <h2 className="text-lg font-bold">Cập nhật gần đây</h2>
       </div>
       <div className="p-4">
-        {recentUpdates.map((update, index) => (
+        {/* {recentUpdates.map((update, index) => (
           <div
             key={index}
             className={`p-3 ${
@@ -24,7 +22,7 @@ export default function RecentUpdates() {
             </div>
             <p className="text-sm text-gray-500">{update.user}</p>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

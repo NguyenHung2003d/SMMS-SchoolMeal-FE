@@ -23,7 +23,7 @@ export interface StaffDto {
   userId: string;
   fullName: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   role: string;
   isActive: boolean;
   avatarUrl?: string;

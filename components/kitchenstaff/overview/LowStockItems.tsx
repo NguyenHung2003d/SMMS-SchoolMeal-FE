@@ -1,6 +1,5 @@
 "use client";
 
-import { lowStockItems } from "@/data/kitchen/inventory";
 import { ChevronRight } from "lucide-react";
 
 export default function LowStockItems() {
@@ -9,7 +8,7 @@ export default function LowStockItems() {
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-lg font-bold">Nguyên liệu sắp hết</h2>
       </div>
-      <div className="p-4">
+      {/* <div className="p-4">
         {lowStockItems.map((item, index) => (
           <div
             key={index}
@@ -43,7 +42,7 @@ export default function LowStockItems() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
       <div className="p-4 border-t border-gray-100">
         <button className="w-full py-2 text-orange-500 hover:text-orange-600 font-medium flex items-center justify-center">
           <span>Quản lý kho</span>

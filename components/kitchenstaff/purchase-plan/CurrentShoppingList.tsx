@@ -26,7 +26,7 @@ export default function CurrentShoppingList({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {shoppingItems.map((item: any) => (
+            {/* {shoppingItems.map((item: any) => (
               <tr
                 key={item.id}
                 className={item.status === "outOfStock" ? "bg-red-50" : ""}
@@ -109,7 +109,7 @@ export default function CurrentShoppingList({
                   </button>
                 </td>
               </tr>
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>

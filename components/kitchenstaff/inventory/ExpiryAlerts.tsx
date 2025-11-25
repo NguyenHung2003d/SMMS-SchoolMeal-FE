@@ -10,7 +10,7 @@ export default function ExpiryAlerts({ alerts }: { alerts: any[] }) {
         <h2 className="text-lg font-medium">Cảnh báo hạn sử dụng</h2>
       </div>
       <div className="p-4 space-y-4">
-        {alerts.map((a) => (
+        {/* {alerts.map((a) => (
           <div
             key={a.id}
             className="bg-orange-50 border border-orange-100 rounded-lg p-4 flex justify-between items-center"
@@ -30,7 +30,7 @@ export default function ExpiryAlerts({ alerts }: { alerts: any[] }) {
               </div>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function InventoryTable({ items }: { items: any[] }) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {items.map((item) => (
+            {/* {items.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">{item.name}</td>
                 <td className="px-6 py-4 text-gray-500">{item.category}</td>
@@ -44,7 +44,7 @@ export default function InventoryTable({ items }: { items: any[] }) {
                   </div>
                 </td>
               </tr>
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>

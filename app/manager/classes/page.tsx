@@ -5,26 +5,26 @@ import {
   Plus,
   Edit,
   Trash,
-  Users,
   X,
-  Save,
   Loader2,
+  School,
+  User,
+  Calendar,
 } from "lucide-react";
-import { ClassDto, TeacherDto } from "@/types/manager-class";
-import { managerClassService } from "@/services/managerClassService";
 import toast from "react-hot-toast";
+import { managerClassService } from "@/services/managerClassService";
+import { ClassDto, TeacherSimpleDto } from "@/types/manager-class";
 
 export default function ManagerClasses() {
   const [classes, setClasses] = useState<ClassDto[]>([]);
-  const [teachers, setTeachers] = useState<TeacherDto[]>([]);
-
+  const [teachers, setTeachers] = useState<TeacherSimpleDto[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("all");
 
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [showEditClassModal, setShowEditClassModal] = useState(false);
-
   const [editingClass, setEditingClass] = useState<ClassDto | null>(null);
 
   const [classForm, setClassForm] = useState({
@@ -39,14 +39,20 @@ export default function ManagerClasses() {
       const classRes = await managerClassService.getAll();
       if (classRes && Array.isArray(classRes.data)) {
         setClasses(classRes.data);
+      } else if (Array.isArray(classRes)) {
+        setClasses(classRes);
       }
+
       const teacherRes = await managerClassService.getTeacherStatus();
       if (teacherRes) {
         const allTeachers = [
           ...(teacherRes.teachersWithoutClass || []),
           ...(teacherRes.teachersWithClass || []),
         ];
-        setTeachers(allTeachers);
+        const uniqueTeachers = allTeachers.filter(
+          (v, i, a) => a.findIndex((t) => t.teacherId === v.teacherId) === i
+        );
+        setTeachers(uniqueTeachers);
       }
     } catch (error) {
       console.error("Lỗi tải dữ liệu:", error);
@@ -60,18 +66,19 @@ export default function ManagerClasses() {
     fetchData();
   }, []);
 
-  const filteredClasses = classes.filter((cls) => {
-    const matchesSearch = cls.className
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesGrade =
-      selectedGrade === "all" || cls.yearId === parseInt(selectedGrade);
-    return matchesSearch && matchesGrade;
-  });
-
   const resetForm = () => {
     setClassForm({ className: "", yearId: "", teacherId: "" });
     setEditingClass(null);
+  };
+
+  const openEditClassModal = (cls: ClassDto) => {
+    setEditingClass(cls);
+    setClassForm({
+      className: cls.className,
+      yearId: cls.yearId.toString(),
+      teacherId: cls.teacherId ? cls.teacherId.toString() : "",
+    });
+    setShowEditClassModal(true);
   };
 
   const handleAddClass = async () => {
@@ -81,44 +88,60 @@ export default function ManagerClasses() {
     }
 
     try {
-      await managerClassService.create({
+      const payload = {
         className: classForm.className,
         yearId: parseInt(classForm.yearId),
-        teacherId: classForm.teacherId || undefined,
-      });
+        teacherId: classForm.teacherId ? parseInt(classForm.teacherId) : null,
+      };
+
+      await managerClassService.create(payload);
+
       toast.success("Tạo lớp thành công");
       setShowAddClassModal(false);
       resetForm();
       fetchData();
     } catch (error: any) {
-      const msg = error?.response?.data?.message || "Tạo lớp thất bại";
+      const msg =
+        error?.response?.data?.message || "Tạo lớp thất bại (Lỗi Server)";
       toast.error(msg);
     }
   };
 
   const handleUpdateClass = async () => {
     if (!editingClass) return;
-    if (!classForm.className || !classForm.yearId) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+    if (!classForm.className) {
+      toast.error("Tên lớp không được để trống");
       return;
     }
 
     try {
-      await managerClassService.update(editingClass.classId, {
+      // Backend Handler UpdateClassCommand KHÔNG cập nhật YearId, nên ta bỏ qua nó
+      const payload = {
         className: classForm.className,
-        teacherId: classForm.teacherId || undefined,
-      });
+        teacherId: classForm.teacherId ? parseInt(classForm.teacherId) : null,
+        isActive: true, // Mặc định giữ active
+      };
+
+      await managerClassService.update(editingClass.classId, payload);
+
       toast.success("Cập nhật lớp thành công");
       setShowEditClassModal(false);
       resetForm();
       fetchData();
     } catch (error: any) {
-      toast.error("Cập nhật thất bại");
+      const msg = error?.response?.data?.message || "Cập nhật thất bại";
+      toast.error(msg);
     }
   };
 
+  // 🔴 DELETE
   const handleDeleteClass = async (id: string) => {
-    if (!confirm("Bạn có chắc muốn xóa lớp học này?")) return;
+    if (
+      !confirm(
+        "Bạn có chắc muốn xóa lớp học này? Dữ liệu liên quan có thể bị ảnh hưởng."
+      )
+    )
+      return;
     try {
       await managerClassService.delete(id);
       toast.success("Xóa lớp thành công");
@@ -128,237 +151,242 @@ export default function ManagerClasses() {
     }
   };
 
-  const openEditClassModal = (cls: ClassDto) => {
-    setEditingClass(cls);
-    setClassForm({
-      className: cls.className,
-      yearId: cls.yearId.toString(),
-      teacherId: cls.teacherId || "",
-    });
-    setShowEditClassModal(true);
-  };
+  // ---FILTER LOGIC ---
+  const filteredClasses = classes.filter((cls) => {
+    const matchesSearch = cls.className
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesGrade =
+      selectedGrade === "all" || cls.yearId === parseInt(selectedGrade);
+    return matchesSearch && matchesGrade;
+  });
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Quản lý lớp học</h1>
-          <p className="text-gray-600">Tạo và quản lý lớp học, học sinh</p>
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <School className="h-8 w-8 text-orange-600" /> Quản lý lớp học
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Danh sách các lớp học và phân công giáo viên chủ nhiệm
+          </p>
         </div>
         <button
           onClick={() => {
             resetForm();
             setShowAddClassModal(true);
           }}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center"
+          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center shadow-md transition-all"
         >
-          <Plus size={16} className="mr-2" />
-          Tạo lớp
+          <Plus size={18} className="mr-2" />
+          Tạo lớp mới
         </button>
       </div>
 
-      {/* Search and filter */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <input
               type="text"
-              placeholder="Tìm kiếm lớp học..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Tìm kiếm theo tên lớp..."
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
           </div>
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            value={selectedGrade}
-            onChange={(e) => setSelectedGrade(e.target.value)}
-          >
-            <option value="all">Tất cả khối</option>
-            {[1, 2, 3, 4, 5].map((g) => (
-              <option key={g} value={g}>
-                Khối {g}
-              </option>
-            ))}
-          </select>
+          <div className="md:w-48">
+            <select
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+            >
+              <option value="all">Tất cả khối</option>
+              {[1, 2, 3, 4, 5].map((g) => (
+                <option key={g} value={g}>
+                  Khối {g}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {loading && classes.length === 0 ? (
+      {loading ? (
         <div className="flex justify-center items-center py-20">
-          <Loader2 className="animate-spin text-orange-500 h-8 w-8" />
+          <Loader2 className="animate-spin text-orange-500 h-10 w-10" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div
-            onClick={() => {
-              resetForm();
-              setShowAddClassModal(true);
-            }}
-            className="bg-white rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 h-64 hover:border-orange-400 transition-colors cursor-pointer"
-          >
-            <div className="bg-blue-100 rounded-full p-4 mb-3">
-              <Plus size={24} className="text-orange-500" />
+        <>
+          {filteredClasses.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+              <p className="text-gray-500">Không tìm thấy lớp học nào.</p>
             </div>
-            <p className="font-medium text-gray-800">Tạo lớp học mới</p>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              {filteredClasses.map((cls) => (
+                <div
+                  key={cls.classId}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group"
+                >
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="h-12 w-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 font-bold text-xl">
+                        {cls.className.substring(0, 2)}
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                        Khối {cls.yearId}
+                      </span>
+                    </div>
 
-          {filteredClasses.map((cls) => (
-            <div
-              key={cls.classId}
-              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div className="p-4 border-b border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-800">
+                    <h3 className="font-bold text-xl text-gray-800 mb-2">
                       Lớp {cls.className}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
-                      <span className="text-gray-400">GVCN:</span>
-                      <span className="font-medium">
-                        {cls.teacherName || "Chưa phân công"}
-                      </span>
-                    </p>
-                  </div>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    Khối {cls.yearId}
-                  </span>
-                </div>
-              </div>
 
-              <div className="p-4">
-                <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                  <p className="text-xs text-gray-500 uppercase font-semibold">
-                    Sĩ số
-                  </p>
-                  <p className="font-bold text-lg text-gray-800">--</p>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <User size={16} className="mr-2 text-gray-400" />
+                        <span className="truncate">
+                          {cls.teacherName || "Chưa gán GV"}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar size={16} className="mr-2 text-gray-400" />
+                        <span>
+                          Tạo ngày:{" "}
+                          {new Date(cls.createdAt).toLocaleDateString("vi-VN")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-50 flex gap-2">
+                      <button
+                        onClick={() => openEditClassModal(cls)}
+                        className="flex-1 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                      >
+                        <Edit size={14} className="mr-1" /> Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClass(cls.classId)}
+                        className="flex-1 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                      >
+                        <Trash size={14} className="mr-1" /> Xóa
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={() => openEditClassModal(cls)}
-                    className="flex-1 py-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 flex items-center justify-center text-sm font-medium transition-colors"
-                  >
-                    <Edit size={16} className="mr-1" /> Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClass(cls.classId)}
-                    className="flex-1 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 flex items-center justify-center text-sm font-medium transition-colors"
-                  >
-                    <Trash size={16} className="mr-1" /> Xóa
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {(showAddClassModal || showEditClassModal) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {editingClass ? "Cập nhật lớp học" : "Tạo lớp học mới"}
-                </h2>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h2 className="text-xl font-bold text-gray-800">
+                {editingClass ? "Cập nhật thông tin" : "Tạo lớp học mới"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowAddClassModal(false);
+                  setShowEditClassModal(false);
+                  resetForm();
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Tên lớp <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  value={classForm.className}
+                  onChange={(e) =>
+                    setClassForm({ ...classForm, className: e.target.value })
+                  }
+                  placeholder="Ví dụ: 1A, 2B..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Khối (Năm học) <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className={`w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all ${
+                    editingClass
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : ""
+                  }`}
+                  value={classForm.yearId}
+                  onChange={(e) =>
+                    setClassForm({ ...classForm, yearId: e.target.value })
+                  }
+                  disabled={!!editingClass}
+                >
+                  <option value="">-- Chọn khối --</option>
+                  {[1, 2, 3, 4, 5].map((g) => (
+                    <option key={g} value={g}>
+                      Khối {g}
+                    </option>
+                  ))}
+                </select>
+                {editingClass && (
+                  <p className="text-xs text-amber-600 mt-1 flex items-center">
+                    * Không thể thay đổi khối khi đang cập nhật.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Giáo viên chủ nhiệm
+                </label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all"
+                  value={classForm.teacherId}
+                  onChange={(e) =>
+                    setClassForm({ ...classForm, teacherId: e.target.value })
+                  }
+                >
+                  <option value="">-- Chưa phân công --</option>
+                  {teachers.map((t) => (
+                    <option key={t.teacherId} value={t.teacherId}>
+                      {t.fullName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Danh sách bao gồm các giáo viên trong trường.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => {
                     setShowAddClassModal(false);
                     setShowEditClassModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors"
                 >
-                  <X size={20} />
+                  Hủy
                 </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tên lớp <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    value={classForm.className}
-                    onChange={(e) =>
-                      setClassForm({ ...classForm, className: e.target.value })
-                    }
-                    placeholder="Ví dụ: 1A"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Khối (Năm học) <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    value={classForm.yearId}
-                    onChange={(e) =>
-                      setClassForm({ ...classForm, yearId: e.target.value })
-                    }
-                    // Backend Update không cho sửa khối, nên disable khi edit
-                    disabled={!!editingClass}
-                  >
-                    <option value="">Chọn khối</option>
-                    {[1, 2, 3, 4, 5].map((g) => (
-                      <option key={g} value={g}>
-                        Khối {g}
-                      </option>
-                    ))}
-                  </select>
-                  {editingClass && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Không thể thay đổi khối khi cập nhật.
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Giáo viên chủ nhiệm
-                  </label>
-                  <select
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    value={classForm.teacherId}
-                    onChange={(e) =>
-                      setClassForm({ ...classForm, teacherId: e.target.value })
-                    }
-                  >
-                    <option value="">-- Chưa phân công --</option>
-                    {teachers.map((t) => (
-                      <option key={t.teacherId} value={t.teacherId}>
-                        {t.fullName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex gap-3 pt-4 mt-2">
-                  <button
-                    onClick={() => {
-                      setShowAddClassModal(false);
-                      setShowEditClassModal(false);
-                      resetForm();
-                    }}
-                    className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    onClick={editingClass ? handleUpdateClass : handleAddClass}
-                    className="flex-1 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium shadow-md hover:shadow-lg transition-all"
-                  >
-                    {editingClass ? "Lưu thay đổi" : "Tạo lớp"}
-                  </button>
-                </div>
+                <button
+                  onClick={editingClass ? handleUpdateClass : handleAddClass}
+                  className="flex-1 py-2.5 bg-orange-600 text-white rounded-xl hover:bg-orange-700 font-medium shadow-lg shadow-orange-200 transition-all"
+                >
+                  {editingClass ? "Lưu thay đổi" : "Tạo lớp ngay"}
+                </button>
               </div>
             </div>
           </div>

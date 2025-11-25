@@ -102,7 +102,7 @@ export default function StaffTable({
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Phone size={14} className="text-gray-400 mr-2" />
-                          {staff.phoneNumber}
+                          {staff.phone}
                         </div>
                       </div>
                     </td>

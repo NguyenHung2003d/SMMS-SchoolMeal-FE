@@ -29,3 +29,10 @@ export interface LoadingContextType {
   loading: boolean;
   setLoading: (value: boolean) => void;
 }
+
+export interface SidebarItemProps {
+  href: string;
+  icon: any;
+  label: string;
+  isActive: boolean;
+}

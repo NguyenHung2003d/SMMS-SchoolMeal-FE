@@ -37,6 +37,9 @@ export default function LoginPage() {
         if (normalizedRole === "manager" || normalizedRole === "admin") {
           toast.success(`Xin chào quản lý: ${res?.user?.fullName}`);
           router.push("/manager/dashboard");
+        } else if (normalizedRole === "teacher") {
+          toast.success(`Xin chào giám thị: ${res?.user?.fullName}`);
+          router.push("/warden/dashboard");
         } else {
           toast.success("Đăng nhập thành công!");
           setTimeout(() => router.push("/parent"), 500);
@@ -61,7 +64,6 @@ export default function LoginPage() {
       },
     });
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4">
       <div className="relative w-full max-w-md">

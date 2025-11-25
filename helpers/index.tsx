@@ -41,17 +41,17 @@ export const formatNumber = (num: number) => {
   return num?.toLocaleString("vi-VN");
 };
 
-export const convertFileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64String = (reader.result as string).split(",")[1];
-      resolve(base64String);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
+// export const convertFileToBase64 = (file: File): Promise<string> => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+//     reader.onload = () => {
+//       const base64String = (reader.result as string).split(",")[1];
+//       resolve(base64String);
+//     };
+//     reader.onerror = (error) => reject(error);
+//   });
+// };
 
 export const calculateManualBMI = () => {
   const [manualHeight, setManualHeight] = useState("");
@@ -157,4 +157,99 @@ export const getAuthHeaders = () => {
   };
 };
 
-export const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `Tháng ${i + 1}` }));
+export const months = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: `Tháng ${i + 1}`,
+}));
+
+export const getBMIStatusColor = (category?: string | null) => {
+  const cat = category?.toLowerCase();
+  switch (cat) {
+    case "underweight":
+      return "bg-blue-100 text-blue-800";
+    case "normal":
+      return "bg-green-100 text-green-800";
+    case "overweight":
+      return "bg-yellow-100 text-yellow-800";
+    case "obese":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+export const getBMIStatusText = (category?: string | null) => {
+  const cat = category?.toLowerCase();
+  switch (cat) {
+    case "underweight":
+      return "Thiếu cân";
+    case "normal":
+      return "Bình thường";
+    case "overweight":
+      return "Thừa cân";
+    case "obese":
+      return "Béo phì";
+    default:
+      return "Chưa có dữ liệu";
+  }
+};
+
+export const getCategoryLabel = (category: string) => {
+  switch (category.toLowerCase()) {
+    case "food":
+      return "Thức ăn";
+    case "facility":
+      return "Cơ sở vật chất";
+    case "health":
+      return "Sức khỏe";
+    case "activity":
+      return "Hoạt động";
+    default:
+      return "Khác";
+  }
+};
+
+export const getCategoryColor = (category: string) => {
+  switch (category.toLowerCase()) {
+    case "food":
+      return "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border border-orange-200";
+    case "facility":
+      return "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200";
+    case "health":
+      return "bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 border border-emerald-200";
+    case "activity":
+      return "bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200";
+    default:
+      return "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border border-gray-200";
+  }
+};
+
+export const getStatusLabel = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "Chờ xử lý";
+    case "processing":
+    case "inprogress":
+      return "Đang xử lý";
+    case "resolved":
+    case "completed":
+      return "Đã giải quyết";
+    default:
+      return "Không xác định";
+  }
+};
+
+export const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/30";
+    case "processing":
+    case "inprogress":
+      return "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30";
+    case "resolved":
+    case "completed":
+      return "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30";
+    default:
+      return "bg-gradient-to-r from-gray-500 to-slate-500 text-white";
+  }
+};

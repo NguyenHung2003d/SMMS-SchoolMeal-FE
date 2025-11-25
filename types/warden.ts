@@ -1,0 +1,102 @@
+export interface ClassDto {
+  classId: string;
+  className: string;
+  schoolName: string; // Đã thêm trường này để fix lỗi đỏ
+  wardenId: string;
+  wardenName: string;
+  totalStudents: number;
+  presentToday: number; // Backend trả về PresentToday
+  absentToday: number;
+  attendanceRate: number;
+}
+
+export interface NotificationDto {
+  notificationId: number; // Backend là long NotificationId
+  title: string;
+  content: string; // Backend là Content, không phải message
+  createdAt: string;
+  isRead: boolean;
+  sendType: string;
+}
+
+export interface WardenStats {
+  totalClasses: number;
+  totalStudents: number;
+  totalPresent: number;
+  issuesCount: number;
+}
+
+export interface StudentDto {
+  studentId: string;
+  fullName: string;
+  gender?: string;
+  dateOfBirth?: string;
+  avatarUrl?: string;
+  isActive: boolean;
+  parentName?: string;
+  parentPhone?: string;
+  relationName?: string;
+  allergies: string[];
+  isAbsent: boolean;
+}
+
+export interface AttendanceSummaryDto {
+  totalStudents: number;
+  present: number;
+  absent: number;
+  late: number;
+  attendanceRate: number;
+}
+
+export interface ClassAttendanceDto {
+  classId: string;
+  className: string;
+  students: StudentAttendanceDto[];
+  summary: AttendanceSummaryDto;
+}
+
+export interface StudentAttendanceDto {
+  studentId: string;
+  studentName: string;
+  status: string;
+  reason?: string;
+  createdAt: string;
+}
+
+export interface StudentHealthDto {
+  studentId: string;
+  studentName: string;
+  heightCm?: number | null;
+  weightKg?: number | null;
+  bmi?: number | null;
+  bmiCategory?: string | null; // "Underweight", "Normal", "Overweight", "Obese"
+  recordDate: string;
+}
+
+export interface HealthStats {
+    underweight: number;
+    normal: number;
+    overweight: number;
+    obese: number;
+}
+
+export interface FeedbackDto {
+  feedbackId: string;
+  title: string;
+  content: string;
+  category: string; // "food", "facility", "health", "activity", "other"
+  severity: string; // "low", "medium", "high"
+  status: string;   // "pending", "processing", "resolved"
+  studentName?: string;
+  createdAt: string;
+  replyCount?: number; // Số lượng phản hồi (nếu có)
+}
+
+export interface CreateFeedbackRequest {
+  title: string;
+  content: string;
+  category: string;
+  severity: string;
+  studentName?: string;
+  wardenId: string;
+}

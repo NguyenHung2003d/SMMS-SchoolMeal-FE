@@ -19,3 +19,15 @@ export const getSchoolId = () => {
     return "";
   }
 };
+
+export const getWardenIdFromToken = (): string | null => {
+  const token = Cookies.get("accessToken");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    console.log("Token Payload:", payload); // <--- Bật log này lên để xem key thật
+    return payload.nameid || payload.sub || null;
+  } catch {
+    return null;
+  }
+};

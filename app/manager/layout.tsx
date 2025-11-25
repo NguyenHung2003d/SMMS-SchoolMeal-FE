@@ -29,7 +29,6 @@ export default function ManagerLayout({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   const { user, logout, isLoading } = useAuth();
 
@@ -38,14 +37,6 @@ export default function ManagerLayout({
       logout();
     }
   };
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (!user || user.role !== "Manager") {
-      router.push("/login");
-      return;
-    }
-  }, [user, isLoading, router]);
 
   const getInitials = (name: string) => {
     if (!name) return "MN";

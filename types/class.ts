@@ -1,4 +1,3 @@
-import { LucideIcon } from "lucide-react";
 import { Student } from "./student";
 
 export type ClassStudent = {

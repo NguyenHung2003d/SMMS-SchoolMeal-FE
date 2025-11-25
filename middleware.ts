@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
-const PROTECTED_PARENT = "/parent";
-const PROTECTED_MANAGER = "/manager";
-const PROTECTED_WARDEN = "/warden";
-const LOGIN_PAGE = "/login";
+import { PATHS, ROLES } from "./constants/auth";
 
 function parseJwt(token: string) {
   try {
@@ -17,58 +12,45 @@ function parseJwt(token: string) {
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
   const { pathname } = req.nextUrl;
-
-  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    if (token) {
-      const user = parseJwt(token);
-      if (user?.role === "Manager") {
-        return NextResponse.redirect(new URL("/manager/dashboard", req.url));
-      } else if (user?.role === "Parent") {
-        return NextResponse.redirect(new URL("/parent", req.url));
-      } else if (user?.role === "Teacher") {
-        return NextResponse.redirect(new URL("/warden/dashboard", req.url));
-      }
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-    return NextResponse.next();
-  }
-
   const user = token ? parseJwt(token) : null;
-  const userRole = user?.role; 
+  const userRole = user?.role;
 
-  if (pathname.startsWith(PROTECTED_MANAGER)) {
-    if (!token) {
-      const loginUrl = new URL(LOGIN_PAGE, req.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    if (userRole !== "Manager" && userRole !== "Admin") {
-      return NextResponse.redirect(new URL("/403", req.url)); 
+  if (["/login", "/register"].some((r) => pathname.startsWith(r)) && token) {
+    if (userRole === ROLES.MANAGER)
+      return NextResponse.redirect(new URL(PATHS.MANAGER_DASHBOARD, req.url));
+    if (userRole === ROLES.TEACHER)
+      return NextResponse.redirect(new URL(PATHS.WARDEN_DASHBOARD, req.url));
+    if (userRole === ROLES.PARENT)
+      return NextResponse.redirect(new URL(PATHS.PARENT_DASHBOARD, req.url));
+    if (userRole === ROLES.KITCHEN_STAFF)
+      return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
+  }
+
+  if (pathname.startsWith("/manager")) {
+    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
+    if (userRole !== ROLES.MANAGER && userRole !== ROLES.ADMIN) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
   }
 
-  if (pathname.startsWith(PROTECTED_PARENT)) {
-    if (!token) {
-      const loginUrl = new URL(LOGIN_PAGE, req.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    if (userRole !== "Parent") {
-      if (userRole === "Teacher") return NextResponse.redirect(new URL("/warden/dashboard", req.url));
-      if (userRole === "Manager") return NextResponse.redirect(new URL("/manager/dashboard", req.url));
-      
-      return NextResponse.redirect(new URL("/403", req.url));
+  if (pathname.startsWith("/warden")) {
+    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
+    if (userRole !== ROLES.TEACHER) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
   }
 
-  if (pathname.startsWith(PROTECTED_WARDEN)) {
-    if (!token) {
-      const loginUrl = new URL(LOGIN_PAGE, req.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
+  if (pathname.startsWith("/kitchen-staff")) {
+    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
+    if (userRole !== ROLES.KITCHEN_STAFF) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
-    if (userRole !== "Teacher") {
-      return NextResponse.redirect(new URL("/403", req.url));
+  }
+
+  if (pathname.startsWith("/parent")) {
+    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
+    if (userRole !== ROLES.KITCHEN_STAFF) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
   }
 
@@ -83,5 +65,6 @@ export const config = {
     "/login",
     "/register",
     "/forgot-password",
+    "/kitchen-staff/:path*",
   ],
 };

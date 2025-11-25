@@ -225,16 +225,13 @@ export default function KitchenStaffLayout({
             </div>
           </nav>
         </div>
-        {/* --- PHẦN TÀI KHOẢN ĐÃ ĐƯỢC DỜI ĐI --- */}
       </aside>
 
-      {/* Main content */}
       <div
         className={`flex-1 ${
           isSidebarOpen ? "ml-64" : "ml-20"
         } transition-all duration-300`}
       >
-        {/* Header */}
         <header className="bg-white shadow-sm sticky top-0 z-20">
           <div className="px-6 py-4 flex justify-between items-center">
             <div>

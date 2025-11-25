@@ -26,7 +26,7 @@ export default function ParentFeedbackSection({
           </h3>
           <div className="flex items-center mb-4">
             <div className="text-3xl font-bold text-orange-500 mr-2">
-              {averageRating.toFixed(1)}
+              {/* {averageRating.toFixed(1)} */}
             </div>
             <div className="flex">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -42,7 +42,7 @@ export default function ParentFeedbackSection({
               ))}
             </div>
             <span className="ml-2 text-sm text-gray-600">
-              ({parentFeedbacks.length} đánh giá)
+              {/* ({parentFeedbacks.length} đánh giá) */}
             </span>
           </div>
 
@@ -53,7 +53,7 @@ export default function ParentFeedbackSection({
                 <div className="w-8 text-sm text-gray-600">{star} sao</div>
                 <div className="flex-1 mx-3">
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
+                    {/* <div
                       className="bg-yellow-400 h-2 rounded-full"
                       style={{
                         width: `${
@@ -61,12 +61,12 @@ export default function ParentFeedbackSection({
                           100
                         }%`,
                       }}
-                    ></div>
+                    ></div> */}
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 w-8 text-right">
+                {/* <div className="text-sm text-gray-600 w-8 text-right">
                   {ratingCounts[star - 1]}
-                </div>
+                </div> */}
               </div>
             ))}
           </div>
@@ -108,7 +108,7 @@ export default function ParentFeedbackSection({
           </div>
 
           <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-            {filteredParentFeedback.map((feedback: any) => (
+            {/* {filteredParentFeedback.map((feedback: any) => (
               <div
                 key={feedback.id}
                 className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
@@ -174,7 +174,7 @@ export default function ParentFeedbackSection({
                   </div>
                 </div>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       </div>

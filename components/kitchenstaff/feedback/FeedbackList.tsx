@@ -48,11 +48,11 @@ export default function FeedbackList({
             }`}
           >
             Chưa xử lý
-            {pendingCount > 0 && (
+            {/* {pendingCount > 0 && (
               <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">
                 {pendingCount}
               </span>
-            )}
+            )} */}
           </button>
           <button
             onClick={() => setActiveTab("inProgress")}
@@ -115,7 +115,7 @@ export default function FeedbackList({
 
       {/* Feedback Items */}
       <div className="divide-y divide-gray-200">
-        {paginatedFeedback.length > 0 ? (
+        {/* {paginatedFeedback.length > 0 ? (
           paginatedFeedback.map((feedback: any) => (
             <div
               key={feedback.id}
@@ -244,7 +244,7 @@ export default function FeedbackList({
               Không tìm thấy phản hồi phù hợp với bộ lọc hiện tại
             </p>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Pagination */}

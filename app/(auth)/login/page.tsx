@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { useLoginForm } from "@/hooks/auth/useLoginForm";
 import { LoginFormData } from "@/types/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { PATHS, ROLES } from "@/constants/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,8 +24,7 @@ export default function LoginPage() {
   const onLoginSubmit = (data: LoginFormData) => {
     login(data, rememberMe, {
       onSuccess: (res) => {
-        const userRole = res?.user?.role;
-        const normalizedRole = userRole ? userRole.toLowerCase() : "";
+        const role = res?.user?.role;
 
         if (res.requirePasswordReset) {
           toast.error(
@@ -34,15 +34,22 @@ export default function LoginPage() {
           return;
         }
 
-        if (normalizedRole === "manager" || normalizedRole === "admin") {
-          toast.success(`Xin chào quản lý: ${res?.user?.fullName}`);
-          router.push("/manager/dashboard");
-        } else if (normalizedRole === "teacher") {
-          toast.success(`Xin chào giám thị: ${res?.user?.fullName}`);
-          router.push("/warden/dashboard");
-        } else {
-          toast.success("Đăng nhập thành công!");
-          setTimeout(() => router.push("/parent"), 500);
+        switch (role) {
+          case ROLES.MANAGER:
+            toast.success(`Xin chào quản lý: ${res?.user?.fullName}`);
+            router.push(PATHS.MANAGER_DASHBOARD);
+            break;
+          case ROLES.TEACHER:
+            toast.success(`Xin chào giám thị: ${res?.user?.fullName}`);
+            router.push(PATHS.WARDEN_DASHBOARD);
+            break;
+          case ROLES.KITCHEN_STAFF:
+            toast.success(`Xin chào bếp: ${res?.user?.fullName}`);
+            router.push(PATHS.KITCHEN_DASHBOARD);
+            break;
+          default:
+            toast.success("Đăng nhập thành công!");
+            router.push(PATHS.PARENT_DASHBOARD);
         }
       },
 

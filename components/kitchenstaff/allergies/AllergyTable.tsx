@@ -1,6 +1,6 @@
 "use client";
 
-import { studentAllergies } from "@/data";
+// import { studentAllergies } from "@/data";
 import { AlertCircle, Search } from "lucide-react";
 
 export default function AllergyTable() {
@@ -39,7 +39,7 @@ export default function AllergyTable() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {studentAllergies.map((student) => (
+            {/* {studentAllergies.map((student) => (
               <tr key={student.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap flex items-center">
                   <img
@@ -71,7 +71,7 @@ export default function AllergyTable() {
                 </td>
                 <td className="px-6 py-4">{student.notes}</td>
               </tr>
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>

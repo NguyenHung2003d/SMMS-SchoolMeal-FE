@@ -1,6 +1,6 @@
 "use client";
 
-import { allergyAlerts } from "@/data/nutrition/allergies";
+// import { allergyAlerts } from "@/data/nutrition/allergies";
 import { AlertCircle, ChevronRight } from "lucide-react";
 
 export default function AllergyAlerts() {
@@ -10,7 +10,7 @@ export default function AllergyAlerts() {
         <h2 className="text-lg font-bold">Cảnh báo dị ứng</h2>
       </div>
       <div className="p-4">
-        {allergyAlerts.map((alert, index) => (
+        {/* {allergyAlerts.map((alert, index) => (
           <div
             key={index}
             className={`p-3 ${
@@ -40,7 +40,7 @@ export default function AllergyAlerts() {
               </p>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
       <div className="p-4 border-t border-gray-100">
         <button className="w-full py-2 text-orange-500 hover:text-orange-600 font-medium flex items-center justify-center">

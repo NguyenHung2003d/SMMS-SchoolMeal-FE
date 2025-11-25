@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, AlertTriangle } from "lucide-react";
-import { allergyAlerts, dietaryRestrictions } from "@/data";
+// import { allergyAlerts, dietaryRestrictions } from "@/data";
 import AllergyTable from "./AllergyTable";
 import AddAllergyModal from "./AddAllergyModal";
 import AsideRight from "./AsideRight";
@@ -65,7 +65,7 @@ function StatsCards() {
 
 function TodayAlerts() {
   const today = "24/10/2023";
-  const todayAlerts = allergyAlerts.filter((a) => a.date === today);
+  // const todayAlerts = allergyAlerts.filter((a) => a.date === today);
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -73,7 +73,7 @@ function TodayAlerts() {
         <AlertTriangle className="mr-2 text-orange-500" size={20} />
         <h2 className="text-lg font-medium">Cảnh báo dị ứng hôm nay</h2>
       </div>
-      <div className="p-4">
+      {/* <div className="p-4">
         {todayAlerts.length === 0 ? (
           <p className="text-gray-500 text-center">Không có cảnh báo hôm nay</p>
         ) : (
@@ -86,7 +86,7 @@ function TodayAlerts() {
             </div>
           ))
         )}
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -98,12 +98,12 @@ function DietaryRestrictions() {
         <h2 className="text-lg font-medium">Chế độ ăn đặc biệt</h2>
       </div>
       <div className="p-4 space-y-3">
-        {dietaryRestrictions.map((r) => (
+        {/* {dietaryRestrictions.map((r) => (
           <div key={r.id} className="p-3 bg-blue-50 rounded-lg">
             <p className="font-medium">{r.student}</p>
             <p className="text-sm text-gray-600">{r.restriction}</p>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

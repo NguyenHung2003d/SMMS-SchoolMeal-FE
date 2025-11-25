@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Calendar, FileText } from "lucide-react";
-import { allergyAlerts, commonAllergens } from "@/data";
+// import { allergyAlerts, commonAllergens } from "@/data";
 
 export default function AsideRight() {
   return (
@@ -21,7 +21,7 @@ function CommonAllergens() {
         <h2 className="text-lg font-medium">Dị ứng phổ biến</h2>
       </div>
       <div className="p-4 space-y-3">
-        {commonAllergens.map((a, idx) => (
+        {/* {commonAllergens.map((a, idx) => (
           <div key={idx} className="mb-3 last:mb-0">
             <div className="flex justify-between mb-1">
               <span className="text-sm font-medium">{a.name}</span>
@@ -44,7 +44,7 @@ function CommonAllergens() {
               ></div>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );
@@ -52,7 +52,7 @@ function CommonAllergens() {
 
 function UpcomingAlerts() {
   const today = "24/10/2023";
-  const upcoming = allergyAlerts.filter((a) => a.date !== today);
+  // const upcoming = allergyAlerts.filter((a) => a.date !== today);
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -61,7 +61,7 @@ function UpcomingAlerts() {
         <h2 className="text-lg font-medium">Cảnh báo sắp tới</h2>
       </div>
       <div className="p-4 space-y-3">
-        {upcoming.map((alert) => (
+        {/* {upcoming.map((alert) => (
           <div
             key={alert.id}
             className="border border-gray-200 rounded-lg p-3 mb-3 last:mb-0"
@@ -88,7 +88,7 @@ function UpcomingAlerts() {
               {alert.date} - {alert.dish}
             </p>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

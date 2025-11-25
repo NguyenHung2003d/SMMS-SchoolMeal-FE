@@ -9,41 +9,39 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import { upcomingMenuItems, dessertItems } from "@/data";
-import { WeeklyMenuByDay } from "@/types";
 import Link from "next/link";
 
 // Organize menu by day
-const getWeeklyMenu = (): WeeklyMenuByDay => {
-  const weekDays = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu"];
-  const weeklyMenu = {} as WeeklyMenuByDay;
+// const getWeeklyMenu = (): WeeklyMenuByDay => {
+//   const weekDays = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu"];
+//   const weeklyMenu = {} as WeeklyMenuByDay;
 
-  weekDays.forEach((day) => {
-    weeklyMenu[day] = {
-      main: null,
-      dessert: null,
-      date: "",
-    };
-  });
+//   weekDays.forEach((day) => {
+//     weeklyMenu[day] = {
+//       main: null,
+//       dessert: null,
+//       date: "",
+//     };
+//   });
 
-  upcomingMenuItems.forEach((item) => {
-    if (item.day && weeklyMenu[item.day]) {
-      weeklyMenu[item.day].main = item;
-      weeklyMenu[item.day].date = item.date;
-    }
-  });
+//   upcomingMenuItems.forEach((item) => {
+//     if (item.day && weeklyMenu[item.day]) {
+//       weeklyMenu[item.day].main = item;
+//       weeklyMenu[item.day].date = item.date;
+//     }
+//   });
 
-  dessertItems.forEach((item) => {
-    if (item.day && weeklyMenu[item.day]) {
-      weeklyMenu[item.day].dessert = item;
-    }
-  });
+//   dessertItems.forEach((item) => {
+//     if (item.day && weeklyMenu[item.day]) {
+//       weeklyMenu[item.day].dessert = item;
+//     }
+//   });
 
-  return weeklyMenu;
-};
+//   return weeklyMenu;
+// };
 
 export default function UpcomingMenu() {
-  const weeklyMenu = getWeeklyMenu();
+  // const weeklyMenu = getWeeklyMenu();
 
   // Navigate weeks
   const navigateWeek = (direction: "prev" | "next") => {
@@ -99,117 +97,7 @@ export default function UpcomingMenu() {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(weeklyMenu).map(([day, meals], index) => (
-              <tr
-                key={day}
-                className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-              >
-                <td className="py-4 px-4 border-b border-gray-200">
-                  <div className="font-medium text-gray-800">{day}</div>
-                  <div className="text-sm text-gray-500">{meals.date}</div>
-                </td>
-
-                {/* Main dish */}
-                <td className="py-4 px-4 border-b border-gray-200">
-                  {meals.main ? (
-                    <div className="flex">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden mr-3 flex-shrink-0">
-                        <img
-                          src={meals.main.image}
-                          alt={meals.main.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800">
-                          {meals.main.name}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {meals.main.ingredients.join(", ")}
-                        </div>
-                        {meals.main.allergies.length > 0 && (
-                          <div className="flex items-center mt-1">
-                            <AlertCircle
-                              size={12}
-                              className="text-red-500 mr-1"
-                            />
-                            <span className="text-xs text-red-600">
-                              Dị ứng: {meals.main.allergies.join(", ")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-start ml-2">
-                        <button className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-colors">
-                          <Eye size={16} />
-                        </button>
-                        <button className="p-1 text-orange-500 hover:bg-orange-50 rounded transition-colors">
-                          <Pencil size={16} />
-                        </button>
-                        <button className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-gray-500">
-                      <Plus size={16} className="mr-1" />
-                      <span className="text-sm">Thêm món chính</span>
-                    </div>
-                  )}
-                </td>
-
-                {/* Dessert */}
-                <td className="py-4 px-4 border-b border-gray-200">
-                  {meals.dessert ? (
-                    <div className="flex">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden mr-3 flex-shrink-0">
-                        <img
-                          src={meals.dessert.image}
-                          alt={meals.dessert.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800">
-                          {meals.dessert.name}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {meals.dessert.ingredients.join(", ")}
-                        </div>
-                        {meals.dessert.allergies.length > 0 && (
-                          <div className="flex items-center mt-1">
-                            <AlertCircle
-                              size={12}
-                              className="text-red-500 mr-1"
-                            />
-                            <span className="text-xs text-red-600">
-                              Dị ứng: {meals.dessert.allergies.join(", ")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-start ml-2">
-                        <button className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-colors">
-                          <Eye size={16} />
-                        </button>
-                        <button className="p-1 text-orange-500 hover:bg-orange-50 rounded transition-colors">
-                          <Pencil size={16} />
-                        </button>
-                        <button className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-gray-500">
-                      <Plus size={16} className="mr-1" />
-                      <span className="text-sm">Thêm tráng miệng</span>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+          
           </tbody>
         </table>
       </div>

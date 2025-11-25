@@ -1,11 +1,11 @@
 "use client";
-import { dessertItems } from "@/data";
+// import { dessertItems } from "@/data";
 import { AlertCircle, Eye, Pencil, Trash2 } from "lucide-react";
 
 export default function DessertMenu() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {dessertItems.map((item) => (
+      {/* {dessertItems.map((item) => (
         <div
           key={item.id}
           className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow"
@@ -60,7 +60,7 @@ export default function DessertMenu() {
             </div>
           </div>
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }

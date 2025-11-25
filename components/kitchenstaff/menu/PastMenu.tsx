@@ -1,11 +1,11 @@
 "use client";
-import { pastMenuItems } from "@/data";
+// import { pastMenuItems } from "@/data";
 import { Eye, MessageCircle } from "lucide-react";
 
 export default function PastMenu() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {pastMenuItems.map((item) => (
+      {/* {pastMenuItems.map((item) => (
         <div
           key={item.id}
           className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow"
@@ -65,7 +65,7 @@ export default function PastMenu() {
             </div>
           </div>
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }

@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Plus, Trash2, Save, Eye, X, Search, Check } from "lucide-react";
-import { foodLibrary } from "@/data";
-import { WeeklyMenu, MenuDay, Meal } from "@/types";
 import { useRouter } from "next/navigation";
 
 export function MenuCreationPage() {

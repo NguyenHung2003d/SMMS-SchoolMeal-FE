@@ -17,7 +17,7 @@ import {
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import { SidebarItemProps } from "@/types";
-
+import { WardenNotificationBell } from "@/components/warden/WardenNotificationBell";
 const NAV_ITEMS = [
   { href: "/warden/dashboard", label: "Trang chủ", icon: Home, exact: true },
   { href: "/warden/classView", label: "Xem lớp học", icon: Users },
@@ -107,15 +107,7 @@ export default function WardenLayout({
           </h2>
 
           <div className="flex items-center space-x-5">
-            <div className="relative cursor-pointer group">
-              <Bell
-                size={22}
-                className="text-gray-500 group-hover:text-orange-500 transition-colors"
-              />
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">
-                3
-              </span>
-            </div>
+            <WardenNotificationBell />
 
             <div className="relative" ref={dropdownRef}>
               <button

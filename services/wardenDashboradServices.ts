@@ -1,18 +1,18 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { ClassDto, NotificationDto, StudentDto } from "@/types/warden";
 
 export const wardenDashboardService = {
-  getClasses: async (wardenId: string): Promise<ClassDto[]> => {
-    const res = await axiosInstance.get(`/WardensHome/classes/${wardenId}`);
-    if (!res.data) throw new Error("Failed to fetch classes");
-    return res.data;
+  getDashboardStats: async () => {
+    const response = await axiosInstance.get("/WardensHome/dashboard");
+    return response.data;
   },
 
-  getNotifications: async (wardenId: string): Promise<NotificationDto[]> => {
-    const res = await axiosInstance.get(
-      `/WardensHome/notifications/${wardenId}`
-    );
-    if (!res.data) return [];
-    return res.data;
+  getClasses: async () => {
+    const response = await axiosInstance.get("/WardensHome/classes");
+    return response.data;
+  },
+
+  getNotifications: async () => {
+    const response = await axiosInstance.get("/WardensHome/notifications");
+    return response.data;
   },
 };

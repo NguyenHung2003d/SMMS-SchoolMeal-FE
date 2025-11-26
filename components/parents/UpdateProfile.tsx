@@ -58,7 +58,7 @@ export default function ParentProfileUpdate() {
             ...child,
             studentId: child.studentId,
             fullName: child.fullName,
-            class: child.className || child.ClassName || "",
+            className: child.className || child.ClassName || "",
             allergies: child.allergyFoods ?? [],
             avatar: User,
             dateOfBirth:

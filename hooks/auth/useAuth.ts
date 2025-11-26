@@ -17,6 +17,7 @@ export const USER_QUERY_KEY = ["user"] as const;
 export const useAuth = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const token = Cookies.get("accessToken");
 
   const userQuery = useQuery<User | null, AxiosError>({
     queryKey: USER_QUERY_KEY,
@@ -61,6 +62,7 @@ export const useAuth = () => {
   }, [queryClient, router]);
 
   return {
+    token,
     user: userQuery.data,
     isAuthenticated: !!userQuery.data && !userQuery.error,
     isLoading: userQuery.isLoading,

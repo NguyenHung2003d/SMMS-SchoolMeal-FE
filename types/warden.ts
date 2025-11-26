@@ -1,19 +1,20 @@
 export interface ClassDto {
   classId: string;
   className: string;
-  schoolName: string; // Đã thêm trường này để fix lỗi đỏ
+  schoolName: string;
   wardenId: string;
   wardenName: string;
   totalStudents: number;
-  presentToday: number; // Backend trả về PresentToday
+  presentToday: number;
   absentToday: number;
   attendanceRate: number;
+  shift?: string;
 }
 
 export interface NotificationDto {
-  notificationId: number; // Backend là long NotificationId
+  notificationId: number;
   title: string;
-  content: string; // Backend là Content, không phải message
+  content: string;
   createdAt: string;
   isRead: boolean;
   sendType: string;
@@ -74,10 +75,10 @@ export interface StudentHealthDto {
 }
 
 export interface HealthStats {
-    underweight: number;
-    normal: number;
-    overweight: number;
-    obese: number;
+  underweight: number;
+  normal: number;
+  overweight: number;
+  obese: number;
 }
 
 export interface FeedbackDto {
@@ -86,7 +87,7 @@ export interface FeedbackDto {
   content: string;
   category: string; // "food", "facility", "health", "activity", "other"
   severity: string; // "low", "medium", "high"
-  status: string;   // "pending", "processing", "resolved"
+  status: string; // "pending", "processing", "resolved"
   studentName?: string;
   createdAt: string;
   replyCount?: number; // Số lượng phản hồi (nếu có)

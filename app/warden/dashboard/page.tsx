@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { StatsCard } from "@/components/warden/StatsCard";
 import { ClassOverview } from "@/components/warden/ClassOverview";
-import { getWardenIdFromToken } from "@/utils";
 import { QuickAccessCard } from "@/components/warden/QuickAccessCard";
 import { ClassDto, WardenStats } from "@/types/warden";
 import { wardenDashboardService } from "@/services/wardenDashboradServices";
@@ -28,27 +27,17 @@ export default function WardenDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const wardenId = getWardenIdFromToken();
-        if (!wardenId) {
-          return;
-        }
-        const [classesData, notificationsData] = await Promise.all([
-          wardenDashboardService.getClasses(wardenId),
-          wardenDashboardService.getNotifications(wardenId),
-        ]);
-        const totalStudents = classesData.reduce(
-          (acc, curr) => acc + curr.totalStudents,
-          0
-        );
-        const totalPresent = classesData.reduce(
-          (acc, curr) => acc + curr.presentToday, // Fixed: presentCount -> presentToday
-          0
-        );
+        const [dashboardData, classesData, notificationsData] =
+          await Promise.all([
+            wardenDashboardService.getDashboardStats(),
+            wardenDashboardService.getClasses(),
+            wardenDashboardService.getNotifications(),
+          ]);
         setClasses(classesData);
         setStats({
-          totalClasses: classesData.length,
-          totalStudents: totalStudents,
-          totalPresent: totalPresent,
+          totalClasses: dashboardData.totalClasses,
+          totalStudents: dashboardData.totalStudents,
+          totalPresent: dashboardData.presentToday,
           issuesCount: notificationsData.length,
         });
       } catch (error) {
@@ -57,7 +46,7 @@ export default function WardenDashboardPage() {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchData()
   }, []);
 
   if (loading) {

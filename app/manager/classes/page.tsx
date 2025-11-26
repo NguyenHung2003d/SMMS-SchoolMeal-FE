@@ -14,27 +14,22 @@ import ClassFormModal from "@/components/manager/class/ClassFormModal";
 import DeleteClassModal from "@/components/manager/class/DeleteClassModal";
 
 export default function ManagerClasses() {
-  // State Data
   const [classes, setClasses] = useState<ClassDto[]>([]);
   const [teachers, setTeachers] = useState<TeacherSimpleDto[]>([]);
   const [freeTeachers, setFreeTeachers] = useState<TeacherSimpleDto[]>([]);
   const [academicYears, setAcademicYears] = useState<AcademicYearDto[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // State Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
 
-  // State Modals
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassDto | null>(null);
   const [classToDelete, setClassToDelete] = useState<ClassDto | null>(null);
 
-  // --- Fetch Data ---
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Lấy Niên khóa (Không chặn luồng chính nếu lỗi)
       try {
         const yearsData = await managerClassService.getAcademicYears();
         setAcademicYears(yearsData);
@@ -42,7 +37,6 @@ export default function ManagerClasses() {
         console.error("Lỗi lấy niên khóa:", err);
       }
 
-      // Lấy Lớp
       const classRes = await managerClassService.getAll();
       if (classRes && Array.isArray(classRes.data)) {
         setClasses(classRes.data);
@@ -50,7 +44,6 @@ export default function ManagerClasses() {
         setClasses(classRes);
       }
 
-      // Lấy Giáo viên
       const teacherRes = await managerClassService.getTeacherStatus();
       if (teacherRes) {
         setFreeTeachers(teacherRes.teachersWithoutClass || []);
@@ -58,7 +51,6 @@ export default function ManagerClasses() {
           ...(teacherRes.teachersWithoutClass || []),
           ...(teacherRes.teachersWithClass || []),
         ];
-        // Unique
         const uniqueTeachers = allTeachers.filter(
           (v, i, a) => a.findIndex((t) => t.teacherId === v.teacherId) === i
         );
@@ -76,28 +68,22 @@ export default function ManagerClasses() {
     fetchData();
   }, []);
 
-  // --- Handlers ---
-
-  // Mở modal thêm mới
   const openAddModal = () => {
     setEditingClass(null);
     setShowFormModal(true);
   };
 
-  // Mở modal sửa
   const openEditModal = (cls: ClassDto) => {
     setEditingClass(cls);
     setShowFormModal(true);
   };
 
-  // Logic Submit Form (Chung cho Add và Edit)
   const handleFormSubmit = async (formData: {
     className: string;
     yearId: string;
     teacherId: string;
   }) => {
     if (editingClass) {
-      // --- UPDATE ---
       try {
         const payload = {
           className: formData.className,
@@ -109,13 +95,19 @@ export default function ManagerClasses() {
         setShowFormModal(false);
         fetchData();
       } catch (error: any) {
-        const msg = error?.response?.data?.message || "Cập nhật thất bại";
-        toast.error(msg);
+        const serverMessage = error?.response?.data?.message;
+        if (serverMessage) {
+          toast.error(serverMessage);
+        } else {
+          toast.error("Cập nhật thất bại");
+        }
       }
     } else {
-      // --- CREATE ---
       const currentUserRaw = authService.getCurrentUser();
-      const currentUser = currentUserRaw instanceof Promise ? await currentUserRaw : currentUserRaw;
+      const currentUser =
+        currentUserRaw instanceof Promise
+          ? await currentUserRaw
+          : currentUserRaw;
 
       if (!currentUser || !currentUser.schoolId) {
         toast.error("Lỗi: Không tìm thấy thông tin trường học.");
@@ -134,13 +126,16 @@ export default function ManagerClasses() {
         setShowFormModal(false);
         fetchData();
       } catch (error: any) {
-        const msg = error?.response?.data?.message || "Tạo lớp thất bại";
-        toast.error(msg);
+        const serverMessage = error?.response?.data?.message;
+        if (serverMessage) {
+          toast.error(serverMessage);
+        } else {
+          toast.error("Tạo lớp thất bại (Vui lòng thử lại)");
+        }
       }
     }
   };
 
-  // Logic Delete
   const handleDeleteConfirm = async () => {
     if (!classToDelete) return;
     try {
@@ -154,7 +149,6 @@ export default function ManagerClasses() {
     }
   };
 
-  // Filter logic
   const filteredClasses = classes.filter((cls) => {
     const matchesSearch = cls.className
       .toLowerCase()

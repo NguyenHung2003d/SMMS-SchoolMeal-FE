@@ -31,7 +31,7 @@ export default function StaffFormModal({
       setFormData({
         fullName: staffToEdit.fullName || "",
         email: staffToEdit.email || "",
-        phone: staffToEdit.phoneNumber || "",
+        phone: staffToEdit.phone || "",
         role: staffToEdit.role || "",
         password: "",
       });
@@ -140,7 +140,6 @@ export default function StaffFormModal({
                 <option value="">-- Chọn vai trò --</option>
                 <option value="Teacher">Quản sinh / Giáo viên</option>
                 <option value="KitchenStaff">Nhân viên bếp</option>
-                <option value="Teacher">Giám thị</option>
               </select>
             </div>
             <div>
@@ -150,7 +149,6 @@ export default function StaffFormModal({
               <input
                 type="password"
                 required
-                disabled={!isEditMode}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 value={formData.password}
                 onChange={(e) =>

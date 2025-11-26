@@ -10,11 +10,11 @@ import {
   Save,
   Calendar,
 } from "lucide-react";
-import { ALLERGY_LIST } from "@/data/nutrition/allergies";
 import { StudentsInfoProps } from "@/types/student";
 import { AllergyPill, formatDateForInput } from "@/helpers";
 import toast from "react-hot-toast";
 import { getImageUrl } from "@/lib/utils";
+import { ALLERGY_LIST } from "@/data/nutrition/allergies";
 
 export function StudentsInfo({
   students,

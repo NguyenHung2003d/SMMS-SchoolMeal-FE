@@ -16,7 +16,7 @@ import {
   BarChart3,
   UserPlus,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 
@@ -88,11 +88,11 @@ export default function ManagerLayout({
             <ul className="space-y-1">
               <li>
                 <Link
-                  href="/manager"
+                  href="/manager/dashboard"
                   className={`flex items-center w-full ${
                     isSidebarOpen ? "justify-start px-4" : "justify-center"
                   } py-3 rounded-lg ${
-                    isActive("/manager")
+                    isActive("/manager/dashboard")
                       ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
                       : "text-gray-600 hover:bg-orange-50"
                   }`}

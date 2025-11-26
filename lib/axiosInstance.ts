@@ -6,10 +6,6 @@ export const BASE_URL =
 
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 10000,
 });
 
 let isRefreshing = false;

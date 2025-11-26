@@ -12,4 +12,5 @@ export const PATHS = {
   WARDEN_DASHBOARD: "/warden/dashboard",
   PARENT_DASHBOARD: "/parent",
   KITCHEN_DASHBOARD: "/kitchen-staff/dashboard",
+  ADMIN_DASHBOARD: '/admin/dashboard'
 };

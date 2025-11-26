@@ -24,6 +24,8 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(PATHS.PARENT_DASHBOARD, req.url));
     if (userRole === ROLES.KITCHEN_STAFF)
       return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
+    if (userRole === ROLES.ADMIN)
+      return NextResponse.redirect(new URL(PATHS.ADMIN_DASHBOARD, req.url));
   }
 
   if (pathname.startsWith("/manager")) {
@@ -48,6 +50,13 @@ export function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith("/parent")) {
+    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
+    if (userRole !== ROLES.PARENT) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
+  }
+
+  if (pathname.startsWith("/admin")) {
     if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
     if (userRole !== ROLES.KITCHEN_STAFF) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));

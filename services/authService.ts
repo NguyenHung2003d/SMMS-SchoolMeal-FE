@@ -29,7 +29,7 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const res = await axiosInstance.get<User>("/Auth/me");
+    const res = await axiosInstance.get("/Auth/me");
     return res.data;
   },
 

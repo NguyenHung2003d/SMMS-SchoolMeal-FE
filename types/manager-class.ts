@@ -1,13 +1,13 @@
 export interface CreateClassRequest {
   className: string;
   yearId: number;
-  teacherId?: number | null
-  schoolId?: number; 
+  teacherId?: string | null
+  schoolId?: string; 
 }
 
 export interface UpdateClassRequest {
   className: string;
-  teacherId?: number | null;
+  teacherId?: string | null;
   isActive?: boolean;
 }
 export interface ClassDto {
@@ -15,7 +15,7 @@ export interface ClassDto {
   className: string;
   schoolId: number;
   yearId: number;
-  teacherId?: number | null;
+  teacherId?: string | null;
   teacherName: string; 
   isActive: boolean;
   createdAt: string;
@@ -29,4 +29,9 @@ export interface TeacherSimpleDto {
 export interface TeacherStatusResponse {
   teachersWithClass: TeacherSimpleDto[];
   teachersWithoutClass: TeacherSimpleDto[];
+}
+
+export interface AcademicYearDto {
+  yearId: number;
+  yearName: string;
 }

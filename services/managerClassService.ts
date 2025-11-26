@@ -1,7 +1,18 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { CreateClassRequest, UpdateClassRequest } from "@/types/manager-class";
+import {
+  AcademicYearDto,
+  CreateClassRequest,
+  UpdateClassRequest,
+} from "@/types/manager-class";
 
 export const managerClassService = {
+  getAcademicYears: async (): Promise<AcademicYearDto[]> => {
+    // Gọi vào endpoint mới bạn vừa tạo ở Backend
+    const res = await axiosInstance.get<AcademicYearDto[]>(
+      "/ManagerClass/academic-years"
+    );
+    return res.data;
+  },
   // 🟢 GET ALL
   getAll: async () => {
     const res = await axiosInstance.get("/ManagerClass");

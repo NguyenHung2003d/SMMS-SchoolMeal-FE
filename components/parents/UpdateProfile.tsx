@@ -35,6 +35,9 @@ export default function ParentProfileUpdate() {
       try {
         setIsLoading(true);
         const res = await axiosInstance.get("/ParentProfile/profile");
+
+        console.log("🚀 [API Raw Data]:", res.data);
+
         const { children, ...parentData } = res.data;
 
         if (parentData.DateOfBirth || parentData.dateOfBirth) {
@@ -44,29 +47,33 @@ export default function ParentProfileUpdate() {
             .toISOString()
             .split("T")[0];
         }
+
+        console.log("👤 [Parent Data Processed]:", parentData);
         setParentInfo(parentData);
 
-        setStudents(
-          children.map((child: any) => {
-            return {
-              ...child,
-              studentId: child.studentId,
-              fullName: child.fullName,
-              class: child.className,
-              allergies: child.allergyFoods ?? [],
-              avatar: User,
-              dateOfBirth:
-                child.DateOfBirth || child.dateOfBirth
-                  ? new Date(child.DateOfBirth || child.dateOfBirth)
-                      .toISOString()
-                      .split("T")[0]
-                  : "",
-              gender: child.gender || child.Gender || "M",
-              relation: child.relation || child.Relation || "Phụ huynh",
-            };
-          })
-        );
+        const formattedStudents = children.map((child: any) => {
+          console.log("Child item raw:", child);
+
+          return {
+            ...child,
+            studentId: child.studentId,
+            fullName: child.fullName,
+            class: child.className || child.ClassName || "",
+            allergies: child.allergyFoods ?? [],
+            avatar: User,
+            dateOfBirth:
+              child.DateOfBirth || child.dateOfBirth
+                ? new Date(child.DateOfBirth || child.dateOfBirth)
+                    .toISOString()
+                    .split("T")[0]
+                : "",
+            gender: child.gender || child.Gender || "M",
+            relation: child.relation || child.Relation || "Phụ huynh",
+          };
+        });
+        setStudents(formattedStudents);
       } catch (err) {
+        console.error("❌ [Fetch Error]:", err);
         if (axios.isAxiosError(err) && err.response?.status === 401) {
           toast.error("Phiên đăng nhập hết hạn.");
           window.location.href = "/login";
@@ -128,9 +135,7 @@ export default function ParentProfileUpdate() {
           }
           profileFormData.append("ChildrenJson", "[]");
 
-          await axiosInstance.put("/ParentProfile/profile", profileFormData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await axiosInstance.put("/ParentProfile/profile", profileFormData);
 
           toast.success("Cập nhật thông tin phụ huynh thành công!");
           setParentInfo((prev) => ({
@@ -177,9 +182,7 @@ export default function ParentProfileUpdate() {
           selectedStudent.allergies.forEach((food, index) => {
             studentFormData.append(`AllergyFoods[${index}]`, food);
           });
-          await axiosInstance.put("/ParentProfile/child", studentFormData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await axiosInstance.put("/ParentProfile/child", studentFormData);
 
           toast.success(
             `Đã cập nhật thông tin bé ${selectedStudent.fullName}!`

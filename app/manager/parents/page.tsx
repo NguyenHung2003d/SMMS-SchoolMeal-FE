@@ -16,28 +16,24 @@ import { parentService } from "@/services/managerParentService";
 import { ParentTable } from "@/components/manager/parents/parent-table";
 import { CreateParentModal } from "@/components/manager/parents/create-parent-modal";
 import { ImportExcelModal } from "@/components/manager/parents/import-excel-modal";
-
-interface ClassDto {
-  classId: string;
-  className: string;
-}
+import { managerClassService } from "@/services/managerClassService";
+import { ClassDto } from "@/types/manager-class";
 
 export default function ManagerParentsPage() {
   const [parents, setParents] = useState<ParentAccountDto[]>([]);
   const [classes, setClasses] = useState<ClassDto[]>([]);
   const [loading, setLoading] = useState(false);
-  
-  // State filter
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string>("all");
-  
-  // Modals
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchClasses = async () => {
     try {
-      const res = await parentService.getAll(); 
+      const res = await managerClassService.getAll();
       if (Array.isArray(res)) setClasses(res);
       else if (res?.data && Array.isArray(res.data)) setClasses(res.data);
     } catch (error) {
@@ -54,7 +50,7 @@ export default function ManagerParentsPage() {
       if (searchTerm && searchTerm.trim() !== "") {
         responseData = await parentService.search(searchTerm);
       } else {
-        responseData = await parentService.getAll(); 
+        responseData = await parentService.getAll();
       }
 
       let dataToSet: ParentAccountDto[] = [];
@@ -63,11 +59,6 @@ export default function ManagerParentsPage() {
         dataToSet = responseData.data;
       } else if (Array.isArray(responseData)) {
         dataToSet = responseData;
-      }
-
-      console.log(`API trả về: ${dataToSet.length} phụ huynh`);
-      if (dataToSet.length > 0) {
-        console.log("Dữ liệu mẫu:", dataToSet[0]);
       }
 
       setParents(dataToSet);
@@ -86,6 +77,22 @@ export default function ManagerParentsPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [fetchParents]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setLoading(true);
+    const toastId = toast.loading("Đang làm mới dữ liệu...");
+
+    try {
+      await Promise.all([fetchClasses(), fetchParents()]);
+      toast.success("Dữ liệu đã được cập nhật", { id: toastId });
+    } catch (error) {
+      toast.error("Lỗi khi làm mới dữ liệu", { id: toastId });
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
 
   const handleDownloadTemplate = async () => {
     try {
@@ -137,18 +144,16 @@ export default function ManagerParentsPage() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-           {/* Nút làm mới thủ công để test xem dữ liệu có về không */}
-          <Button variant="outline" onClick={fetchParents} title="Làm mới dữ liệu">
-            <RefreshCcw size={16} />
-          </Button>
-          
           <Button variant="outline" onClick={handleDownloadTemplate}>
             <FileDown size={16} className="mr-2" /> Mẫu Excel
           </Button>
           <Button variant="outline" onClick={() => setShowImportModal(true)}>
             <FileUp size={16} className="mr-2" /> Nhập Excel
           </Button>
-          <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-orange-600 hover:bg-orange-700"
+          >
             <UserPlus size={16} className="mr-2" /> Thêm mới
           </Button>
         </div>
@@ -164,21 +169,36 @@ export default function ManagerParentsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="w-full md:w-[200px]">
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Lọc theo lớp" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả các lớp</SelectItem>
-              {/* Map danh sách lớp thực tế vào đây */}
-               {classes.map((cls) => (
+
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex-1 md:w-[200px]">
+            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Lọc theo lớp" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả các lớp</SelectItem>
+                {classes.map((cls) => (
                   <SelectItem key={cls.classId} value={cls.classId}>
                     {cls.className}
                   </SelectItem>
-               ))}
-            </SelectContent>
-          </Select>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            className="bg-white hover:bg-gray-100 text-gray-700 border-gray-300 px-3"
+            title="Tải lại dữ liệu"
+          >
+            <RefreshCcw 
+              size={16} 
+              className={`${isRefreshing ? "animate-spin text-blue-600" : ""}`} 
+            />
+          </Button>
         </div>
       </div>
 
@@ -199,7 +219,7 @@ export default function ManagerParentsPage() {
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
         onSuccess={() => {
-            fetchParents();
+          fetchParents();
         }}
       />
     </div>

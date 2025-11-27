@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, ShoppingCart, Download } from "lucide-react";
+import {
+  ArrowUpRight,
+  ShoppingCart,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecentPurchaseDto } from "@/types/manager";
 import { formatCurrency } from "@/helpers";
@@ -10,10 +16,29 @@ interface RecentPurchasesTableProps {
   totalFinance: number;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export default function RecentPurchasesTable({
   purchases,
   totalFinance,
 }: RecentPurchasesTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(purchases.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentPurchases = purchases.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
+  const handlePrevious = () => {
+    setCurrentPage((pre) => Math.max(pre - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((pre) => Math.min(pre + 1, totalPages));
+  };
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
@@ -69,7 +94,7 @@ export default function RecentPurchasesTable({
                   </td>
                 </tr>
               ) : (
-                purchases.map((purchase) => (
+                currentPurchases.map((purchase) => (
                   <tr key={purchase.orderId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {new Date(purchase.orderDate).toLocaleDateString("vi-VN")}
@@ -114,6 +139,38 @@ export default function RecentPurchasesTable({
             </tbody>
           </table>
         </div>
+        {purchases.length > 0 && (
+          <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between bg-white">
+            <div className="text-xs text-gray-300">
+              Hiển thị: {startIndex + 1} -{" "}
+              {Math.min(startIndex + ITEMS_PER_PAGE, purchases.length)} trong{" "}
+              {purchases.length} đơn hàng
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={"outline"}
+                size={"sm"}
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              <span className="text-sm font-medium text-gray-600 min-w-[3rem] text-center">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
           <div className="text-sm text-gray-600">
             <span className="font-medium">Tổng chi phí tháng này:</span>{" "}

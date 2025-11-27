@@ -71,28 +71,28 @@ export default function WardenDashboardPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <QuickAccessCard
-          href="/wardens/classView"
+          href="/warden/classView"
           icon={<Users size={32} className="text-blue-600" />}
           bgClass="bg-blue-100"
           title="Xem lớp học"
           desc="Danh sách lớp & học sinh"
         />
         <QuickAccessCard
-          href="/wardens/health"
+          href="/warden/health"
           icon={<Activity size={32} className="text-green-600" />}
           bgClass="bg-green-100"
           title="Sức khỏe"
           desc="Chỉ số BMI & Y tế"
         />
         <QuickAccessCard
-          href="/wardens/gallery"
+          href="/warden/gallery"
           icon={<ImageIcon size={32} className="text-purple-600" />}
           bgClass="bg-purple-100"
           title="Thư viện ảnh"
           desc="Hoạt động lớp học"
         />
         <QuickAccessCard
-          href="/wardens/issues"
+          href="/warden/issues"
           icon={<AlertCircle size={32} className="text-red-600" />}
           bgClass="bg-red-100"
           title="Báo cáo"

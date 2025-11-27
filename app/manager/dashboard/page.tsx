@@ -50,7 +50,6 @@ export default function ManagerDashboardPage() {
           <h1 className="text-2xl font-bold text-gray-800">
             Quản lý trường học
           </h1>
-          <p className="text-gray-600">Chào mừng trở lại, Nguyễn Hoàng</p>
         </div>
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2">

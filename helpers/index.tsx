@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import Cookies from "js-cookie";
-import { AcademicYearDto } from "@/types/manager-class";
 
 export function AllergyPill({
   label,

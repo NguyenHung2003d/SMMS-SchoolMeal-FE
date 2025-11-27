@@ -8,7 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { HubConnectionBuilder, LogLevel, HubConnection, HttpTransportType } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HubConnection,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -28,7 +33,7 @@ export function WardenNotificationBell() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const { token } = useAuth();
   const connectionRef = useRef<HubConnection | null>(null);
 
@@ -36,11 +41,11 @@ export function WardenNotificationBell() {
     const fetchNotifications = async () => {
       try {
         const res = await axiosInstance.get("/WardensHome/notifications");
-        
+
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-        
+
         setNotifications(data);
-        
+
         const unread = data.filter((n: NotificationDto) => !n.isRead).length;
         setUnreadCount(unread);
       } catch (error) {
@@ -57,17 +62,21 @@ export function WardenNotificationBell() {
     if (!token) return;
     if (connectionRef.current) return;
 
-    const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || "http://localhost:5000/hubs/notifications";
+    const HUB_URL =
+      process.env.NEXT_PUBLIC_HUB_URL ||
+      "http://localhost:5000/hubs/notifications";
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        accessTokenFactory: () => token, 
-        skipNegotiation: true,           
-        transport: HttpTransportType.WebSockets
+        accessTokenFactory: () => token,
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build();
+
+    connectionRef.current = connection;
 
     connection
       .start()
@@ -76,12 +85,12 @@ export function WardenNotificationBell() {
 
         connection.on("ReceiveNotification", (newNotif: NotificationDto) => {
           console.log("🔔 Nhận thông báo mới:", newNotif);
-          
+
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
-          
+
           try {
-            const audio = new Audio('/sounds/notification.mp3');
+            const audio = new Audio("/sounds/notification.mp3");
             audio.play().catch(() => {});
           } catch (e) {}
         });
@@ -93,7 +102,12 @@ export function WardenNotificationBell() {
     return () => {
       if (connectionRef.current) {
         connectionRef.current.off("ReceiveNotification");
-        connectionRef.current.stop();
+        connectionRef.current.stop().catch((err) => {
+          console.warn(
+            "SignalR Stopped during negotiation (Safe to ignore in Dev):",
+            err.message
+          );
+        });
         connectionRef.current = null;
       }
     };
@@ -101,7 +115,7 @@ export function WardenNotificationBell() {
 
   const handleMarkAsRead = () => {
     setUnreadCount(0);
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     // TODO: Gọi API PUT /WardensHome/notifications/read nếu backend hỗ trợ
   };
 
@@ -124,11 +138,14 @@ export function WardenNotificationBell() {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-[380px] p-0 shadow-xl border-orange-100 rounded-xl bg-white z-50">
+      <DropdownMenuContent
+        align="end"
+        className="w-[380px] p-0 shadow-xl border-orange-100 rounded-xl bg-white z-50"
+      >
         <div className="flex items-center justify-between px-4 py-3 bg-orange-50/80 border-b border-orange-100 rounded-t-xl backdrop-blur-sm">
           <span className="font-bold text-gray-800">Thông báo Warden</span>
           {unreadCount > 0 && (
-            <button 
+            <button
               onClick={handleMarkAsRead}
               className="text-xs font-medium text-orange-600 hover:text-orange-700 flex items-center gap-1 hover:underline"
             >
@@ -148,7 +165,9 @@ export function WardenNotificationBell() {
               <div className="bg-gray-100 w-12 h-12 rounded-full flex items-center justify-center mb-3">
                 <Bell className="text-gray-400" size={20} />
               </div>
-              <p className="text-gray-500 text-sm font-medium">Bạn chưa có thông báo nào</p>
+              <p className="text-gray-500 text-sm font-medium">
+                Bạn chưa có thông báo nào
+              </p>
             </div>
           ) : (
             notifications.map((item, index) => (
@@ -156,7 +175,9 @@ export function WardenNotificationBell() {
                 key={item.notificationId || index}
                 className={cn(
                   "flex flex-col items-start px-4 py-3 border-b last:border-0 cursor-pointer transition-colors focus:bg-orange-50",
-                  !item.isRead ? "bg-orange-50/40 hover:bg-orange-50/60" : "hover:bg-gray-50"
+                  !item.isRead
+                    ? "bg-orange-50/40 hover:bg-orange-50/60"
+                    : "hover:bg-gray-50"
                 )}
               >
                 <div className="flex justify-between w-full mb-1.5 items-start">
@@ -164,7 +185,12 @@ export function WardenNotificationBell() {
                     {!item.isRead && (
                       <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0 animate-pulse" />
                     )}
-                    <span className={cn("text-sm text-gray-800", !item.isRead ? "font-bold" : "font-semibold")}>
+                    <span
+                      className={cn(
+                        "text-sm text-gray-800",
+                        !item.isRead ? "font-bold" : "font-semibold"
+                      )}
+                    >
                       {item.title}
                     </span>
                   </div>
@@ -175,10 +201,12 @@ export function WardenNotificationBell() {
                     })}
                   </span>
                 </div>
-                <p className={cn(
-                  "text-sm line-clamp-2 w-full", 
-                  !item.isRead ? "text-gray-700" : "text-gray-500"
-                )}>
+                <p
+                  className={cn(
+                    "text-sm line-clamp-2 w-full",
+                    !item.isRead ? "text-gray-700" : "text-gray-500"
+                  )}
+                >
                   {item.content}
                 </p>
               </DropdownMenuItem>
@@ -187,9 +215,9 @@ export function WardenNotificationBell() {
         </div>
 
         <div className="p-2 bg-gray-50 border-t text-center rounded-b-xl">
-           <button className="text-xs text-gray-500 hover:text-orange-600 font-medium transition-colors w-full py-1">
-             Xem tất cả
-           </button>
+          <button className="text-xs text-gray-500 hover:text-orange-600 font-medium transition-colors w-full py-1">
+            Xem tất cả
+          </button>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

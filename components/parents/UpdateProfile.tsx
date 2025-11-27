@@ -35,9 +35,6 @@ export default function ParentProfileUpdate() {
       try {
         setIsLoading(true);
         const res = await axiosInstance.get("/ParentProfile/profile");
-
-        console.log("🚀 [API Raw Data]:", res.data);
-
         const { children, ...parentData } = res.data;
 
         if (parentData.DateOfBirth || parentData.dateOfBirth) {

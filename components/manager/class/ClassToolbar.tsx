@@ -1,6 +1,7 @@
 import React from "react";
-import { Search, Plus, School } from "lucide-react";
+import { Search, Plus, School, RefreshCcw } from "lucide-react";
 import { AcademicYearDto } from "@/types/manager-class";
+import { Button } from "@/components/ui/button";
 
 interface ClassToolbarProps {
   searchQuery: string;
@@ -9,6 +10,9 @@ interface ClassToolbarProps {
   setSelectedYear: (val: string) => void;
   academicYears: AcademicYearDto[];
   onAddClick: () => void;
+  handleRefresh: () => void;
+  isRefreshing: boolean;
+  loading: boolean;
 }
 
 export default function ClassToolbar({
@@ -18,6 +22,9 @@ export default function ClassToolbar({
   setSelectedYear,
   academicYears,
   onAddClick,
+  handleRefresh,
+  isRefreshing,
+  loading, 
 }: ClassToolbarProps) {
   return (
     <>
@@ -30,13 +37,29 @@ export default function ClassToolbar({
             Danh sách lớp học và phân công giáo viên
           </p>
         </div>
-        <button
-          onClick={onAddClick}
-          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center shadow-md transition-all"
-        >
-          <Plus size={18} className="mr-2" />
-          Tạo lớp mới
-        </button>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
+            className="bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
+            title="Tải lại dữ liệu"
+          >
+            <RefreshCcw
+              size={16}
+              className={`${isRefreshing ? "animate-spin text-blue-600" : ""}`}
+            />
+          </Button>
+
+          <Button
+            onClick={onAddClick}
+            className="bg-orange-600 hover:bg-orange-700 text-white flex items-center shadow-md transition-all"
+          >
+            <Plus size={18} className="mr-2" />
+            Tạo lớp mới
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">

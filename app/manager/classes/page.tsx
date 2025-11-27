@@ -18,7 +18,9 @@ export default function ManagerClasses() {
   const [teachers, setTeachers] = useState<TeacherSimpleDto[]>([]);
   const [freeTeachers, setFreeTeachers] = useState<TeacherSimpleDto[]>([]);
   const [academicYears, setAcademicYears] = useState<AcademicYearDto[]>([]);
+
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // ✅ State loading cho nút refresh
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
@@ -30,21 +32,23 @@ export default function ManagerClasses() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      try {
-        const yearsData = await managerClassService.getAcademicYears();
-        setAcademicYears(yearsData);
-      } catch (err) {
-        console.error("Lỗi lấy niên khóa:", err);
-      }
+      const [yearsData, classRes, teacherRes] = await Promise.all([
+        managerClassService.getAcademicYears().catch((err) => {
+          console.error("Lỗi lấy niên khóa:", err);
+          return [];
+        }),
+        managerClassService.getAll(),
+        managerClassService.getTeacherStatus().catch(() => null),
+      ]);
 
-      const classRes = await managerClassService.getAll();
+      setAcademicYears(yearsData);
+
       if (classRes && Array.isArray(classRes.data)) {
         setClasses(classRes.data);
       } else if (Array.isArray(classRes)) {
         setClasses(classRes);
       }
 
-      const teacherRes = await managerClassService.getTeacherStatus();
       if (teacherRes) {
         setFreeTeachers(teacherRes.teachersWithoutClass || []);
         const allTeachers = [
@@ -67,6 +71,22 @@ export default function ManagerClasses() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setLoading(true); // Hiện skeleton loading ở bảng
+    const toastId = toast.loading("Đang cập nhật dữ liệu...");
+
+    try {
+      await fetchData();
+      toast.success("Dữ liệu đã được làm mới", { id: toastId });
+    } catch (error) {
+      toast.error("Lỗi khi làm mới", { id: toastId });
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
 
   const openAddModal = () => {
     setEditingClass(null);
@@ -167,6 +187,9 @@ export default function ManagerClasses() {
         setSelectedYear={setSelectedYear}
         academicYears={academicYears}
         onAddClick={openAddModal}
+        handleRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+        loading={loading}
       />
 
       <ClassList
@@ -177,7 +200,6 @@ export default function ManagerClasses() {
         onDelete={(cls) => setClassToDelete(cls)}
       />
 
-      {/* Form Modal (Add/Edit) */}
       {showFormModal && (
         <ClassFormModal
           onClose={() => setShowFormModal(false)}

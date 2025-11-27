@@ -36,23 +36,10 @@ export default function ManagerFinance() {
 
   const fetchPeriodicData = useCallback(async () => {
     try {
-      console.log(
-        `🚀 [START] Gọi API Summary cho Tháng ${selectedMonth}/${selectedYear}...`
-      );
       const summaryRes = await managerFinanceService.getSummary(
         selectedMonth,
         selectedYear
       );
-      console.log("📊 [DATA BE] Summary Response:", summaryRes);
-
-      if (summaryRes) {
-        console.log("   - Total Income:", summaryRes.totalIncome);
-        console.log("   - Net Income:", summaryRes.netIncome);
-        console.log(
-          "   - Income By Date Length:",
-          summaryRes.incomeByDate?.length
-        );
-      }
       setSummary(summaryRes);
       try {
         const ordersRes = await managerFinanceService.getPurchaseOrders(
@@ -73,22 +60,12 @@ export default function ManagerFinance() {
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("🚀 [START] Gọi API Invoices...");
       let data: InvoiceDto[] = [];
       if (searchQuery.trim())
         data = await managerFinanceService.searchInvoices(searchQuery);
       else if (selectedStatus !== "all")
         data = await managerFinanceService.filterInvoices(selectedStatus);
       else data = await managerFinanceService.getAllInvoices();
-      console.log("🧾 [DATA BE] Invoices List:", data);
-      
-      if (data.length > 0) {
-        console.log("   - Sample Invoice #1:", data[0]);
-        console.log("   - ParentName:", data[0].parentName); // Check cái này
-        console.log("   - Amount:", data[0].amount);         // Check cái này
-      } else {
-        console.warn("⚠️ Không có hóa đơn nào được trả về!");
-      }
       setInvoices(data || []);
     } catch (e) {
       console.error("❌ Lỗi lấy Invoices:", e);

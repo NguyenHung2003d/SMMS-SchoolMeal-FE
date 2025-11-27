@@ -1,7 +1,19 @@
 import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
-import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  FileText,
+  School,
+  User,
+  UserPlus,
+  Utensils,
+} from "lucide-react";
 
 export function AllergyPill({
   label,
@@ -40,18 +52,6 @@ export const formatNumber = (num: number) => {
   return num?.toLocaleString("vi-VN");
 };
 
-// export const convertFileToBase64 = (file: File): Promise<string> => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.readAsDataURL(file);
-//     reader.onload = () => {
-//       const base64String = (reader.result as string).split(",")[1];
-//       resolve(base64String);
-//     };
-//     reader.onerror = (error) => reject(error);
-//   });
-// };
-
 export const calculateManualBMI = () => {
   const [manualHeight, setManualHeight] = useState("");
   const [manualWeight, setManualWeight] = useState("");
@@ -62,6 +62,26 @@ export const calculateManualBMI = () => {
     const bmi = (parseFloat(manualWeight) / (h * h)).toFixed(1);
     setManualBMI(bmi);
   }
+};
+
+export const getIconComponent = (iconName: any) => {
+  const icons = {
+    School: <School size={16} />,
+    Utensils: <Utensils size={16} />,
+    FileText: <FileText size={16} />,
+    User: <User size={16} />,
+    UserPlus: <UserPlus size={16} />,
+    DollarSign: <DollarSign size={16} />,
+    AlertCircle: <AlertCircle size={16} />,
+    Bell: <Bell size={16} />,
+  };
+  return <Activity size={16} />;
+};
+
+export const formatGrowth = (growth: number) => {
+  if (growth === 0) return "0% so với tháng trước";
+  const sign = growth > 0 ? "+" : "";
+  return `${sign}${growth}% so với tháng trước`;
 };
 
 export const getBMIStatus = (bmi: number) => {
@@ -86,6 +106,7 @@ export const formatDateForInput = (dateString?: string) => {
   if (isNaN(date.getTime())) return "";
   return date.toISOString().split("T")[0];
 };
+
 export const getDayName = (dateString: string) => {
   try {
     return format(parseISO(dateString), "EEEE", { locale: vi });
@@ -251,4 +272,28 @@ export const getStatusColor = (status: string) => {
     default:
       return "bg-gradient-to-r from-gray-500 to-slate-500 text-white";
   }
+};
+
+export const getInitials = (name: string) => {
+  if (!name) return "MN";
+  const parts = name.split(" ");
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+export const getSendTypeInfo = (type: string) => {
+  if (type === "Immediate" || type === "Tức thời") {
+    return {
+      bg: "bg-red-50",
+      text: "text-red-700",
+      label: "🚨 Tức thời",
+      icon: CheckCircle2,
+    };
+  }
+  return {
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    label: "📅 Định kỳ",
+    icon: Clock,
+  };
 };

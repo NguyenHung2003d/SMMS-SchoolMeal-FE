@@ -47,6 +47,10 @@ export default function LoginPage() {
             toast.success(`Xin chào bếp: ${res?.user?.fullName}`);
             router.push(PATHS.KITCHEN_DASHBOARD);
             break;
+          case ROLES.ADMIN:
+            toast.success(`Xin chào quản trị viên: ${res?.user?.fullName}`);
+            router.push(PATHS.ADMIN_DASHBOARD);
+            break;
           default:
             toast.success("Đăng nhập thành công!");
             router.push(PATHS.PARENT_DASHBOARD);
@@ -71,6 +75,7 @@ export default function LoginPage() {
       },
     });
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4">
       <div className="relative w-full max-w-md">

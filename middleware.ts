@@ -58,7 +58,7 @@ export function middleware(req: NextRequest) {
 
   if (pathname.startsWith("/admin")) {
     if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.KITCHEN_STAFF) {
+    if (userRole !== ROLES.ADMIN) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
   }
@@ -75,5 +75,6 @@ export const config = {
     "/register",
     "/forgot-password",
     "/kitchen-staff/:path*",
+    "/admin/:path*",
   ],
 };

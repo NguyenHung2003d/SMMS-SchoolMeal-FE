@@ -35,9 +35,9 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     try {
-      await axiosInstance.post("/Auth/logout");
+      await axiosInstance.post("/Auth/logout", {});
     } catch (error) {
-      console.error("Logout API error", error);
+      console.warn("Logout API failed", error);
     } finally {
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");

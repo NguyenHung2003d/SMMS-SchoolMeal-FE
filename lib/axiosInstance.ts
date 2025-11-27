@@ -1,8 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-export const BASE_URL =
-  process.env.NEXT_PUBLIC_URL_API;
+export const BASE_URL = process.env.NEXT_PUBLIC_URL_API;
 
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -30,7 +29,6 @@ const handleLogout = () => {
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
     window.dispatchEvent(new Event("auth-session-expired"));
-    window.location.href = "/login";
   }
 };
 
@@ -50,7 +48,11 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.toLowerCase().includes("/auth/logout")
+    ) {
       if (originalRequest.url?.includes("/Auth/refresh-token")) {
         handleLogout();
         return Promise.reject(error);

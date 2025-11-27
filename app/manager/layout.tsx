@@ -19,6 +19,7 @@ import {
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { getInitials } from "@/helpers";
 
 export default function ManagerLayout({
   children,
@@ -36,13 +37,6 @@ export default function ManagerLayout({
     if (logout) {
       logout();
     }
-  };
-
-  const getInitials = (name: string) => {
-    if (!name) return "MN";
-    const parts = name.split(" ");
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
   const isActive = (href: string) => pathname.startsWith(href);

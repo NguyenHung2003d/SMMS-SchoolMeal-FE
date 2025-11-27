@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { getInitials } from "@/helpers";
 
 export default function AdminLayout({
   children,
@@ -23,11 +25,15 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const isActive = (href: string) => pathname?.startsWith(href);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <div
         className={`${
           isSidebarOpen ? "w-64" : "w-20"
@@ -95,11 +101,9 @@ export default function AdminLayout({
         </nav>
       </div>
 
-      {/* Main content */}
       <div
         className={`flex-1 ${isSidebarOpen ? "ml-64" : "ml-20"} transition-all`}
       >
-        {/* Header */}
         <header className="bg-white shadow-sm sticky top-0 z-10 p-4 flex justify-between items-center">
           <div className="relative max-w-md w-full">
             <input
@@ -113,36 +117,28 @@ export default function AdminLayout({
             />
           </div>
 
-          {/* Account Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsAccountOpen(!isAccountOpen)}
               className="flex items-center space-x-2 hover:bg-gray-100 p-2 rounded-lg transition"
             >
               <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                <span className="text-orange-600 font-medium">LC</span>
+                <span className="text-orange-600 font-medium text-sm">
+                  {getInitials(user?.fullName || "Admin")}
+                </span>
+              </div>
+              <div className="hidden md:block text-left mr-1">
+                <p className="text-sm font-medium text-gray-700">
+                  {user?.fullName || "Administrator"}
+                </p>
               </div>
               <ChevronDown size={16} className="text-gray-500" />
             </button>
 
             {isAccountOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border">
-                <Link
-                  href="/admin/account"
-                  className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-                >
-                  Hồ sơ cá nhân
-                </Link>
-                <Link
-                  href="/admin/settings"
-                  className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-                >
-                  Cài đặt
-                </Link>
                 <button
-                  onClick={() => {
-                    /* logic đăng xuất */
-                  }}
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
                 >
                   Đăng xuất

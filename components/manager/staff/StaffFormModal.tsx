@@ -166,7 +166,7 @@ export default function StaffFormModal({
             >
               Hủy
             </button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button type="submit" disabled={mutation.isPending} className="bg-orange-500 hover:bg-orange-600">
               {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang xử

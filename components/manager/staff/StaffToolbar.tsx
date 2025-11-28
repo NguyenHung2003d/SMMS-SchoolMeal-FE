@@ -39,8 +39,7 @@ export default function StaffToolbar({
             onChange={(e) => setSelectedRole(e.target.value)}
           >
             <option value="all">Tất cả</option>
-            <option value="Teacher">Giáo viên</option>
-            <option value="Warden">Quản sinh</option>
+            <option value="Teacher">Giáo viên & Quản sinh</option>
             <option value="KitchenStaff">Nhân viên bếp</option>
           </select>
         </div>

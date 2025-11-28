@@ -1,6 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import { Loader2, Trash } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Plus,
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Users,
+  CalendarDays,
+  BookOpen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +31,8 @@ import {
 import { toast } from "react-hot-toast";
 import { CreateParentRequest, CreateChildDto } from "@/types/manager-parent";
 import { parentService } from "@/services/managerParentService";
+import { useQuery } from "@tanstack/react-query";
+import { managerClassService } from "@/services/managerClassService";
 
 interface CreateParentModalProps {
   open: boolean;
@@ -27,7 +40,20 @@ interface CreateParentModalProps {
   onSuccess: () => void;
 }
 
-export function CreateParentModal({ open, onClose, onSuccess }: CreateParentModalProps) {
+export function CreateParentModal({
+  open,
+  onClose,
+  onSuccess,
+}: CreateParentModalProps) {
+  const { data: classesResponse } = useQuery({
+    queryKey: ["classes-for-parent-modal"],
+    queryFn: () => managerClassService.getAll(),
+    enabled: open,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const classesList = classesResponse?.data || [];
+
   const [formData, setFormData] = useState<CreateParentRequest>({
     fullName: "",
     email: "",
@@ -37,6 +63,7 @@ export function CreateParentModal({ open, onClose, onSuccess }: CreateParentModa
     relationName: "Phụ huynh",
   });
   const [loading, setLoading] = useState(false);
+
   const [newChild, setNewChild] = useState<CreateChildDto>({
     fullName: "",
     gender: "M",
@@ -49,10 +76,12 @@ export function CreateParentModal({ open, onClose, onSuccess }: CreateParentModa
       toast.error("Vui lòng nhập tên con và chọn lớp");
       return;
     }
+
     setFormData({
       ...formData,
       children: [...formData.children, { ...newChild }],
     });
+
     setNewChild({ fullName: "", gender: "M", dateOfBirth: "", classId: "" });
   };
 
@@ -64,151 +93,345 @@ export function CreateParentModal({ open, onClose, onSuccess }: CreateParentModa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.children.length === 0) {
+      toast.error("Vui lòng thêm ít nhất một học sinh.");
+      return;
+    }
+
     setLoading(true);
     try {
       await parentService.create(formData);
       toast.success("Tạo tài khoản thành công!");
       onSuccess();
       onClose();
-      setFormData({ fullName: "", email: "", phone: "", password: "@1", children: [] });
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "@1",
+        children: [],
+        relationName: "Phụ huynh",
+      });
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
   };
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Tạo tài khoản phụ huynh mới</DialogTitle>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-white to-gray-50">
+        <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 -mx-6 -mt-6 px-6 py-5 mb-2 rounded-t-lg">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+            <User className="w-6 h-6" />
+            Tạo tài khoản phụ huynh mới
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Họ tên phụ huynh</label>
-              <Input
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                placeholder="Nguyễn Văn A"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Quan hệ</label>
-              <Select
-                value={formData.relationName}
-                onValueChange={(val) => setFormData({ ...formData, relationName: val })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Cha">Cha</SelectItem>
-                  <SelectItem value="Mẹ">Mẹ</SelectItem>
-                  <SelectItem value="Phụ huynh">Phụ huynh</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Số điện thoại</label>
-              <Input
-                required
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="0912345678"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Mật khẩu</label>
-              <Input
-                type="text"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Mặc định: @1"
-              />
-            </div>
-          </div>
 
-          <div className="border-t pt-4">
-            <h3 className="text-sm font-bold mb-3">Thông tin học sinh (Con)</h3>
-            
-            {formData.children.length > 0 && (
-              <div className="mb-4 space-y-2">
-                {formData.children.map((child, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded border text-sm">
-                    <span>
-                      <strong>{child.fullName}</strong> - {child.gender === 'M' ? 'Nam' : 'Nữ'}
-                      {/* (Lớp: {MOCK_CLASSES.find(c => c.id === child.classId)?.name}) */}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveChild(idx)}
-                      className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
-                    >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                ))}
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6 px-2">
+          {/* Parent Info Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-5 pb-2 border-b-2 border-blue-100">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <User className="w-5 h-5 text-blue-600" />
               </div>
-            )}
+              <h3 className="text-base font-bold text-gray-800">
+                Thông tin phụ huynh
+              </h3>
+            </div>
 
-            <div className="grid grid-cols-12 gap-2 items-end bg-blue-50 p-3 rounded-md">
-              <div className="col-span-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Họ và tên
+                </label>
                 <Input
-                  placeholder="Tên học sinh"
-                  value={newChild.fullName}
-                  onChange={(e) => setNewChild({ ...newChild, fullName: e.target.value })}
+                  required
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
+                  placeholder="Nguyễn Văn A"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white"
                 />
               </div>
-              <div className="col-span-2">
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Quan hệ
+                </label>
                 <Select
-                  value={newChild.gender}
-                  onValueChange={(val) => setNewChild({ ...newChild, gender: val })}
+                  value={formData.relationName}
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, relationName: val })
+                  }
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="M">Nam</SelectItem>
-                    <SelectItem value="F">Nữ</SelectItem>
+                    <SelectItem value="Cha">Cha</SelectItem>
+                    <SelectItem value="Mẹ">Mẹ</SelectItem>
+                    <SelectItem value="Phụ huynh">Phụ huynh</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-3">
-                <Select
-                  value={newChild.classId}
-                  onValueChange={(val) => setNewChild({ ...newChild, classId: val })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Chọn lớp" /></SelectTrigger>
-                  {/* <SelectContent>
-                    {MOCK_CLASSES.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent> */}
-                </Select>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-blue-500" /> Email
+                </label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="email@example.com"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white"
+                />
               </div>
-              <div className="col-span-3">
-                <Button type="button" onClick={handleAddChild} className="w-full text-xs">
-                  + Thêm con
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-blue-500" /> Số điện thoại
+                </label>
+                <Input
+                  required
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="0912345678"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white"
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-blue-500" /> Mật khẩu
+                </label>
+                <Input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder="Mặc định: @1"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Children Info Section */}
+          <div className="space-y-4 border-t-2 border-gray-100 pt-6">
+            <div className="flex items-center gap-2 mb-5 pb-2 border-b-2 border-green-100">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Users className="w-5 h-5 text-green-600" />
+              </div>
+              <h3 className="text-base font-bold text-gray-800">
+                Thông tin học sinh
+              </h3>
+              {formData.children.length > 0 && (
+                <span className="ml-auto bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  {formData.children.length} học sinh
+                </span>
+              )}
+            </div>
+
+            {/* Children List Display */}
+            {formData.children.length > 0 && (
+              <div className="space-y-3 mb-5 max-h-56 overflow-y-auto pr-2">
+                {formData.children.map((child, idx) => {
+                  const foundClass = classesList.find(
+                    (c: any) => c.classId === child.classId
+                  );
+                  const className = foundClass
+                    ? foundClass.className
+                    : "Chưa xác định";
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-200 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-200"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center gap-3 flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-lg">
+                            {child.gender === "M" ? "👦" : "👧"}
+                          </div>
+                          <span className="font-bold text-gray-900 text-lg">
+                            {child.fullName}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-sm items-center">
+                          <span className="px-3 py-1 bg-white rounded-full text-xs border border-gray-200 font-medium">
+                            {child.gender === "M" ? "Nam" : "Nữ"}
+                          </span>
+
+                          {child.dateOfBirth && (
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200 font-medium">
+                              <CalendarDays className="w-3.5 h-3.5" />
+                              {formatDate(child.dateOfBirth)}
+                            </span>
+                          )}
+
+                          <span className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs border border-indigo-200 font-semibold">
+                            <BookOpen className="w-3.5 h-3.5" />
+                            {className}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveChild(idx)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-2 h-9 w-9 p-0 rounded-full transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Add Child Form */}
+            <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 p-8 rounded-xl border-2 border-blue-200 shadow-sm">
+              <h4 className="text-base font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-blue-600" />
+                Thêm học sinh mới
+              </h4>
+
+              {/* Row 1 */}
+              <div className="grid grid-cols-1 gap-5 mb-6">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                    Họ và tên con
+                  </label>
+                  <Input
+                    placeholder="Nhập tên học sinh..."
+                    value={newChild.fullName}
+                    onChange={(e) =>
+                      setNewChild({ ...newChild, fullName: e.target.value })
+                    }
+                    className="h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-5">
+                  <div>
+                    <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                      Giới tính
+                    </label>
+                    <Select
+                      value={newChild.gender}
+                      onValueChange={(val) =>
+                        setNewChild({ ...newChild, gender: val })
+                      }
+                    >
+                      <SelectTrigger className="h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">👦 Nam</SelectItem>
+                        <SelectItem value="F">👧 Nữ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                      Ngày sinh
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <CalendarDays className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <Input
+                        type="date"
+                        value={newChild.dateOfBirth || ""}
+                        onChange={(e) =>
+                          setNewChild({
+                            ...newChild,
+                            dateOfBirth: e.target.value,
+                          })
+                        }
+                        className="pl-12 h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                    Lớp học
+                  </label>
+                  <Select
+                    value={newChild.classId}
+                    onValueChange={(val) =>
+                      setNewChild({ ...newChild, classId: val })
+                    }
+                  >
+                    <SelectTrigger className="h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base">
+                      <SelectValue placeholder="Chọn lớp" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classesList.length === 0 ? (
+                        <div className="p-2 text-xs text-center text-gray-500">
+                          Không có lớp nào
+                        </div>
+                      ) : (
+                        classesList.map((c: any) => (
+                          <SelectItem key={c.classId} value={c.classId}>
+                            {c.className}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleAddChild}
+                  className="h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
+                >
+                  <Plus size={20} className="mr-2" />
+                  Thêm
                 </Button>
               </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Hủy</Button>
-            <Button type="submit" disabled={loading}>
+          <DialogFooter className="border-t-2 border-gray-100 pt-6 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="rounded-lg font-semibold"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Tạo tài khoản
+              {loading ? "Đang tạo..." : "Tạo tài khoản"}
             </Button>
           </DialogFooter>
         </form>

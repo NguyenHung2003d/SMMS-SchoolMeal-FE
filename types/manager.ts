@@ -28,6 +28,7 @@ export interface StaffDto {
   isActive: boolean;
   avatarUrl?: string;
   createdDate?: string;
+  password?: string;
 }
 
 export interface CreateAccountRequest {

@@ -17,7 +17,7 @@ export const parentService = {
   },
 
   create: async (data: CreateParentRequest) => {
-    const res = await axiosInstance.post("/ManagerParent", data);
+    const res = await axiosInstance.post("/ManagerParent/create-parent", data);
     return res.data;
   },
 

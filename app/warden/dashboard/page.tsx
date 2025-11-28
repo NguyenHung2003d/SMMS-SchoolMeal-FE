@@ -9,7 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { StatsCard } from "@/components/warden/StatsCard";
-import { ClassOverview } from "@/components/warden/ClassOverview";
+import { ClassOverview } from "@/components/warden/class/ClassOverview";
 import { QuickAccessCard } from "@/components/warden/QuickAccessCard";
 import { ClassDto, WardenStats } from "@/types/warden";
 import { wardenDashboardService } from "@/services/wardenDashboradServices";

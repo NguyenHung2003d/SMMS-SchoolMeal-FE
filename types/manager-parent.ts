@@ -6,7 +6,6 @@ export interface ParentStudentDetailDto {
   className?: string;
 }
 
-// 2️⃣ DTO hiển thị danh sách Phụ huynh (Khớp với GetAll/Search Backend)
 export interface ParentAccountDto {
   userId: string;
   fullName: string;

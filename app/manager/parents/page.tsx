@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "react-hot-toast";
 import { ParentAccountDto } from "@/types/manager-parent";
-import { parentService } from "@/services/managerParentService";
-import { ParentTable } from "@/components/manager/parents/parent-table";
-import { CreateParentModal } from "@/components/manager/parents/create-parent-modal";
-import { ImportExcelModal } from "@/components/manager/parents/import-excel-modal";
+import { ParentTable } from "@/components/manager/parents/ParentTable";
+import { CreateParentModal } from "@/components/manager/parents/CreateParentModal";
+import { ImportExcelModal } from "@/components/manager/parents/ImportExcelModal";
 import { managerClassService } from "@/services/managerClassService";
 import { ClassDto } from "@/types/manager-class";
+import { managerParentService } from "@/services/managerParentService";
+import { EditParentModal } from "@/components/manager/parents/EditParentModal";
 
 export default function ManagerParentsPage() {
   const [parents, setParents] = useState<ParentAccountDto[]>([]);
@@ -30,6 +31,11 @@ export default function ManagerParentsPage() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [parentToEdit, setParentToEdit] = useState<ParentAccountDto | null>(
+    null
+  );
 
   const fetchClasses = async () => {
     try {
@@ -48,9 +54,9 @@ export default function ManagerParentsPage() {
 
       console.log("Fetching with:", { searchTerm, selectedClassId });
       if (searchTerm && searchTerm.trim() !== "") {
-        responseData = await parentService.search(searchTerm);
+        responseData = await managerParentService.search(searchTerm);
       } else {
-        responseData = await parentService.getAll();
+        responseData = await managerParentService.getAll();
       }
 
       let dataToSet: ParentAccountDto[] = [];
@@ -96,7 +102,7 @@ export default function ManagerParentsPage() {
 
   const handleDownloadTemplate = async () => {
     try {
-      const blob = await parentService.downloadTemplate();
+      const blob = await managerParentService.downloadTemplate();
       const url = window.URL.createObjectURL(new Blob([blob]));
       const a = document.createElement("a");
       a.href = url;
@@ -114,7 +120,7 @@ export default function ManagerParentsPage() {
   const handleDelete = async (userId: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
     try {
-      await parentService.delete(userId);
+      await managerParentService.delete(userId);
       toast.success("Xóa thành công");
       fetchParents();
     } catch (error) {
@@ -124,12 +130,17 @@ export default function ManagerParentsPage() {
 
   const handleChangeStatus = async (userId: string, currentStatus: boolean) => {
     try {
-      await parentService.changeStatus(userId, !currentStatus);
+      await managerParentService.changeStatus(userId, !currentStatus);
       toast.success("Cập nhật trạng thái thành công");
       fetchParents();
     } catch (error) {
       toast.error("Lỗi cập nhật trạng thái");
     }
+  };
+
+  const handleEdit = (parent: ParentAccountDto) => {
+    setParentToEdit(parent);
+    setShowEditModal(true);
   };
 
   return (
@@ -187,16 +198,16 @@ export default function ManagerParentsPage() {
             </Select>
           </div>
 
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh} 
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
             disabled={isRefreshing}
             className="bg-white hover:bg-gray-100 text-gray-700 border-gray-300 px-3"
             title="Tải lại dữ liệu"
           >
-            <RefreshCcw 
-              size={16} 
-              className={`${isRefreshing ? "animate-spin text-blue-600" : ""}`} 
+            <RefreshCcw
+              size={16}
+              className={`${isRefreshing ? "animate-spin text-blue-600" : ""}`}
             />
           </Button>
         </div>
@@ -207,6 +218,7 @@ export default function ManagerParentsPage() {
         loading={loading}
         onDelete={handleDelete}
         onStatusChange={handleChangeStatus}
+        onEdit={handleEdit}
       />
 
       <CreateParentModal
@@ -214,6 +226,14 @@ export default function ManagerParentsPage() {
         onClose={() => setShowCreateModal(false)}
         onSuccess={fetchParents}
       />
+
+      {showEditModal && parentToEdit && (
+        <EditParentModal
+          open={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          parentToEdit={parentToEdit}
+        />
+      )}
 
       <ImportExcelModal
         open={showImportModal}

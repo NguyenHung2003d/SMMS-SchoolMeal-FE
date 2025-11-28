@@ -1,7 +1,10 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { CreateParentRequest } from "@/types/manager-parent";
+import {
+  CreateParentRequest,
+  UpdateParentRequest,
+} from "@/types/manager-parent";
 
-export const parentService = {
+export const managerParentService = {
   getAll: async () => {
     const res = await axiosInstance.get("/ManagerParent");
     return res.data;
@@ -13,6 +16,11 @@ export const parentService = {
         keyword: keyword.trim(),
       },
     });
+    return res.data;
+  },
+
+  update: async (id: string, data: UpdateParentRequest) => {
+    const res = await axiosInstance.put(`/ManagerParent/${id}`, data);
     return res.data;
   },
 

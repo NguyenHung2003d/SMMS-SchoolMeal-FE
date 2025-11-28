@@ -31,7 +31,7 @@ export default function ManagerLayout({
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const pathname = usePathname();
 
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     if (logout) {
@@ -136,7 +136,6 @@ export default function ManagerLayout({
                   )}
                 </button>
 
-                {/* Dropdown con */}
                 {isAccountDropdownOpen && isSidebarOpen && (
                   <ul className="ml-8 mt-2 space-y-1">
                     <li>

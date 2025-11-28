@@ -36,7 +36,7 @@ export default function TeacherClassView() {
         try {
           const wardenId = getWardenIdFromToken();
           if (wardenId) {
-            const classes = await wardenDashboardService.getClasses(wardenId);
+            const classes = await wardenDashboardService.getClasses();
 
             if (classes && classes.length > 0) {
               const defaultClassId = classes[0].classId.toString();
@@ -85,19 +85,40 @@ export default function TeacherClassView() {
     e.preventDefault();
     if (!classId) return;
     setLoading(true);
+
     try {
       if (!searchQuery.trim()) {
         const data = await wardenClassService.getStudentsInClass(classId);
         setStudents(data);
       } else {
-        const results = await wardenClassService.searchStudents(
+        const response = await wardenClassService.searchStudents(
           classId,
           searchQuery
         );
-        setStudents(results);
+
+        const rawList = response?.students || response?.Students || [];
+
+        const mappedStudents: StudentDto[] = rawList.map((item: any) => ({
+          studentId: item.studentId || item.StudentId,
+          fullName: item.fullName || item.FullName,
+          gender: item.gender || item.Gender,
+          dateOfBirth: item.dateOfBirth || item.DateOfBirth,
+          parentName: item.parentName || item.ParentName,
+
+          parentPhone: "",
+          relationName: "",
+          avatarUrl: "",
+          allergies: [],
+          isAbsent: false,
+          isActive: true,
+        }));
+
+        console.log("Search Result:", mappedStudents);
+        setStudents(mappedStudents);
       }
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
+      setStudents([]);
     } finally {
       setLoading(false);
     }

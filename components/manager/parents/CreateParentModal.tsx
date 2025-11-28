@@ -11,6 +11,8 @@ import {
   Users,
   CalendarDays,
   BookOpen,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +32,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "react-hot-toast";
 import { CreateParentRequest, CreateChildDto } from "@/types/manager-parent";
-import { parentService } from "@/services/managerParentService";
 import { useQuery } from "@tanstack/react-query";
 import { managerClassService } from "@/services/managerClassService";
+import { managerParentService } from "@/services/managerParentService";
 
 interface CreateParentModalProps {
   open: boolean;
@@ -63,6 +65,7 @@ export function CreateParentModal({
     relationName: "Phụ huynh",
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State hiển thị mật khẩu
 
   const [newChild, setNewChild] = useState<CreateChildDto>({
     fullName: "",
@@ -100,7 +103,7 @@ export function CreateParentModal({
 
     setLoading(true);
     try {
-      await parentService.create(formData);
+      await managerParentService.create(formData);
       toast.success("Tạo tài khoản thành công!");
       onSuccess();
       onClose();
@@ -218,20 +221,28 @@ export function CreateParentModal({
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <Lock className="w-4 h-4 text-blue-500" /> Mật khẩu
                 </label>
-                <Input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  placeholder="Mặc định: @1"
-                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="Mặc định: @1"
+                    className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Children Info Section */}
           <div className="space-y-4 border-t-2 border-gray-100 pt-6">
             <div className="flex items-center gap-2 mb-5 pb-2 border-b-2 border-green-100">
               <div className="p-2 bg-green-50 rounded-lg">
@@ -247,7 +258,6 @@ export function CreateParentModal({
               )}
             </div>
 
-            {/* Children List Display */}
             {formData.children.length > 0 && (
               <div className="space-y-3 mb-5 max-h-56 overflow-y-auto pr-2">
                 {formData.children.map((child, idx) => {
@@ -305,14 +315,12 @@ export function CreateParentModal({
               </div>
             )}
 
-            {/* Add Child Form */}
             <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 p-8 rounded-xl border-2 border-blue-200 shadow-sm">
               <h4 className="text-base font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-blue-600" />
                 Thêm học sinh mới
               </h4>
 
-              {/* Row 1 */}
               <div className="grid grid-cols-1 gap-5 mb-6">
                 <div>
                   <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
@@ -373,7 +381,6 @@ export function CreateParentModal({
                 </div>
               </div>
 
-              {/* Row 2 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
                 <div>
                   <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">

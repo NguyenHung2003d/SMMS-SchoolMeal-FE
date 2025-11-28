@@ -3,7 +3,6 @@ import {
   FinanceSummaryDto,
   InvoiceDetailDto,
   InvoiceDto,
-  PurchaseOrderDetailDto,
   PurchaseOrderDto,
 } from "@/types/manager-finance";
 
@@ -39,20 +38,6 @@ export const managerFinanceService = {
   getInvoiceDetail: async (invoiceId: number) => {
     const res = await axiosInstance.get<InvoiceDetailDto>(
       `/ManagerFinance/invoices/${invoiceId}`
-    );
-    return res.data;
-  },
-
-  getPurchaseOrders: async (month: number, year: number) => {
-    const res = await axiosInstance.get<PurchaseOrderDto[]>(
-      `/ManagerFinance/purchase-orders?month=${month}&year=${year}`
-    );
-    return res.data;
-  },
-
-  getPurchaseOrderDetail: async (orderId: number) => {
-    const res = await axiosInstance.get<PurchaseOrderDetailDto>(
-      `/ManagerFinance/purchase-orders/${orderId}`
     );
     return res.data;
   },

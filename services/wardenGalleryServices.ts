@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 
 export interface GalleryImageDto {
   imageId: string;
-  imageUrl: string;
+  url: string;
   publicId?: string;
   caption?: string;
   createdAt: string;

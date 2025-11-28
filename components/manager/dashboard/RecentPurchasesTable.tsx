@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -6,10 +6,16 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  Calculator,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecentPurchaseDto } from "@/types/manager";
 import { formatCurrency } from "@/helpers";
+import PurchaseDetailModal from "./PurchaseDetailModal";
+import { managerPurchasesService } from "@/services/managerPurchasesService";
+import toast from "react-hot-toast";
 
 interface RecentPurchasesTableProps {
   purchases: RecentPurchaseDto[];
@@ -24,6 +30,11 @@ export default function RecentPurchasesTable({
 }: RecentPurchasesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isExporting, setIsExporting] = useState(false);
+
   const totalPages = Math.ceil(purchases.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentPurchases = purchases.slice(
@@ -31,12 +42,55 @@ export default function RecentPurchasesTable({
     startIndex + ITEMS_PER_PAGE
   );
 
+  const totalDisplayedList = useMemo(() => {
+    return purchases.reduce((sum, item) => sum + item.totalAmount, 0);
+  }, [purchases]);
+
   const handlePrevious = () => {
     setCurrentPage((pre) => Math.max(pre - 1, 1));
   };
 
   const handleNext = () => {
     setCurrentPage((pre) => Math.min(pre + 1, totalPages));
+  };
+
+  const handleOpenDetail = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleExportReport = async () => {
+    try {
+      setIsExporting(true);
+      const today = new Date();
+      const month = today.getMonth() + 1;
+      const year = today.getFullYear();
+
+      const blob = await managerPurchasesService.exportPurchaseReport(
+        month,
+        year,
+        false
+      );
+
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      link.setAttribute(
+        "download",
+        `BaoCaoChiPhiDiCho_Thang_${month}_${year}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Lỗi xuất báo cáo:", error);
+      toast.error("Xuất báo cáo thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -57,9 +111,19 @@ export default function RecentPurchasesTable({
             <ShoppingCart className="mr-2" size={18} />
             Các khoản thu mua gần đây
           </h3>
-          <Button variant="outline" size="sm" className="flex items-center">
-            <Download size={14} className="mr-1" />
-            Xuất báo cáo
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center"
+            onClick={handleExportReport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Download size={14} />
+            )}
+            {isExporting ? "Đang xuất..." : "Xuất báo cáo"}
           </Button>
         </div>
         <div className="overflow-x-auto">
@@ -126,12 +190,12 @@ export default function RecentPurchasesTable({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/manager/kitchen-purchases/${purchase.orderId}`}
-                        className="text-blue-500 hover:text-blue-700"
+                      <button
+                        onClick={() => handleOpenDetail(purchase.orderId)}
+                        className="text-blue-500 hover:text-blue-700 flex items-center justify-end gap-1 ml-auto"
                       >
-                        Xem chi tiết
-                      </Link>
+                        <Eye size={16} /> Xem chi tiết{" "}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -171,13 +235,33 @@ export default function RecentPurchasesTable({
             </div>
           </div>
         )}
-        <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
-          <div className="text-sm text-gray-600">
-            <span className="font-medium">Tổng chi phí tháng này:</span>{" "}
-            {formatCurrency(totalFinance)}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-end items-end sm:items-center gap-6">
+          <div className="text-sm text-gray-500 flex flex-col items-end">
+            <span className="text-xs font-medium uppercase tracking-wide mb-1 flex items-center gap-1">
+              <Calculator size={12} /> Tổng giá trị danh sách
+            </span>
+            <span className="font-semibold text-gray-700 text-base">
+              {formatCurrency(totalDisplayedList)}
+            </span>
+          </div>
+
+          <div className="h-8 w-px bg-gray-300 hidden sm:block"></div>
+
+          <div className="text-sm flex flex-col items-end">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+              Tổng chi phí tháng này
+            </span>
+            <span className="font-bold text-orange-600 text-lg">
+              {formatCurrency(totalFinance)}
+            </span>
           </div>
         </div>
       </div>
+      <PurchaseDetailModal
+        isOpen={isModalOpen}
+        orderId={selectedOrderId}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

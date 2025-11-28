@@ -5,13 +5,13 @@ import {
   Image as ImageIcon,
   Upload,
   Trash2,
-  Filter,
   Grid,
   List,
   ChevronLeft,
   Loader2,
   Folder,
   Camera,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,15 @@ import { getWardenIdFromToken } from "@/utils";
 import { ClassDto } from "@/types/warden";
 import { format } from "date-fns";
 import { wardenDashboardService } from "@/services/wardenDashboradServices";
-
+import toast from "react-hot-toast"; // ✅ Import toast
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 export default function TeacherGallery() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -35,16 +43,20 @@ export default function TeacherGallery() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         const wardenId = getWardenIdFromToken();
         if (wardenId) {
-          const data = await wardenDashboardService.getClasses(wardenId);
+          const data = await wardenDashboardService.getClasses();
           setClasses(data);
         }
       } catch (error) {
         console.error("Lỗi lấy danh sách lớp:", error);
+        toast.error("Không thể tải danh sách lớp học.");
       } finally {
         setLoading(false);
       }
@@ -60,7 +72,7 @@ export default function TeacherGallery() {
       setClassImages(images);
     } catch (error) {
       console.error("Lỗi lấy ảnh:", error);
-      alert("Không thể tải danh sách ảnh.");
+      toast.error("Không thể tải danh sách ảnh.");
     } finally {
       setLoadingImages(false);
     }
@@ -83,7 +95,7 @@ export default function TeacherGallery() {
     const wardenId = getWardenIdFromToken();
 
     if (!wardenId) {
-      alert("Phiên đăng nhập không hợp lệ.");
+      toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
       return;
     }
 
@@ -91,35 +103,49 @@ export default function TeacherGallery() {
     formData.append("File", file);
     formData.append("ClassId", selectedClass.classId);
     formData.append("UploaderId", wardenId);
-    // formData.append("Caption", "Optional Caption");
 
     setUploading(true);
     try {
       await wardenGalleryService.uploadImage(formData);
-      alert("Upload thành công!");
+      toast.success("Tải ảnh lên thành công!");
 
       const updatedImages = await wardenGalleryService.getImagesByClass(
         selectedClass.classId
       );
+      console.log("Dữ liệu ảnh mới lấy về:", updatedImages); // 👉 F12 xem cái này
       setClassImages(updatedImages);
     } catch (error) {
       console.error("Upload thất bại:", error);
-      alert("Upload thất bại. Vui lòng kiểm tra lại.");
+      toast.error("Tải ảnh thất bại. Vui lòng thử lại.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const handleDeleteImage = async (imageId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa ảnh này không?")) return;
+  const confirmDeleteImage = (imageId: string) => {
+    setImageToDelete(imageId);
+  };
+
+  const handleDeleteImage = async () => {
+    if (!imageToDelete) return;
+
+    setIsDeleting(true);
+    const toastId = toast.loading("Đang xóa ảnh...");
 
     try {
-      await wardenGalleryService.deleteImage(imageId);
-      setClassImages((prev) => prev.filter((img) => img.imageId !== imageId));
+      await wardenGalleryService.deleteImage(imageToDelete);
+      toast.success("Đã xóa ảnh thành công", { id: toastId });
+
+      setClassImages((prev) =>
+        prev.filter((img) => img.imageId !== imageToDelete)
+      );
+      setImageToDelete(null);
     } catch (error) {
       console.error("Xóa ảnh thất bại:", error);
-      alert("Không thể xóa ảnh này.");
+      toast.error("Không thể xóa ảnh này. Vui lòng thử lại.", { id: toastId });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -134,7 +160,6 @@ export default function TeacherGallery() {
   if (selectedClass) {
     return (
       <div className="p-6 bg-gray-50 min-h-screen">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <button
@@ -145,7 +170,7 @@ export default function TeacherGallery() {
             </button>
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
-                Thư viện ảnh: {selectedClass.className}
+                Thư viện ảnh: Lớp {selectedClass.className}
               </h1>
               <p className="text-sm text-gray-500">
                 {classImages.length} ảnh đã tải lên
@@ -188,30 +213,29 @@ export default function TeacherGallery() {
                     key={image.imageId}
                     className="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all relative"
                   >
-                    <div className="aspect-square bg-gray-100">
+                    <div className="aspect-square bg-gray-100 relative">
                       <img
-                        src={image.imageUrl}
+                        src={image.url}
                         alt={image.caption || "Student Image"}
-                        className="w-full h-full object-cover"
+                        className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
-                    </div>
-
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => window.open(image.imageUrl, "_blank")}
-                        className="p-2 bg-white/20 text-white rounded-full hover:bg-white/40 backdrop-blur-sm"
-                        title="Xem ảnh gốc"
-                      >
-                        <ImageIcon size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteImage(image.imageId)}
-                        className="p-2 bg-red-500/80 text-white rounded-full hover:bg-red-600 backdrop-blur-sm"
-                        title="Xóa ảnh"
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => window.open(image.url, "_blank")}
+                          className="p-2 bg-white/20 text-white rounded-full hover:bg-white/40 backdrop-blur-sm transition-colors"
+                          title="Xem ảnh gốc"
+                        >
+                          <ImageIcon size={20} />
+                        </button>
+                        <button
+                          onClick={() => confirmDeleteImage(image.imageId)}
+                          className="p-2 bg-red-500/80 text-white rounded-full hover:bg-red-600 backdrop-blur-sm transition-colors"
+                          title="Xóa ảnh"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="p-3">
@@ -250,6 +274,47 @@ export default function TeacherGallery() {
             )}
           </>
         )}
+
+        <Dialog
+          open={!!imageToDelete}
+          onOpenChange={(open) => !open && setImageToDelete(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" /> Xác nhận xóa ảnh
+              </DialogTitle>
+              <DialogDescription>
+                Bạn có chắc chắn muốn xóa ảnh này không? Hành động này không thể
+                hoàn tác.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setImageToDelete(null)}
+                disabled={isDeleting}
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteImage}
+                disabled={isDeleting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang
+                    xóa...
+                  </>
+                ) : (
+                  "Xóa ảnh"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -296,9 +361,9 @@ export default function TeacherGallery() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {classes.map((cls) => (
+          {classes.map((cls, index) => (
             <div
-              key={cls.classId}
+              key={cls.classId || index}
               onClick={() => handleViewAlbum(cls)}
               className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer border border-gray-100 group"
             >
@@ -343,9 +408,9 @@ export default function TeacherGallery() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {classes.map((cls) => (
+              {classes.map((cls, index) => (
                 <tr
-                  key={cls.classId}
+                  key={cls.classId || index}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleViewAlbum(cls)}
                 >

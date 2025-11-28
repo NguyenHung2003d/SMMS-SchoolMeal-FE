@@ -13,10 +13,9 @@ import { Button } from "@/components/ui/button";
 import { FinanceStats } from "@/components/manager/finance/FinanceStats";
 import { FinanceCharts } from "@/components/manager/finance/FinanceCharts";
 import { InvoicesTable } from "@/components/manager/finance/InvoicesTable";
-import {
-  InvoiceDetailModal,
-  ShoppingOrdersModal,
-} from "@/components/manager/finance/FinanceModals";
+import { InvoiceDetailModal } from "@/components/manager/finance/FinanceModals";
+import { managerPurchasesService } from "@/services/managerPurchasesService";
+import { ShoppingOrdersModal } from "@/components/manager/finance/ShoppingOrdersModal";
 
 export default function ManagerFinance() {
   const [loading, setLoading] = useState(false);
@@ -42,7 +41,7 @@ export default function ManagerFinance() {
       );
       setSummary(summaryRes);
       try {
-        const ordersRes = await managerFinanceService.getPurchaseOrders(
+        const ordersRes = await managerPurchasesService.getPurchaseOrders(
           selectedMonth,
           selectedYear
         );
@@ -51,7 +50,7 @@ export default function ManagerFinance() {
         console.error("❌ Lỗi lấy Orders:", err);
         setPurchaseOrders([]);
       }
-    } catch(error) {
+    } catch (error) {
       console.error("❌ Lỗi lấy Summary:", error);
       toast.error("Không thể tải dữ liệu tài chính.");
     }

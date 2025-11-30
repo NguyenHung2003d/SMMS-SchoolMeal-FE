@@ -17,11 +17,11 @@ import { Button } from "@/components/ui/button";
 import {
   wardenGalleryService,
   GalleryImageDto,
-} from "@/services/wardenGalleryServices";
+} from "@/services/wardenGallery.service";
 import { getWardenIdFromToken } from "@/utils";
 import { ClassDto } from "@/types/warden";
 import { format } from "date-fns";
-import { wardenDashboardService } from "@/services/wardenDashboradServices";
+import { wardenDashboardService } from "@/services/wardenDashborad.service";
 import toast from "react-hot-toast"; // ✅ Import toast
 import {
   Dialog,

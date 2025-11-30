@@ -1,7 +1,7 @@
 "use client";
 import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
 import { Button } from "@/components/ui/button";
-import { adminSchoolService } from "@/services/adminSchoolService";
+import { adminSchoolService } from "@/services/adminSchool.service";
 import {
   CreateSchoolDto,
   SchoolDTO,

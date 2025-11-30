@@ -3,7 +3,7 @@ import CreateNotificationModal from "@/components/admin/notifications/CreateNoti
 import NotificationDetailModal from "@/components/admin/notifications/NotificationDetailModal";
 import NotificationHeader from "@/components/admin/notifications/NotificationHeader";
 import NotificationList from "@/components/admin/notifications/NotificationList";
-import { adminNotificationService } from "@/services/adminNotificationService";
+import { adminNotificationService } from "@/services/adminNotification.service";
 import {
   CreateNotificationDto,
   NotificationDetailDto,

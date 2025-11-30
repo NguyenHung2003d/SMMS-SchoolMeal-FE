@@ -15,8 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDateForInput } from "@/helpers";
-import { managerClassService } from "@/services/managerClassService";
-import { managerParentService } from "@/services/managerParentService";
+import { managerClassService } from "@/services/managerClass.service";
+import { managerParentService } from "@/services/managerParent.service";
 import { CreateChildDto, UpdateParentRequest } from "@/types/manager-parent";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import {

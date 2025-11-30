@@ -33,8 +33,8 @@ import {
 import { toast } from "react-hot-toast";
 import { CreateParentRequest, CreateChildDto } from "@/types/manager-parent";
 import { useQuery } from "@tanstack/react-query";
-import { managerClassService } from "@/services/managerClassService";
-import { managerParentService } from "@/services/managerParentService";
+import { managerClassService } from "@/services/managerClass.service";
+import { managerParentService } from "@/services/managerParent.service";
 
 interface CreateParentModalProps {
   open: boolean;

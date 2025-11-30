@@ -1,16 +1,16 @@
 "use client";
 
+import { getInitials } from "@/helpers";
+import { useAuth } from "@/hooks/auth/useAuth";
 import {
   Bell,
   ChefHat,
-  BarChart3,
   Utensils,
   Package,
   AlertCircle,
   Search,
   Menu,
   Home,
-  Settings,
   LogOut,
   Users,
   ShoppingCart,
@@ -18,21 +18,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react"; // Thêm useEffect và useRef
+import { useState, useEffect, useRef } from "react";
 
 export default function KitchenStaffLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const pathname = usePathname();
-  const accountMenuRef = useRef<HTMLDivElement>(null); // Ref cho menu tài khoản
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => pathname?.startsWith(href);
 
-  // Tự động đóng menu khi click ra ngoài
+  const handleLogout = () => {
+    logout();
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -50,7 +54,6 @@ export default function KitchenStaffLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
       <aside
         className={`${
           isSidebarOpen ? "w-64" : "w-20"
@@ -90,12 +93,12 @@ export default function KitchenStaffLayout({
               <ul className="space-y-1">
                 <li>
                   <Link
-                    href="/kitchen-staff"
+                    href="/kitchen-staff/dashboard"
                     className={`flex items-center ${
                       isSidebarOpen ? "justify-start" : "justify-center"
                     } py-2 px-3 rounded-lg ${
                       isActive("/kitchen-staff") &&
-                      !pathname.includes("/kitchen-staff/")
+                      !pathname.includes("/kitchen-staff/dashboard")
                         ? "bg-orange-50 text-orange-500 font-medium"
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
@@ -118,32 +121,17 @@ export default function KitchenStaffLayout({
               <ul className="space-y-1">
                 <li>
                   <Link
-                    href="/kitchen-staff/menu"
+                    href="/kitchen-staff/menu/upcoming"
                     className={`flex items-center ${
                       isSidebarOpen ? "justify-start" : "justify-center"
                     } py-2 px-3 rounded-lg ${
-                      isActive("/kitchen-staff/menu")
+                      isActive("/kitchen-staff/menu/upcoming")
                         ? "bg-orange-50 text-orange-500 font-medium"
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
                     <Utensils size={20} />
                     {isSidebarOpen && <span className="ml-3">Thực đơn</span>}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/kitchen-staff/students"
-                    className={`flex items-center ${
-                      isSidebarOpen ? "justify-start" : "justify-center"
-                    } py-2 px-3 rounded-lg ${
-                      isActive("/kitchen-staff/students")
-                        ? "bg-orange-50 text-orange-500 font-medium"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <Users size={20} />
-                    {isSidebarOpen && <span className="ml-3">Học sinh</span>}
                   </Link>
                 </li>
                 <li>
@@ -177,28 +165,6 @@ export default function KitchenStaffLayout({
                     <ShoppingCart size={20} />
                     {isSidebarOpen && (
                       <span className="ml-3">Kế hoạch mua sắm</span>
-                    )}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/kitchen-staff/allergies"
-                    className={`flex items-center ${
-                      isSidebarOpen ? "justify-start" : "justify-center"
-                    } py-2 px-3 rounded-lg ${
-                      isActive("/kitchen-staff/allergies")
-                        ? "bg-orange-50 text-orange-500 font-medium"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <AlertCircle size={20} />
-                    {isSidebarOpen && (
-                      <>
-                        <span className="ml-3">Dị ứng</span>
-                        <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          1
-                        </span>
-                      </>
                     )}
                   </Link>
                 </li>
@@ -260,41 +226,33 @@ export default function KitchenStaffLayout({
                 </div>
               </div>
 
-              {/* --- PHẦN TÀI KHOẢN ĐÃ CHUYỂN VÀO ĐÂY --- */}
               <div className="relative" ref={accountMenuRef}>
                 <button
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                   className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                 >
-                  <span className="font-medium text-orange-600">NT</span>
+                  <span className="font-medium text-orange-600">
+                    {getInitials(user?.fullName || "")}
+                  </span>
                 </button>
 
                 {isAccountMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-10">
                     <div className="p-2 border-b">
                       <p className="font-medium text-sm text-gray-800">
-                        Nguyễn Thị Tâm
+                        {user?.fullName}
                       </p>
-                      <p className="text-xs text-gray-500">Quản lý bếp</p>
+                      <p className="text-xs text-gray-500">{user?.role}</p>
                     </div>
                     <ul className="p-1">
                       <li>
-                        <a
-                          href="#"
-                          className="flex items-center w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
-                        >
-                          <Settings size={16} className="mr-2" />
-                          Cài đặt
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
+                        <button
+                          onClick={handleLogout}
                           className="flex items-center w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md"
                         >
                           <LogOut size={16} className="mr-2" />
                           Đăng xuất
-                        </a>
+                        </button>
                       </li>
                     </ul>
                   </div>

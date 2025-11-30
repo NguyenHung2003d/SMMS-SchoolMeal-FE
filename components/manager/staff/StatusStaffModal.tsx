@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { StaffDto } from "@/types/manager";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { managerService } from "@/services/managerStaffService";
+import { managerService } from "@/services/managerStaff.service";
 
 interface StatusStaffModalProps {
   staff: StaffDto;

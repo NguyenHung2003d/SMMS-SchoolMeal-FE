@@ -214,37 +214,73 @@ export const getBMIStatusText = (category?: string | null) => {
   }
 };
 
-export const getCategoryLabel = (category: string) => {
-  switch (category.toLowerCase()) {
+export const getCategoryLabel = (type?: string) => {
+  if (!type) return "Khác";
+
+  const normalizedType = type.toLowerCase().trim();
+
+  switch (normalizedType) {
+    // 1. Nhóm Thức ăn
     case "food":
-      return "Thức ăn";
+    case "kitchenstaff":
+    case "meal":
+      return "🍽️ Thức ăn";
+
     case "facility":
-      return "Cơ sở vật chất";
+    case "facilitymanager":
+      return "🏫 Cơ sở vật chất";
+
     case "health":
-      return "Sức khỏe";
+    case "medicalstaff":
+      return "❤️ Sức khỏe";
+
     case "activity":
-      return "Hoạt động";
+    case "activitymanager":
+      return "🎨 Hoạt động";
+
     default:
-      return "Khác";
+      return "📋 Khác";
   }
 };
 
-export const getCategoryColor = (category: string) => {
-  switch (category.toLowerCase()) {
-    case "food":
-      return "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border border-orange-200";
-    case "facility":
-      return "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200";
-    case "health":
-      return "bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 border border-emerald-200";
-    case "activity":
-      return "bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200";
+export const getCategoryColor = (type?: string) => {
+  if (!type) return "bg-gray-100 text-gray-700";
+
+  const normalizedType = type.toLowerCase().trim();
+
+  if (["food", "kitchenstaff", "meal"].includes(normalizedType))
+    return "bg-orange-100 text-orange-700";
+
+  if (["facility", "facilitymanager"].includes(normalizedType))
+    return "bg-blue-100 text-blue-700";
+
+  if (["health", "medicalstaff"].includes(normalizedType))
+    return "bg-red-100 text-red-700";
+
+  if (["activity", "activitymanager"].includes(normalizedType))
+    return "bg-purple-100 text-purple-700";
+
+  return "bg-gray-100 text-gray-700";
+};
+
+export const getStatusColor = (status?: string) => {
+  if (!status) return "bg-gray-100 text-gray-700";
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "bg-amber-100 text-amber-700";
+    case "processing":
+    case "inprogress":
+      return "bg-blue-100 text-blue-700";
+    case "resolved":
+    case "completed":
+      return "bg-emerald-100 text-emerald-700";
     default:
-      return "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border border-gray-200";
+      return "bg-gray-100 text-gray-700";
   }
 };
 
-export const getStatusLabel = (status: string) => {
+export const getStatusLabel = (status?: string) => {
+  if (!status) return "Chờ xử lý";
   switch (status.toLowerCase()) {
     case "pending":
       return "Chờ xử lý";
@@ -255,22 +291,7 @@ export const getStatusLabel = (status: string) => {
     case "completed":
       return "Đã giải quyết";
     default:
-      return "Không xác định";
-  }
-};
-
-export const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "pending":
-      return "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/30";
-    case "processing":
-    case "inprogress":
-      return "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30";
-    case "resolved":
-    case "completed":
-      return "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30";
-    default:
-      return "bg-gradient-to-r from-gray-500 to-slate-500 text-white";
+      return "Chờ xử lý";
   }
 };
 

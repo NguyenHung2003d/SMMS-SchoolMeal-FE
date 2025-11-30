@@ -10,8 +10,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { parentService } from "@/services/managerParentService";
 import toast from "react-hot-toast";
+import { managerParentService } from "@/services/managerParent.service";
 
 interface ImportExcelModalProps {
   open: boolean;
@@ -27,7 +27,7 @@ export function ImportExcelModal({ open, onClose, onSuccess }: ImportExcelModalP
     if (!file) return;
     setUploading(true);
     try {
-      await parentService.importExcel(file);
+      await managerParentService.importExcel(file);
       toast.success("Import thành công!");
       onSuccess();
       onClose();

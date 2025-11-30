@@ -4,7 +4,7 @@ import {
   UseMutationOptions,
 } from "@tanstack/react-query";
 import { AuthResponse, User } from "@/types/auth";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import { AxiosError } from "axios";
 import { USER_QUERY_KEY } from "./useAuth";
 import { LoginFormData } from "@/lib/definitions";

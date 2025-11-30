@@ -3,7 +3,7 @@ import {
   useQueryClient,
   UseMutationOptions,
 } from "@tanstack/react-query";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";

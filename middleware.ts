@@ -26,6 +26,8 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
     if (userRole === ROLES.ADMIN)
       return NextResponse.redirect(new URL(PATHS.ADMIN_DASHBOARD, req.url));
+    if (userRole === ROLES.KITCHEN_STAFF)
+      return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
   }
 
   if (pathname.startsWith("/manager")) {

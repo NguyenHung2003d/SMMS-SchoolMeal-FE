@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 import { AttendanceSummaryDto, StudentDto } from "@/types/warden";
 import { formatDateForInput } from "@/helpers";
 import { getWardenIdFromToken } from "@/utils";
-import { wardenDashboardService } from "@/services/wardenDashboradServices";
-import { wardenClassService } from "@/services/wardenClassViewServices";
+import { wardenDashboardService } from "@/services/wardenDashborad.service";
+import { wardenClassService } from "@/services/wardenClassView.service";
 
 export default function TeacherClassView() {
   const [loading, setLoading] = useState(true);

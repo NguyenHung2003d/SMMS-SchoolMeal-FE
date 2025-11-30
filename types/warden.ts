@@ -80,24 +80,3 @@ export interface HealthStats {
   overweight: number;
   obese: number;
 }
-
-export interface FeedbackDto {
-  feedbackId: string;
-  title: string;
-  content: string;
-  category: string; // "food", "facility", "health", "activity", "other"
-  severity: string; // "low", "medium", "high"
-  status: string; // "pending", "processing", "resolved"
-  studentName?: string;
-  createdAt: string;
-  replyCount?: number; // Số lượng phản hồi (nếu có)
-}
-
-export interface CreateFeedbackRequest {
-  title: string;
-  content: string;
-  category: string;
-  severity: string;
-  studentName?: string;
-  wardenId: string;
-}

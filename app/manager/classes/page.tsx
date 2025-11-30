@@ -1,13 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { managerClassService } from "@/services/managerClassService";
+import { managerClassService } from "@/services/managerClass.service";
 import {
   AcademicYearDto,
   ClassDto,
   TeacherSimpleDto,
 } from "@/types/manager-class";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import ClassToolbar from "@/components/manager/class/ClassToolbar";
 import ClassList from "@/components/manager/class/ClassList";
 import ClassFormModal from "@/components/manager/class/ClassFormModal";

@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { href: "/warden/classView", label: "Xem lớp học", icon: Users },
   { href: "/warden/health", label: "Theo dõi sức khỏe", icon: Activity },
   { href: "/warden/gallery", label: "Quản lý ảnh", icon: ImageIcon },
-  { href: "/warden/issues", label: "Báo cáo vấn đề", icon: AlertCircle },
+  { href: "/warden/feedback", label: "Báo cáo vấn đề", icon: AlertCircle },
 ];
 
 export default function WardenLayout({

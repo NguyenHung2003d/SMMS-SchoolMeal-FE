@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { RecentPurchaseDto } from "@/types/manager";
 import { formatCurrency } from "@/helpers";
 import PurchaseDetailModal from "./PurchaseDetailModal";
-import { managerPurchasesService } from "@/services/managerPurchasesService";
+import { managerPurchasesService } from "@/services/managerPurchases.service";
 import toast from "react-hot-toast";
 
 interface RecentPurchasesTableProps {

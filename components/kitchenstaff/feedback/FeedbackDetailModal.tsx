@@ -1,131 +1,110 @@
-"use client";
-import {
-  X,
-  FileText,
-  BarChart2,
-  AlertTriangle,
-  AlertCircle,
-  MessageCircle,
-} from "lucide-react";
+import React from "react";
+import { X, User, Calendar, Tag, Utensils } from "lucide-react";
+import { format } from "date-fns";
+import { FeedbackDetailDto, FeedbackDto } from "@/types/kitchen-feedback";
 
-export default function FeedbackDetailModal({
-  selectedFeedback,
-  setIsDetailModalOpen,
-}: any) {
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  detail: FeedbackDetailDto | null;
+  // Truyền thêm thông tin từ list vào vì Backend Detail DTO đang thiếu SenderName/Title
+  previewData?: FeedbackDto;
+  loading: boolean;
+}
+
+export const FeedbackDetailModal = ({
+  isOpen,
+  onClose,
+  detail,
+  previewData,
+  loading,
+}: Props) => {
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-bold text-gray-800">
-                {selectedFeedback.title}
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {selectedFeedback.date} {selectedFeedback.time} • Món:{" "}
-                {selectedFeedback.dish}
-              </p>
-            </div>
-            <button
-              className="text-gray-400 hover:text-gray-600"
-              onClick={() => setIsDetailModalOpen(false)}
-            >
-              <X size={20} />
-            </button>
+    <div className="fixed inset-0 bg-gray-400/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div className="p-6 border-b border-gray-200 flex justify-between items-start">
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">
+              {previewData?.title || "Chi tiết phản hồi"}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1 flex items-center">
+              <User size={14} className="mr-1" />{" "}
+              {previewData?.senderName || "Người gửi ẩn danh"}
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X size={24} />
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="flex items-start mb-6">
-            <div className="h-10 w-10 rounded-full overflow-hidden mr-4">
-              <img
-                src={
-                  selectedFeedback.sender.avatar ||
-                  "https://via.placeholder.com/40"
-                }
-                alt={selectedFeedback.sender.name}
-                className="h-full w-full object-cover"
-              />
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
             </div>
-            <div>
-              <div className="font-medium text-gray-900">
-                {selectedFeedback.sender.name}
-              </div>
-              <div className="mt-2 bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-800">{selectedFeedback.description}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Responses */}
-          {selectedFeedback.responses.length > 0 && (
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-800 mb-3">
-                Phản hồi ({selectedFeedback.responses.length})
-              </h4>
-              <div className="space-y-4">
-                {selectedFeedback.responses.map((r: any) => (
-                  <div key={r.id} className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center mr-4">
-                      <span className="font-medium text-orange-600">
-                        {r.user.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {r.user.name}
-                      </div>
-                      <div className="mt-1 bg-orange-50 rounded-lg p-3">
-                        <p className="text-gray-800 text-sm">{r.text}</p>
-                      </div>
-                      <div className="mt-1 text-xs text-gray-500">
-                        {r.date} {r.time}
-                      </div>
-                    </div>
+          ) : detail ? (
+            <div className="space-y-6">
+              <div className="flex gap-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center">
+                  <Calendar size={16} className="mr-2 text-blue-500" />
+                  {detail.createdAt
+                    ? format(new Date(detail.createdAt), "dd/MM/yyyy HH:mm")
+                    : "-"}
+                </div>
+                <div className="flex items-center">
+                  <Tag size={16} className="mr-2 text-orange-500" />
+                  <span className="capitalize">
+                    {detail.targetType || "Chung"}
+                  </span>
+                  {detail.targetRef && (
+                    <span className="ml-1">({detail.targetRef})</span>
+                  )}
+                </div>
+                {detail.dailyMealId && (
+                  <div className="flex items-center">
+                    <Utensils size={16} className="mr-2 text-green-500" />
+                    Món ăn ID: {detail.dailyMealId}
                   </div>
-                ))}
+                )}
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">
+                  Nội dung phản hồi:
+                </h4>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 text-gray-800">
+                  {detail.content}
+                </div>
+              </div>
+
+              {/* Placeholder cho Reply (Backend chưa hỗ trợ) */}
+              <div className="border-t pt-4 mt-4">
+                <p className="text-xs text-gray-400 italic text-center">
+                  Tính năng trả lời phản hồi đang được phát triển.
+                </p>
               </div>
             </div>
+          ) : (
+            <p className="text-center text-gray-500">
+              Không tải được thông tin chi tiết.
+            </p>
           )}
-
-          {/* Reply box */}
-          <div className="mb-6">
-            <h4 className="font-medium text-gray-800 mb-3">Trả lời phản hồi</h4>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-              rows={3}
-              placeholder="Nhập phản hồi của bạn..."
-            ></textarea>
-          </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-between">
-          <div className="flex space-x-3">
-            <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center">
-              <FileText size={18} className="mr-2" />
-              Xuất báo cáo
-            </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center">
-              <BarChart2 size={18} className="mr-2" />
-              Xem thống kê
-            </button>
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={() => setIsDetailModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Đóng
-            </button>
-            <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-              Gửi phản hồi
-            </button>
-          </div>
+        <div className="p-4 border-t border-gray-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg"
+          >
+            Đóng
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};

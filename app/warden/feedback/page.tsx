@@ -9,18 +9,16 @@ import {
   Filter,
   ChevronDown,
   Calendar,
-  MessageSquare,
   Send,
   X,
-  Edit,
   Trash,
   TrendingUp,
   Plus,
   Loader2,
+  Edit,
 } from "lucide-react";
-import { wardenFeedbackService } from "@/services/wardenFeedbackServices";
+import { wardenFeedbackService } from "@/services/wardenFeedback.service";
 import { getWardenIdFromToken } from "@/utils";
-import { FeedbackDto } from "@/types/warden";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -29,30 +27,40 @@ import {
   getStatusColor,
   getStatusLabel,
 } from "@/helpers";
+import { FeedbackDto } from "@/types/warden-feedback";
+import toast from "react-hot-toast";
 
-export default function TeacherIssueReport() {
+export default function TeacherFeedback() {
   const [loading, setLoading] = useState(true);
   const [feedbacks, setFeedbacks] = useState<FeedbackDto[]>([]);
-  const [activeTab, setActiveTab] = useState("all");
 
-  // Modal State
+  const [activeTab, setActiveTab] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
-  const [issueCategory, setIssueCategory] = useState("");
+  const [issueCategory, setIssueCategory] = useState("food");
   const [issueSeverity, setIssueSeverity] = useState("medium");
   const [issueStudent, setIssueStudent] = useState("");
 
-  // 1. Fetch Data
   const fetchFeedbacks = async () => {
     try {
       const wardenId = getWardenIdFromToken();
       if (wardenId) {
         const data = await wardenFeedbackService.getFeedbacks(wardenId);
-        setFeedbacks(data);
+        const mappedData = data.map((item) => ({
+          ...item,
+          status: item.status || "pending",
+          targetType: item.targetType || "other",
+        }));
+        setFeedbacks(mappedData);
       }
     } catch (error) {
       console.error("Lỗi tải danh sách phản hồi:", error);
@@ -65,36 +73,92 @@ export default function TeacherIssueReport() {
     fetchFeedbacks();
   }, []);
 
-  // 2. Filter Logic
-  const filteredIssues = feedbacks.filter((issue) => {
-    if (activeTab === "all") return true;
-    // Mapping status backend sang tab frontend
-    // Backend có thể trả về: "Pending", "Processing", "Resolved" (cần check case-insensitive)
-    const status = issue.status.toLowerCase();
-    if (activeTab === "pending") return status === "pending";
-    if (activeTab === "inProgress")
-      return status === "processing" || status === "inprogress";
-    if (activeTab === "resolved")
-      return status === "resolved" || status === "completed";
-    return true;
-  });
+  const handleDelete = async (feedbackId: number) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa báo cáo này không?")) return;
+    const wardenId = getWardenIdFromToken();
+    if (!wardenId) return;
+    try {
+      await wardenFeedbackService.deleteFeedback(feedbackId, wardenId);
+      setFeedbacks((prev) => prev.filter((f) => f.feedbackId !== feedbackId));
+      toast.success("Đã xóa thành công");
+    } catch (error) {
+      console.error("Lỗi xóa:", error);
+      toast.error("Xóa thất bại");
+    }
+  };
 
-  // 3. Stats Counting
   const stats = {
-    pending: feedbacks.filter((i) => i.status.toLowerCase() === "pending")
-      .length,
+    pending: feedbacks.filter(
+      (i) => (i.status || "").toLowerCase() === "pending"
+    ).length,
     inProgress: feedbacks.filter((i) =>
-      ["processing", "inprogress"].includes(i.status.toLowerCase())
+      ["processing", "inprogress"].includes((i.status || "").toLowerCase())
     ).length,
     resolved: feedbacks.filter((i) =>
-      ["resolved", "completed"].includes(i.status.toLowerCase())
+      ["resolved", "completed"].includes((i.status || "").toLowerCase())
     ).length,
   };
 
-  // 4. Handle Create
-  const handleCreateIssue = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const filteredIssues = feedbacks.filter((issue) => {
+    let statusMatch = true;
+    const status = (issue.status || "").toLowerCase();
+    if (activeTab === "pending") statusMatch = status === "pending";
+    else if (activeTab === "inProgress")
+      statusMatch = ["processing", "inprogress"].includes(status);
+    else if (activeTab === "resolved")
+      statusMatch = ["resolved", "completed"].includes(status);
 
+    let categoryMatch = true;
+    if (filterCategory !== "all") {
+      categoryMatch =
+        (issue.targetType || "").toLowerCase() === filterCategory.toLowerCase();
+    }
+
+    let searchMatch = true;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      searchMatch =
+        (issue.title || "").toLowerCase().includes(term) ||
+        (issue.content || "").toLowerCase().includes(term) ||
+        (issue.targetRef || "").toLowerCase().includes(term);
+    }
+
+    return statusMatch && categoryMatch && searchMatch;
+  });
+
+  const handleEdit = (issue: FeedbackDto) => {
+    setIsEditing(true);
+    setEditingId(issue.feedbackId);
+
+    setIssueTitle(issue.title);
+    setIssueDescription(issue.content);
+    setIssueStudent(issue.targetRef || "");
+
+    const type = (issue.targetType || "").toLowerCase();
+    if (type.includes("kitchen") || type.includes("meal") || type === "food")
+      setIssueCategory("food");
+    else if (type.includes("facility")) setIssueCategory("facility");
+    else if (type.includes("medical") || type === "health")
+      setIssueCategory("health");
+    else if (type.includes("activity")) setIssueCategory("activity");
+    else setIssueCategory("other");
+
+    setShowCreateModal(true);
+  };
+
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setEditingId(null);
+    setIssueTitle("");
+    setIssueDescription("");
+    setIssueCategory("food");
+    setIssueSeverity("medium");
+    setIssueStudent("");
+    setShowCreateModal(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     const wardenId = getWardenIdFromToken();
     if (!wardenId) {
       alert("Phiên đăng nhập không hợp lệ");
@@ -103,29 +167,31 @@ export default function TeacherIssueReport() {
 
     setSubmitting(true);
     try {
-      await wardenFeedbackService.createFeedback({
+      const payload = {
         title: issueTitle,
         content: issueDescription,
-        category: issueCategory,
-        severity: issueSeverity,
-        studentName: issueStudent || undefined,
+        targetType: issueCategory,
+        targetRef: issueStudent || undefined,
         wardenId: wardenId,
-      });
+        severity: issueSeverity,
+        senderId: wardenId, // Đảm bảo có senderId cho backend check quyền
+      };
 
-      alert("Gửi báo cáo thành công!");
+      if (isEditing && editingId) {
+        // --- LOGIC UPDATE ---
+        await wardenFeedbackService.updateFeedback(editingId, payload);
+        toast.success("Cập nhật báo cáo thành công");
+      } else {
+        // --- LOGIC CREATE ---
+        await wardenFeedbackService.createFeedback(payload);
+        toast.success("Tạo báo cáo thành công");
+      }
+
       setShowCreateModal(false);
-      // Reset form
-      setIssueTitle("");
-      setIssueDescription("");
-      setIssueCategory("");
-      setIssueSeverity("medium");
-      setIssueStudent("");
-
-      // Reload data
-      fetchFeedbacks();
+      fetchFeedbacks(); // Reload list
     } catch (error) {
-      console.error("Lỗi tạo phản hồi:", error);
-      alert("Gửi báo cáo thất bại. Vui lòng thử lại.");
+      console.error("Lỗi submit:", error);
+      toast.error(isEditing ? "Cập nhật thất bại" : "Gửi báo cáo thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -148,11 +214,11 @@ export default function TeacherIssueReport() {
               Báo cáo vấn đề
             </h1>
             <p className="text-gray-600">
-              Quản lý và theo dõi các vấn đề trong trường học
+              Quản lý phản hồi từ giám thị (Warden){" "}
             </p>
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={openCreateModal}
             className="group relative px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-orange-500/40 hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 hover:scale-105"
           >
             <div className="flex items-center">
@@ -269,6 +335,8 @@ export default function TeacherIssueReport() {
                 <input
                   type="text"
                   placeholder="Tìm kiếm báo cáo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 group-hover:border-gray-300"
                 />
                 <Search
@@ -278,12 +346,17 @@ export default function TeacherIssueReport() {
               </div>
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <select className="appearance-none bg-white border-2 border-gray-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300 hover:shadow-md cursor-pointer">
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="appearance-none bg-white border-2 border-gray-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300 hover:shadow-md cursor-pointer"
+                  >
                     <option value="all">Tất cả phân loại</option>
                     <option value="food">🍽️ Thức ăn</option>
                     <option value="facility">🏫 Cơ sở vật chất</option>
                     <option value="health">❤️ Sức khỏe</option>
                     <option value="activity">🎨 Hoạt động</option>
+                    <option value="other">📋 Khác</option>
                   </select>
                   <ChevronDown
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
@@ -310,22 +383,20 @@ export default function TeacherIssueReport() {
                         <h3 className="font-semibold text-gray-900 text-lg group-hover:text-orange-600 transition-colors duration-300">
                           {issue.title}
                         </h3>
+
                         <span
                           className={`px-3 py-1 rounded-lg text-xs font-medium ${getCategoryColor(
-                            issue.category
+                            issue.targetType || ""
                           )} backdrop-blur-sm`}
                         >
-                          {getCategoryLabel(issue.category)}
+                          {getCategoryLabel(issue.targetType || "")}
                         </span>
-                        {issue.severity === "high" && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-lg font-medium shadow-lg shadow-red-500/30">
-                            ⚠️ Ưu tiên cao
-                          </span>
-                        )}
                       </div>
+
                       <p className="text-sm text-gray-600 mb-4 leading-relaxed">
                         {issue.content}
                       </p>
+
                       <div className="flex items-center text-xs text-gray-500 space-x-4">
                         <div className="flex items-center bg-gray-100 px-3 py-1.5 rounded-lg">
                           <Calendar
@@ -340,55 +411,60 @@ export default function TeacherIssueReport() {
                             )}
                           </span>
                         </div>
-                        {issue.studentName && (
+
+                        {issue.targetRef && (
                           <div className="flex items-center bg-blue-50 px-3 py-1.5 rounded-lg">
                             <span className="font-medium text-blue-700">
-                              👤 {issue.studentName}
+                              🎯 {issue.targetRef}
                             </span>
                           </div>
                         )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end ml-4">
-                      <span
-                        className={`px-4 py-2 text-xs font-semibold rounded-xl ${getStatusColor(
-                          issue.status
-                        )}`}
-                      >
-                        {getStatusLabel(issue.status)}
-                      </span>
-                      {issue.replyCount && issue.replyCount > 0 ? (
-                        <div className="mt-3 text-xs text-gray-500 flex items-center bg-gray-100 px-3 py-1.5 rounded-lg">
-                          <MessageSquare
-                            size={14}
-                            className="mr-1.5 text-blue-500"
-                          />
-                          <span className="font-medium">
-                            {issue.replyCount} phản hồi
+
+                        <div className="flex items-center bg-purple-50 px-3 py-1.5 rounded-lg">
+                          <span className="font-medium text-purple-700">
+                            👤 {issue.senderName}
                           </span>
                         </div>
-                      ) : null}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-4 flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <button className="px-4 py-2 text-blue-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-500 text-sm flex items-center rounded-lg transition-all duration-300 border border-blue-200 hover:border-transparent hover:shadow-lg hover:shadow-blue-500/30">
-                      <MessageSquare size={16} className="mr-1.5" />
-                      Xem chi tiết
-                    </button>
+
+                    <div className="flex flex-col items-end ml-4 gap-2">
+                      <span
+                        className={`px-4 py-2 text-xs font-semibold rounded-xl ${getStatusColor(
+                          issue.status || "pending"
+                        )}`}
+                      >
+                        {getStatusLabel(issue.status || "pending")}
+                      </span>
+                      <div className="flex space-x-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEdit(issue)}
+                          className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg"
+                          title="Chỉnh sửa"
+                        >
+                          <Edit size={18} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(issue.feedbackId)}
+                          className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg"
+                          title="Xóa"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
             ) : (
               <div className="p-12 text-center">
-                <div className="bg-gradient-to-br from-gray-100 to-gray-200 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle size={48} className="text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                <h3 className="text-xl font-semibold text-gray-800">
                   Không có báo cáo nào
                 </h3>
-                <p className="text-gray-500">
-                  Không tìm thấy báo cáo phù hợp với bộ lọc hiện tại
-                </p>
               </div>
             )}
           </div>
@@ -396,125 +472,128 @@ export default function TeacherIssueReport() {
 
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 animate-in slide-in-from-bottom-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all">
               <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-orange-50 to-pink-50">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
                   Báo cáo vấn đề mới
                 </h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-all duration-300"
+                  className="text-gray-400 hover:text-gray-600"
                 >
                   <X size={24} />
                 </button>
               </div>
-              <form onSubmit={handleCreateIssue}>
-                <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
+
+              <form onSubmit={handleSubmit}>
+                <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
                   <div>
                     <label className="block text-sm font-medium text-gray-800 mb-2">
-                      Tiêu đề <span className="text-red-500">*</span>
+                      Chủ đề <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-300 hover:bg-gray-100"
-                      placeholder="Nhập tiêu đề vấn đề"
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      placeholder="Nhập chủ đề vấn đề"
                       value={issueTitle}
                       onChange={(e) => setIssueTitle(e.target.value)}
                       required
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-800 mb-2">
-                      Mô tả <span className="text-red-500">*</span>
+                      Nội dung chi tiết <span className="text-red-500">*</span>
                     </label>
                     <textarea
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-300 resize-none hover:bg-gray-100"
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none resize-none"
                       rows={4}
-                      placeholder="Mô tả chi tiết vấn đề"
+                      placeholder="Mô tả chi tiết..."
                       value={issueDescription}
                       onChange={(e) => setIssueDescription(e.target.value)}
                       required
                     ></textarea>
                   </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="block text-sm font-medium text-gray-800 mb-2">
-                        Phân loại <span className="text-red-500">*</span>
+                        Phân loại (Target Type)
                       </label>
                       <select
-                        className="w-full pl-4 pr-10 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-300 cursor-pointer appearance-none hover:bg-gray-100"
+                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl appearance-none focus:ring-2 focus:ring-orange-500 outline-none"
                         value={issueCategory}
                         onChange={(e) => setIssueCategory(e.target.value)}
-                        required
                       >
-                        <option value="">-- Chọn phân loại --</option>
-                        <option value="food">🍽️ Thức ăn</option>
-                        <option value="facility">🏫 Cơ sở vật chất</option>
-                        <option value="health">❤️ Sức khỏe</option>
-                        <option value="activity">🎨 Hoạt động</option>
-                        <option value="other">📋 Khác</option>
+                        <option value="food">🍽️ Thức ăn (Food)</option>
+                        <option value="facility">
+                          🏫 Cơ sở vật chất (Facility)
+                        </option>
+                        <option value="health">❤️ Sức khỏe (Health)</option>
+                        <option value="activity">
+                          🎨 Hoạt động (Activity)
+                        </option>
+                        <option value="other">📋 Khác (Other)</option>
                       </select>
                       <ChevronDown
-                        className="absolute right-4 top-1/2 mt-3 text-gray-400 pointer-events-none"
+                        className="absolute right-4 top-[3.2rem] text-gray-400 pointer-events-none"
                         size={20}
                       />
                     </div>
+
                     <div className="relative">
                       <label className="block text-sm font-medium text-gray-800 mb-2">
-                        Mức độ ưu tiên
+                        Mức độ (Backend cần update)
                       </label>
                       <select
-                        className="w-full pl-4 pr-10 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-300 cursor-pointer appearance-none hover:bg-gray-100"
+                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl appearance-none focus:ring-2 focus:ring-orange-500 outline-none"
                         value={issueSeverity}
                         onChange={(e) => setIssueSeverity(e.target.value)}
-                        required
                       >
                         <option value="low">🟢 Thấp</option>
                         <option value="medium">🟡 Trung bình</option>
                         <option value="high">🔴 Cao</option>
                       </select>
                       <ChevronDown
-                        className="absolute right-4 top-1/2 mt-3 text-gray-400 pointer-events-none"
+                        className="absolute right-4 top-[3.2rem] text-gray-400 pointer-events-none"
                         size={20}
                       />
                     </div>
                   </div>
-                  <div className="relative">
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-800 mb-2">
-                      Học sinh liên quan (nếu có)
+                      Đối tượng liên quan (Học sinh/Món ăn)
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-300 hover:bg-gray-100"
-                      placeholder="Nhập tên học sinh (không bắt buộc)"
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      placeholder="VD: Nguyễn Văn A hoặc Món cá kho..."
                       value={issueStudent}
                       onChange={(e) => setIssueStudent(e.target.value)}
                     />
                   </div>
                 </div>
-                <div className="p-6 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50">
+
+                <div className="p-6 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50 rounded-b-2xl">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-6 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-xl font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
+                    className="px-6 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-orange-500/40 hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 hover:scale-105 flex items-center disabled:opacity-50"
+                    className="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center disabled:opacity-50"
                   >
                     {submitting ? (
-                      <>
-                        <Loader2 size={18} className="mr-2 animate-spin" /> Đang
-                        gửi...
-                      </>
+                      <Loader2 size={18} className="mr-2 animate-spin" />
                     ) : (
-                      <>
-                        <Send size={18} className="mr-2" /> Gửi báo cáo
-                      </>
+                      <Send size={18} className="mr-2" />
                     )}
+                    {submitting ? "Đang gửi..." : "Gửi báo cáo"}
                   </button>
                 </div>
               </form>

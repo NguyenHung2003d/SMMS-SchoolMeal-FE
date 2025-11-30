@@ -15,9 +15,9 @@ import { ParentAccountDto } from "@/types/manager-parent";
 import { ParentTable } from "@/components/manager/parents/ParentTable";
 import { CreateParentModal } from "@/components/manager/parents/CreateParentModal";
 import { ImportExcelModal } from "@/components/manager/parents/ImportExcelModal";
-import { managerClassService } from "@/services/managerClassService";
+import { managerClassService } from "@/services/managerClass.service";
 import { ClassDto } from "@/types/manager-class";
-import { managerParentService } from "@/services/managerParentService";
+import { managerParentService } from "@/services/managerParent.service";
 import { EditParentModal } from "@/components/manager/parents/EditParentModal";
 
 export default function ManagerParentsPage() {

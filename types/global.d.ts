@@ -4,5 +4,7 @@ declare global {
   interface Window {
     recaptchaVerifier: RecaptchaVerifier;
     confirmationResult: ConfirmationResult;
+    cachedDailyMeals?: DailyMeal[];
+        cachedMenuItems?: MenuFoodItem[];
   }
 }

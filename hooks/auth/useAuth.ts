@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { AuthResponse, LoginFormData, User } from "@/types/auth";
 import { AxiosError } from "axios";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";

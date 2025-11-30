@@ -8,7 +8,7 @@ import {
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
 import { getSchoolId } from "@/utils";
-import { paymentService } from "@/services/managerPaymentService";
+import { paymentService } from "@/services/managerPayment.service";
 import { PaymentSettingCard } from "@/components/manager/paymentSettings/PaymentSettingCard";
 import { PaymentSettingModal } from "@/components/manager/paymentSettings/PaymentSettingModal";
 

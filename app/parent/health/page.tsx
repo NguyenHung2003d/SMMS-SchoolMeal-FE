@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { HealthPoint, StudentBMIResultDto } from "@/types/parent";
-import HealthStats from "@/components/parents/HealthStats";
-import HealthChart from "@/components/parents/HealthChart";
+import HealthStats from "@/components/parents/health/HealthStats";
+import HealthChart from "@/components/parents/health/HealthChart";
 
 export default function HealthPage() {
   const { selectedChild } = useSelectedChild();

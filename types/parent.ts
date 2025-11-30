@@ -1,10 +1,10 @@
 import { ChangeEvent, FormEvent } from "react";
-export interface ChildDto {
-  studentId: number;
-  fullName: string;
-  classId: string;
-  className: string;
-  avatarUrl: string;
+export interface Child {
+  studentId: string;
+  name: string;
+  classId?: string;
+  className?: string;
+  avatar?: string;
 }
 
 export interface ParentAccountDto {

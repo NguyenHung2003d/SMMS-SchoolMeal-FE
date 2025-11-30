@@ -81,7 +81,6 @@ export default function KitchenStaffLayout({
         </div>
         <div className="flex-grow py-4 overflow-y-auto">
           <nav className="px-2">
-            {/* TỔNG QUAN */}
             <div className={`mb-4 ${isSidebarOpen ? "px-4" : "px-0"}`}>
               <p
                 className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -109,7 +108,6 @@ export default function KitchenStaffLayout({
                 </li>
               </ul>
             </div>
-            {/* QUẢN LÝ */}
             <div className={`mb-4 ${isSidebarOpen ? "px-4" : "px-0"}`}>
               <p
                 className={`text-xs font-medium text-gray-400 mb-2 ${

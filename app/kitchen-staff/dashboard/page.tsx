@@ -9,7 +9,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { format } from "date-fns";
-import { useKitchenDashboard } from "@/hooks/useKitchenDashboard";
+import { useKitchenDashboard } from "@/hooks/kitchenStaff/useKitchenDashboard";
 import { StatCard } from "@/components/kitchenstaff/dashboard/StatCard";
 import { InventoryTable } from "@/components/kitchenstaff/dashboard/InventoryTable";
 import { AbsenceList } from "@/components/kitchenstaff/dashboard/AbsenceList";

@@ -107,6 +107,14 @@ export const formatDateForInput = (dateString?: string) => {
   return date.toISOString().split("T")[0];
 };
 
+export const parseDate = (dateString: string) => {
+  if (!dateString) return new Date();
+  if (!dateString.endsWith("Z")) {
+    return new Date(dateString + "Z");
+  }
+  return new Date(dateString);
+};
+
 export const getDayName = (dateString: string) => {
   try {
     return format(parseISO(dateString), "EEEE", { locale: vi });

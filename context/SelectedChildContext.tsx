@@ -1,5 +1,6 @@
 "use client";
 
+import { Child } from "@/types/parent";
 import {
   createContext,
   useState,
@@ -7,11 +8,10 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { Student } from "@/types/student";
 
 interface SelectedChildContextType {
-  selectedChild: Student | null;
-  setSelectedChild: (child: Student | null) => void;
+  selectedChild: Child | null;
+  setSelectedChild: (child: Child | null) => void;
 }
 
 const SelectedChildContext = createContext<
@@ -19,7 +19,7 @@ const SelectedChildContext = createContext<
 >(undefined);
 
 export function SelectedChildProvider({ children }: { children: ReactNode }) {
-  const [selectedChild, setSelectedChild] = useState<Student | null>(null);
+  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedChild");
@@ -32,7 +32,7 @@ export function SelectedChildProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const handleSetSelectedChild = (child: Student | null) => {
+  const handleSetSelectedChild = (child: Child | null) => {
     setSelectedChild(child);
     if (child) {
       localStorage.setItem("selectedChild", JSON.stringify(child));

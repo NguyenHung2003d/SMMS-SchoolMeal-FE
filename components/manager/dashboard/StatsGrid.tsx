@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Users,
-  School,
-  BookOpen,
-  DollarSign,
-  TrendingUp,
-  CheckCircle,
-} from "lucide-react";
+import { Users, School, BookOpen, DollarSign } from "lucide-react";
 import { ManagerOverviewDto } from "@/types/manager";
 import { formatCurrency, formatNumber } from "@/helpers";
 
@@ -42,13 +35,6 @@ export default function StatsGrid({ overview }: StatsGridProps) {
             <h3 className="text-3xl font-bold text-gray-800">
               {formatNumber(overview?.studentCount || 0)}
             </h3>
-            <p className="mt-2 text-sm flex items-center">
-              <span className="text-green-500 flex items-center mr-1">
-                <TrendingUp size={14} className="mr-0.5" />{" "}
-                {overview?.studentGrowth}%
-              </span>
-              <span className="text-gray-500">so với tháng trước</span>
-            </p>
           </div>
           <div className="bg-green-100 p-3 rounded-lg">
             <School size={24} className="text-green-500" />
@@ -56,7 +42,6 @@ export default function StatsGrid({ overview }: StatsGridProps) {
         </div>
       </div>
 
-      {/* Card 3: Lớp học */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start">
           <div>
@@ -64,13 +49,6 @@ export default function StatsGrid({ overview }: StatsGridProps) {
             <h3 className="text-3xl font-bold text-gray-800">
               {overview?.classCount || 0}
             </h3>
-            <p className="mt-2 text-sm flex items-center">
-              <span className="text-blue-500 flex items-center mr-1">
-                <CheckCircle size={14} className="mr-0.5" />
-                {overview?.assignedClasses || 0}
-              </span>
-              <span className="text-gray-500">lớp đã có GVCN</span>
-            </p>
           </div>
           <div className="bg-purple-100 p-3 rounded-lg">
             <BookOpen size={24} className="text-purple-500" />
@@ -91,19 +69,6 @@ export default function StatsGrid({ overview }: StatsGridProps) {
             >
               {formatCurrency(overview?.financeThisMonth || 0)}
             </h3>
-            <p className="mt-2 text-sm flex items-center">
-              <span
-                className={`${
-                  (overview?.financeChangePercent || 0) >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                } flex items-center mr-1`}
-              >
-                <TrendingUp size={14} className="mr-0.5" />{" "}
-                {overview?.financeChangePercent}%
-              </span>
-              <span className="text-gray-500">so với tháng trước</span>
-            </p>
           </div>
           <div className="bg-orange-100 p-3 rounded-lg">
             <DollarSign size={24} className="text-orange-500" />

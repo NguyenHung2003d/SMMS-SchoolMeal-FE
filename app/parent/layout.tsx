@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ParentNotificationBell } from "@/components/layouts/parent/ParentNotificationBell";
 
 export default function ParentLayout({
   children: pageContent,
@@ -94,6 +95,7 @@ export default function ParentLayout({
                 className="flex items-center space-x-4"
                 suppressHydrationWarning
               >
+                <ParentNotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div

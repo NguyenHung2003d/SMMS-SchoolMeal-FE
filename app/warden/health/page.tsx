@@ -12,12 +12,12 @@ import { HealthCharts } from "@/components/warden/health/HealthCharts";
 import { StudentHealthTable } from "@/components/warden/health/StudentHealthTable";
 import { UpdateHealthModal } from "@/components/warden/health/UpdateHealthModal";
 import { StudentHistoryModal } from "@/components/warden/health/StudentHistoryModal";
+import { WardenClassDto } from "@/types/warden-class";
 
 export default function TeacherHealthTracking() {
   const [loading, setLoading] = useState(true);
-  const [classId, setClassId] = useState<string | null>(null);
+  const [currentClass, setCurrentClass] = useState<WardenClassDto | null>(null);
   const [healthData, setHealthData] = useState<HealthRecord[]>([]);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
@@ -34,25 +34,40 @@ export default function TeacherHealthTracking() {
   const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
-    const storedClassId = localStorage.getItem("currentClassId");
-    if (storedClassId) {
-      setClassId(storedClassId);
-    } else {
-      setLoading(false);
-    }
+    const fetchMyClass = async () => {
+      try {
+        setLoading(true);
+        const res = await axiosInstance.get<WardenClassDto[]>(
+          "/WardensHome/classes"
+        );
+
+        if (res.data && res.data.length > 0) {
+          setCurrentClass(res.data[0]);
+        } else {
+          toast.error("Bạn chưa được phân công phụ trách lớp nào.");
+        }
+      } catch (error) {
+        console.error("Lỗi lấy thông tin lớp:", error);
+        toast.error("Không thể tải thông tin lớp học.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyClass();
   }, []);
 
+  // Tự động load data khi có currentClass
   useEffect(() => {
-    if (classId) fetchData();
-  }, [classId]);
+    if (currentClass?.classId) {
+      fetchHealthData(currentClass.classId);
+    }
+  }, [currentClass]);
 
-  const fetchData = async () => {
-    if (!classId) return;
+  const fetchHealthData = async (id: string) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get(
-        `/WardensHealth/class/${classId}/health`
-      );
+      const res = await axiosInstance.get(`/WardensHealth/class/${id}/health`);
       const data = Array.isArray(res.data) ? res.data : res.data.data || [];
       setHealthData(data);
     } catch (error) {
@@ -83,10 +98,10 @@ export default function TeacherHealthTracking() {
   };
 
   const handleExport = async () => {
-    if (!classId) return;
+    if (!currentClass?.classId) return;
     try {
       const response = await axiosInstance.get(
-        `/WardensHealth/class/${classId}/health/export`,
+        `/WardensHealth/class/${currentClass.classId}/health/export`,
         {
           responseType: "blob",
         }
@@ -107,9 +122,12 @@ export default function TeacherHealthTracking() {
     }
   };
 
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedStudent) return;
+  const handleCreateSubmit = async (e?: React.FormEvent) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+
+    if (!selectedStudent || !currentClass?.classId) return;
 
     try {
       await axiosInstance.post(
@@ -123,7 +141,7 @@ export default function TeacherHealthTracking() {
 
       toast.success("Cập nhật chỉ số thành công!");
       setShowCreateModal(false);
-      fetchData();
+      fetchHealthData(currentClass.classId);
     } catch (error) {
       toast.error("Cập nhật thất bại. Vui lòng thử lại.");
     }
@@ -135,7 +153,7 @@ export default function TeacherHealthTracking() {
       await axiosInstance.delete(`/WardensHealth/bmi/${recordId}`);
       toast.success("Đã xóa bản ghi.");
       if (selectedStudent) fetchStudentHistory(selectedStudent.studentId);
-      fetchData();
+      if (currentClass?.classId) fetchHealthData(currentClass.classId);
     } catch (error) {
       toast.error("Xóa thất bại.");
     }
@@ -157,7 +175,7 @@ export default function TeacherHealthTracking() {
     fetchStudentHistory(student.studentId);
   };
 
-  if (loading) {
+  if (loading && !healthData.length) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
@@ -165,11 +183,12 @@ export default function TeacherHealthTracking() {
     );
   }
 
-  if (!classId) {
+  if (!currentClass && !loading) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center text-gray-500">
         <AlertCircle size={48} className="mb-3 text-orange-300" />
-        <p>Chưa chọn lớp học. Vui lòng quay lại trang chủ.</p>
+        <p className="text-lg font-semibold">Chưa có thông tin lớp học</p>
+        <p className="text-sm">Bạn chưa được phân công phụ trách lớp nào.</p>
       </div>
     );
   }
@@ -180,7 +199,8 @@ export default function TeacherHealthTracking() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-              <Activity className="text-orange-500" /> Theo dõi sức khỏe
+              <Activity className="text-orange-500" />
+              Theo dõi sức khỏe - {currentClass?.className}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               Quản lý chỉ số BMI và sự phát triển thể chất của học sinh.
@@ -195,10 +215,8 @@ export default function TeacherHealthTracking() {
           </Button>
         </div>
 
-        {/* Charts */}
         <HealthCharts data={healthData} />
 
-        {/* Table */}
         <StudentHealthTable
           data={healthData}
           onUpdate={openCreateModal}
@@ -206,7 +224,6 @@ export default function TeacherHealthTracking() {
         />
       </div>
 
-      {/* Modals */}
       <UpdateHealthModal
         open={showCreateModal}
         student={selectedStudent}

@@ -55,9 +55,9 @@ export default function AdminLayout({
 
         <nav className="p-4 space-y-1">
           <Link
-            href="/admin"
+            href="/admin/dashboard"
             className={`flex items-center py-3 rounded-lg ${
-              isActive("/admin")
+              isActive("/admin/dashboard")
                 ? "bg-orange-50 text-orange-500"
                 : "text-gray-600 hover:bg-gray-100"
             }`}

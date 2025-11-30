@@ -1,15 +1,14 @@
 import {
   CreateNotificationRequest,
   ManagerNotification,
-  PaginatedResponse,
 } from "@/types/notification";
 import { axiosInstance } from "@/lib/axiosInstance";
 
 export const notificationService = {
   getAll: async (page: number, pageSize: number = 20) => {
-    const response = await axiosInstance.get<
-      PaginatedResponse<ManagerNotification>
-    >(`/ManagerNotifications?page=${page}&pageSize=${pageSize}`);
+    const response = await axiosInstance.get<ManagerNotification>(
+      `/ManagerNotifications?page=${page}&pageSize=${pageSize}`
+    );
     return response.data;
   },
 

@@ -19,8 +19,6 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
-import { parseDate } from "@/helpers";
 
 interface NotificationDto {
   notificationId: number;
@@ -43,17 +41,13 @@ export function WardenNotificationBell() {
     const fetchNotifications = async () => {
       try {
         const res = await axiosInstance.get("/WardensHome/notifications");
+
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
 
-        const sortedData = data.sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        setNotifications(data);
 
-        setNotifications(sortedData);
-        setUnreadCount(
-          sortedData.filter((n: NotificationDto) => !n.isRead).length
-        );
+        const unread = data.filter((n: NotificationDto) => !n.isRead).length;
+        setUnreadCount(unread);
       } catch (error) {
         console.error("Lỗi tải thông báo Warden:", error);
       } finally {
@@ -66,6 +60,7 @@ export function WardenNotificationBell() {
 
   useEffect(() => {
     if (!token) return;
+    if (connectionRef.current) return;
 
     const HUB_URL =
       process.env.NEXT_PUBLIC_HUB_URL ||
@@ -78,54 +73,50 @@ export function WardenNotificationBell() {
         transport: HttpTransportType.WebSockets,
       })
       .withAutomaticReconnect()
+      .configureLogging(LogLevel.Warning)
       .build();
 
-    const startConnection = async () => {
-      try {
-        await connection.start();
-        console.log("🟢 [SignalR] Connected successfully");
+    connectionRef.current = connection;
+
+    connection
+      .start()
+      .then(() => {
+        console.log("🟠 Warden SignalR Connected");
+
         connection.on("ReceiveNotification", (newNotif: NotificationDto) => {
-          console.log("🔥 [SOCKET] Đã nhận tin nhắn Realtime:", newNotif); // <--- LOG NÀY QUAN TRỌNG
+          console.log("🔔 Nhận thông báo mới:", newNotif);
+
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
-          toast.success(`Thông báo mới: ${newNotif.title}`, {
-            position: "bottom-right",
-          });
-        });
-      } catch (err) {
-        console.error("🔴 [SignalR] Connection failed:", err);
-      }
-    };
 
-    startConnection();
+          try {
+            const audio = new Audio("/sounds/notification.mp3");
+            audio.play().catch(() => {});
+          } catch (e) {}
+        });
+      })
+      .catch((err) => console.error("🔴 SignalR Error:", err));
+
     connectionRef.current = connection;
 
     return () => {
       if (connectionRef.current) {
-        connectionRef.current.stop();
+        connectionRef.current.off("ReceiveNotification");
+        connectionRef.current.stop().catch((err) => {
+          console.warn(
+            "SignalR Stopped during negotiation (Safe to ignore in Dev):",
+            err.message
+          );
+        });
+        connectionRef.current = null;
       }
     };
   }, [token]);
 
-  const handleNotificationClick = async (notif: NotificationDto) => {
-    if (!notif.isRead) {
-      try {
-        await axiosInstance.put(
-          `/WardensHome/notifications/${notif.notificationId}/read`
-        );
-
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.notificationId === notif.notificationId
-              ? { ...n, isRead: true }
-              : n
-          )
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch (error) {
-        console.error("Lỗi mark read:", error);
-      }
-    }
+  const handleMarkAsRead = () => {
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    // TODO: Gọi API PUT /WardensHome/notifications/read nếu backend hỗ trợ
   };
 
   return (
@@ -136,7 +127,7 @@ export function WardenNotificationBell() {
             size={22}
             className={cn(
               "text-gray-500 group-hover:text-orange-600 transition-colors",
-              unreadCount > 0 && "text-orange-600 animate-pulse" // Thêm hiệu ứng rung nếu có noti
+              unreadCount > 0 && "text-gray-700"
             )}
           />
           {unreadCount > 0 && (
@@ -152,7 +143,16 @@ export function WardenNotificationBell() {
         className="w-[380px] p-0 shadow-xl border-orange-100 rounded-xl bg-white z-50"
       >
         <div className="flex items-center justify-between px-4 py-3 bg-orange-50/80 border-b border-orange-100 rounded-t-xl backdrop-blur-sm">
-          <span className="font-bold text-gray-800">Thông báo</span>
+          <span className="font-bold text-gray-800">Thông báo Warden</span>
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAsRead}
+              className="text-xs font-medium text-orange-600 hover:text-orange-700 flex items-center gap-1 hover:underline"
+            >
+              <CheckCheck className="w-3 h-3" />
+              Đánh dấu đã đọc
+            </button>
+          )}
         </div>
 
         <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
@@ -173,7 +173,6 @@ export function WardenNotificationBell() {
             notifications.map((item, index) => (
               <DropdownMenuItem
                 key={item.notificationId || index}
-                onClick={() => handleNotificationClick(item)}
                 className={cn(
                   "flex flex-col items-start px-4 py-3 border-b last:border-0 cursor-pointer transition-colors focus:bg-orange-50",
                   !item.isRead
@@ -196,7 +195,7 @@ export function WardenNotificationBell() {
                     </span>
                   </div>
                   <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
-                    {formatDistanceToNow(parseDate(item.createdAt), {
+                    {formatDistanceToNow(new Date(item.createdAt), {
                       addSuffix: true,
                       locale: vi,
                     })}
@@ -213,6 +212,12 @@ export function WardenNotificationBell() {
               </DropdownMenuItem>
             ))
           )}
+        </div>
+
+        <div className="p-2 bg-gray-50 border-t text-center rounded-b-xl">
+          <button className="text-xs text-gray-500 hover:text-orange-600 font-medium transition-colors w-full py-1">
+            Xem tất cả
+          </button>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

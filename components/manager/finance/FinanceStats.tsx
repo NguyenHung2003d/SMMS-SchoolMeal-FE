@@ -24,7 +24,7 @@ export const FinanceStats = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <div className="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition">
-        <p className="text-sm text-gray-500 mb-2">Tổng Thu Nhập (Học phí)</p>
+        <p className="text-sm text-gray-500 mb-2">Tổng Thu Nhập</p>
         <h3 className="text-2xl font-bold text-green-600">
           {formatCurrency(totalIncome)}
         </h3>

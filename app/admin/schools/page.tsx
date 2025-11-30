@@ -1,12 +1,6 @@
 "use client";
-import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
-import { Button } from "@/components/ui/button";
-import { adminSchoolService } from "@/services/adminSchool.service";
-import {
-  CreateSchoolDto,
-  SchoolDTO,
-  UpdateSchoolDto,
-} from "@/types/admin-school";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,19 +15,31 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+
+import { Button } from "@/components/ui/button";
+import { adminSchoolService } from "@/services/adminSchool.service";
+import {
+  CreateSchoolDto,
+  SchoolDTO,
+  UpdateSchoolDto,
+} from "@/types/admin-school";
+
+import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
+import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal"; // ✅ Import Modal mới
 
 export default function SchoolManagementPage() {
   const [schools, setSchools] = useState<SchoolDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [filterStatus, setFilterStatus] = useState("active");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState<SchoolDTO | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [schoolToDeleteId, setSchoolToDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadSchools = async () => {
     try {
@@ -58,7 +64,6 @@ export default function SchoolManagementPage() {
         s.contactEmail.toLowerCase().includes(searchTerm.toLowerCase()));
 
     let matchesFilter = true;
-
     if (filterStatus === "active") {
       matchesFilter = s.isActive === true;
     } else if (filterStatus === "inactive") {
@@ -92,20 +97,24 @@ export default function SchoolManagementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (
-      !confirm(
-        "Bạn có chắc chắn muốn xóa trường học này? Trường sẽ bị vô hiệu hóa."
-      )
-    )
-      return;
-    try {
-      await adminSchoolService.delete(id);
-      toast.success("Đã xóa (vô hiệu hóa) trường học");
+  const openDeleteModal = (id: string) => {
+    setSchoolToDeleteId(id);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!schoolToDeleteId) return;
+    try {
+      setIsDeleting(true);
+      await adminSchoolService.delete(schoolToDeleteId);
+      toast.success("Đã xóa (vô hiệu hóa) trường học");
       loadSchools();
+      setIsDeleteModalOpen(false);
     } catch (error) {
       toast.error("Đã xảy ra lỗi khi xóa.");
+    } finally {
+      setIsDeleting(false);
+      setSchoolToDeleteId(null);
     }
   };
 
@@ -166,7 +175,6 @@ export default function SchoolManagementPage() {
           </select>
         </div>
       </div>
-
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
@@ -239,11 +247,10 @@ export default function SchoolManagementPage() {
                       <Edit size={16} />
                     </button>
 
-                    {/* Chỉ hiện nút Xóa nếu đang hoạt động */}
                     {school.isActive && (
                       <button
                         title="Vô hiệu hóa (Xóa mềm)"
-                        onClick={() => handleDelete(school.schoolId)}
+                        onClick={() => openDeleteModal(school.schoolId)}
                         className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
                       >
                         <Trash2 size={16} />
@@ -276,12 +283,19 @@ export default function SchoolManagementPage() {
           </div>
         </>
       )}
+      ={" "}
       <SchoolFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateOrUpdate}
         initialData={editingSchool}
         isSubmitting={isSubmitting}
+      />
+      <DeleteSchoolModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
       />
     </div>
   );

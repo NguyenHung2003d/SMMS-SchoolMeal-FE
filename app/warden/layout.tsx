@@ -17,7 +17,8 @@ import {
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import { SidebarItemProps } from "@/types";
-import { WardenNotificationBell } from "@/components/warden/WardenNotificationBell";
+import { WardenNotificationBell } from "@/components/layouts/warden/WardenNotificationBell";
+
 const NAV_ITEMS = [
   { href: "/warden/dashboard", label: "Trang chủ", icon: Home, exact: true },
   { href: "/warden/classView", label: "Xem lớp học", icon: Users },

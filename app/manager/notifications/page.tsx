@@ -128,7 +128,6 @@ export default function ManagerNotifications() {
           />
         )}
 
-        {/* Modals */}
         <CreateNotificationModal
           open={showCreateModal}
           formData={formData}

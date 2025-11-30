@@ -31,7 +31,7 @@ interface NotificationDto {
   sendType?: string;
 }
 
-export function WardenNotificationBell() {
+export function ParentNotificationBell() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +42,7 @@ export function WardenNotificationBell() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axiosInstance.get("/WardensHome/notifications");
+        const res = await axiosInstance.get("/Attendance/notifications");
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
 
         const sortedData = data.sort(
@@ -55,7 +55,7 @@ export function WardenNotificationBell() {
           sortedData.filter((n: NotificationDto) => !n.isRead).length
         );
       } catch (error) {
-        console.error("Lỗi tải thông báo Warden:", error);
+        console.error("Lỗi tải thông báo Parent:", error);
       } finally {
         setIsLoading(false);
       }
@@ -78,22 +78,22 @@ export function WardenNotificationBell() {
         transport: HttpTransportType.WebSockets,
       })
       .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
       .build();
 
     const startConnection = async () => {
       try {
         await connection.start();
-        console.log("🟢 [SignalR] Connected successfully");
+        console.log("🟢 [Parent SignalR] Connected successfully");
+
         connection.on("ReceiveNotification", (newNotif: NotificationDto) => {
-          console.log("🔥 [SOCKET] Đã nhận tin nhắn Realtime:", newNotif); // <--- LOG NÀY QUAN TRỌNG
+          console.log("🔔 [SignalR] Received:", newNotif);
+
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
-          toast.success(`Thông báo mới: ${newNotif.title}`, {
-            position: "bottom-right",
-          });
         });
       } catch (err) {
-        console.error("🔴 [SignalR] Connection failed:", err);
+        console.error("🔴 [Parent SignalR] Connection failed:", err);
       }
     };
 
@@ -107,36 +107,15 @@ export function WardenNotificationBell() {
     };
   }, [token]);
 
-  const handleNotificationClick = async (notif: NotificationDto) => {
-    if (!notif.isRead) {
-      try {
-        await axiosInstance.put(
-          `/WardensHome/notifications/${notif.notificationId}/read`
-        );
-
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.notificationId === notif.notificationId
-              ? { ...n, isRead: true }
-              : n
-          )
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch (error) {
-        console.error("Lỗi mark read:", error);
-      }
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors group outline-none focus:ring-2 focus:ring-orange-200">
+        <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors group outline-none focus:ring-2 focus:ring-blue-200">
           <Bell
             size={22}
             className={cn(
-              "text-gray-500 group-hover:text-orange-600 transition-colors",
-              unreadCount > 0 && "text-orange-600 animate-pulse" // Thêm hiệu ứng rung nếu có noti
+              "text-gray-500 group-hover:text-blue-600 transition-colors",
+              unreadCount > 0 && "text-blue-600 animate-pulse"
             )}
           />
           {unreadCount > 0 && (
@@ -149,16 +128,16 @@ export function WardenNotificationBell() {
 
       <DropdownMenuContent
         align="end"
-        className="w-[380px] p-0 shadow-xl border-orange-100 rounded-xl bg-white z-50"
+        className="w-[380px] p-0 shadow-xl border-blue-100 rounded-xl bg-white z-50"
       >
-        <div className="flex items-center justify-between px-4 py-3 bg-orange-50/80 border-b border-orange-100 rounded-t-xl backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-3 bg-blue-50/80 border-b border-blue-100 rounded-t-xl backdrop-blur-sm">
           <span className="font-bold text-gray-800">Thông báo</span>
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
+        <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin text-orange-400 w-6 h-6" />
+              <Loader2 className="animate-spin text-blue-400 w-6 h-6" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
@@ -173,18 +152,17 @@ export function WardenNotificationBell() {
             notifications.map((item, index) => (
               <DropdownMenuItem
                 key={item.notificationId || index}
-                onClick={() => handleNotificationClick(item)}
                 className={cn(
-                  "flex flex-col items-start px-4 py-3 border-b last:border-0 cursor-pointer transition-colors focus:bg-orange-50",
+                  "flex flex-col items-start px-4 py-3 border-b last:border-0 cursor-pointer transition-colors focus:bg-blue-50",
                   !item.isRead
-                    ? "bg-orange-50/40 hover:bg-orange-50/60"
+                    ? "bg-blue-50/40 hover:bg-blue-50/60"
                     : "hover:bg-gray-50"
                 )}
               >
                 <div className="flex justify-between w-full mb-1.5 items-start">
                   <div className="flex items-center gap-2">
                     {!item.isRead && (
-                      <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 animate-pulse" />
                     )}
                     <span
                       className={cn(

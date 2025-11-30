@@ -70,24 +70,6 @@ export default function ManagerDashboardPage() {
             Tổng quan hoạt động và tài chính
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
-            <Calendar size={16} className="text-gray-500" />
-            <select
-              defaultValue="month"
-              className="bg-transparent text-sm text-gray-700 focus:outline-none cursor-pointer"
-            >
-              <option value="today">Hôm nay</option>
-              <option value="week">Tuần này</option>
-              <option value="month">Tháng này</option>
-              <option value="year">Năm nay</option>
-            </select>
-          </div>
-          <Button className="flex items-center bg-orange-500 hover:bg-orange-600 text-white shadow-orange-200 shadow-md">
-            <Plus size={16} className="mr-2" />
-            Tạo mới
-          </Button>
-        </div>
       </div>
 
       <StatsGrid overview={overview} />

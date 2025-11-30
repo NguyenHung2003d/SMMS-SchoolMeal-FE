@@ -4,7 +4,7 @@ import { MessageCircle, Search, Filter, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { FeedbackDetailModal } from "@/components/kitchenstaff/feedback/FeedbackDetailModal";
 import { FeedbackDto } from "@/types/kitchen-feedback";
-import { useKitchenFeedback } from "@/hooks/useKitchenFeedbacks";
+import { useKitchenFeedback } from "@/hooks/kitchenStaff/useKitchenFeedbacks";
 
 export default function KitchenStaffFeedbackPage() {
   const {

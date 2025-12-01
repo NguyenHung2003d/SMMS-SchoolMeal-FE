@@ -3,15 +3,22 @@ import CreateNotificationModal from "@/components/admin/notifications/CreateNoti
 import NotificationDetailModal from "@/components/admin/notifications/NotificationDetailModal";
 import NotificationHeader from "@/components/admin/notifications/NotificationHeader";
 import NotificationList from "@/components/admin/notifications/NotificationList";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { adminNotificationService } from "@/services/adminNotification.service";
 import {
   CreateNotificationDto,
   NotificationDetailDto,
   NotificationDto,
 } from "@/types/admin-notification";
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from "@microsoft/signalr";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { number } from "zod";
 
 export default function NotificationManagement() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
@@ -23,6 +30,56 @@ export default function NotificationManagement() {
   const [viewingNotification, setViewingNotification] =
     useState<NotificationDetailDto | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  const [connection, setConnection] = useState<HubConnection | null>(null);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) return;
+    const HUB_URL =
+      process.env.NEXT_PUBLIC_HUB_URL ||
+      "http://localhost:5000/hubs/notifications";
+    const newConnection = new HubConnectionBuilder()
+      .withUrl(HUB_URL, {
+        accessTokenFactory: () => token,
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+    setConnection(newConnection);
+  }, [token]);
+
+  useEffect(() => {
+    if (connection) {
+      connection
+        .start()
+        .then(() => {
+          console.log("Connected to Notification Hub");
+
+          connection.on(
+            "ReceiveNotification",
+            (newNotification: NotificationDto) => {
+              setNotifications((prev) => [newNotification, ...prev]);
+              toast("Có thông báo mới vừa được tạo!", { icon: "🔔" });
+            }
+          );
+
+          connection.on(
+            "NotificationDeleted",
+            ({ notificationId }: { notificationId: number }) => {
+              setNotifications((prev) =>
+                prev.filter((n) => n.notificationId !== notificationId)
+              );
+            }
+          );
+        })
+        .catch((err) => console.error("SignalR Connection Error: ", err));
+    }
+
+    return () => {
+      connection?.stop();
+    };
+  }, [connection]);
 
   const loadNotifications = async () => {
     try {

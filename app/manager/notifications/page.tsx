@@ -1,18 +1,81 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { CreateNotificationRequest } from "@/types/notification";
+import {
+  CreateNotificationRequest,
+  ManagerNotification,
+} from "@/types/notification";
 
 import SentNotificationsTable from "@/components/manager/notification/SentNotificationsTable";
 import CreateNotificationModal from "@/components/manager/notification/CreateNotificationModal";
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from "@microsoft/signalr";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 export default function ManagerNotifications() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [connection, setConnection] = useState<HubConnection | null>(null);
+
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) return;
+    const HUB_URL =
+      process.env.NEXT_PUBLIC_HUB_URL ||
+      "http://localhost:5000/hubs/notifications";
+
+    const newConnection = new HubConnectionBuilder()
+      .withUrl(HUB_URL, {
+        accessTokenFactory: () => token,
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    setConnection(newConnection);
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      connection
+        .start()
+        .then(() => {
+          console.log("✅ Manager Connected to Notification Hub");
+
+          connection.on(
+            "ReceiveNotification",
+            (notification: ManagerNotification) => {
+              console.log("📩 Received Notification:", notification);
+
+              toast(notification.title || "Bạn có thông báo mới!", {
+                icon: "🔔",
+                duration: 4000,
+              });
+
+              setRefreshKey((prev) => prev + 1);
+            }
+          );
+
+          connection.on("NotificationDeleted", ({ notificationId }) => {
+            setRefreshKey((prev) => prev + 1);
+          });
+        })
+        .catch((err) => console.error("❌ SignalR Connection Error: ", err));
+    }
+
+    return () => {
+      connection?.stop();
+    };
+  }, [connection]);
 
   const [formData, setFormData] = useState<CreateNotificationRequest>({
     title: "",

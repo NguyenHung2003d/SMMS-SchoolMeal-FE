@@ -1,6 +1,6 @@
 "use client";
 import { CreateNotificationDto } from "@/types/admin-notification";
-import { Loader2, Send, Users, X } from "lucide-react";
+import { Loader2, Send, Users, X, Link as LinkIcon } from "lucide-react"; // Thêm icon Link
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -20,7 +20,7 @@ export default function CreateNotificationModal({
   const initialFormData: CreateNotificationDto = {
     title: "",
     content: "",
-    sendType: "Immediate",
+    sendType: "Immediate", // Giá trị mặc định
     attachmentUrl: "",
   };
   const [formData, setFormData] =
@@ -29,10 +29,11 @@ export default function CreateNotificationModal({
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.content) {
+    if (!formData.title.trim() || !formData.content.trim()) {
       toast.error("Vui lòng nhập tiêu đề và nội dung!");
       return;
     }
+    // Gửi data lên parent
     onSubmit(formData);
   };
 
@@ -53,6 +54,7 @@ export default function CreateNotificationModal({
         </div>
 
         <div className="p-6 space-y-5 flex-1 overflow-y-auto">
+          {/* Title Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Tiêu đề <span className="text-red-500">*</span>
@@ -68,6 +70,7 @@ export default function CreateNotificationModal({
             />
           </div>
 
+          {/* Content Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Nội dung <span className="text-red-500">*</span>
@@ -84,6 +87,7 @@ export default function CreateNotificationModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Send Type - Hiện tại BE chỉ xử lý gửi ngay, nhưng FE cứ giữ UI */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Loại gửi
@@ -93,15 +97,17 @@ export default function CreateNotificationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, sendType: e.target.value })
                 }
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-orange-500 outline-none transition"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-orange-500 outline-none transition bg-white"
               >
                 <option value="Immediate">Gửi ngay (Tức thời)</option>
-                <option value="Scheduled">Lên lịch (Sắp ra mắt)</option>
+                {/* <option value="Scheduled" disabled>Lên lịch (Sắp ra mắt)</option> */}
               </select>
             </div>
+
+            {/* Attachment URL */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Link đính kèm (Optional)
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                <LinkIcon size={14} /> Link đính kèm (Optional)
               </label>
               <input
                 type="text"
@@ -115,15 +121,18 @@ export default function CreateNotificationModal({
             </div>
           </div>
 
+          {/* Warning Message */}
           <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2 text-sm text-blue-700">
             <Users size={16} className="mt-0.5 shrink-0" />
             <p>
               Lưu ý: Thông báo này sẽ được gửi đến{" "}
-              <strong>tất cả người dùng</strong> trong hệ thống.
+              <strong>tất cả người dùng</strong> trong hệ thống và hiển thị ngay
+              lập tức.
             </p>
           </div>
         </div>
 
+        {/* Footer Buttons */}
         <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-2xl shrink-0">
           <button
             onClick={onClose}
@@ -135,7 +144,7 @@ export default function CreateNotificationModal({
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-6 py-2.5 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition flex items-center gap-2 disabled:opacity-70"
+            className="px-6 py-2.5 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition flex items-center gap-2 disabled:opacity-70 shadow-orange-200 shadow-lg"
           >
             {isSubmitting ? (
               <>

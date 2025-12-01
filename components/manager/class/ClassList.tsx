@@ -1,5 +1,13 @@
-import React from "react";
-import { Edit, Trash, User, Calendar, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Edit,
+  Trash,
+  User,
+  Calendar,
+  Loader2,
+  Check,
+  Copy,
+} from "lucide-react";
 import { ClassDto, AcademicYearDto } from "@/types/manager-class";
 
 interface ClassListProps {
@@ -10,6 +18,30 @@ interface ClassListProps {
   onDelete: (cls: ClassDto) => void;
 }
 
+const CopyableId = ({ id }: { id: string }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      onClick={handleCopy}
+      title="Bấm để copy ID lớp học"
+      className="inline-flex items-center gap-2 px-2 py-1 mt-1 mb-3 bg-gray-50 border border-gray-200 rounded text-xs text-gray-500 cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:text-gray-500 transition-all group/id"
+    >
+      <span className="font-mono font-medium select-none">ID:</span>
+      <span className="font-mono max-w-[100px] truncate">{id}</span>
+      {copied ? (
+        <Check className="text-green-500" size={12} />
+      ) : (
+        <Copy size={12} className="opacity-50 group-hover/id:opacity-100" />
+      )}
+    </div>
+  );
+};
 export default function ClassList({
   loading,
   classes,
@@ -63,6 +95,10 @@ export default function ClassList({
             <h3 className="font-bold text-xl text-gray-800 mb-2">
               Lớp {cls.className}
             </h3>
+
+            <div>
+              <CopyableId id={cls.classId} />
+            </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center text-sm text-gray-600">

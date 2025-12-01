@@ -15,10 +15,11 @@ import {
   HttpTransportType,
 } from "@microsoft/signalr";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import toast from "react-hot-toast";
 
 interface NotificationDto {
   notificationId: number;
@@ -36,6 +37,23 @@ export function WardenNotificationBell() {
 
   const { token } = useAuth();
   const connectionRef = useRef<HubConnection | null>(null);
+
+  const formatNotificationTime = (dateString: string) => {
+    try {
+      const normalizedDateString = dateString.endsWith("Z")
+        ? dateString
+        : dateString + "Z";
+
+      const date = new Date(normalizedDateString);
+
+      return formatDistanceToNow(date, {
+        addSuffix: true,
+        locale: vi,
+      });
+    } catch (e) {
+      return "Vừa xong";
+    }
+  };
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -88,11 +106,6 @@ export function WardenNotificationBell() {
 
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
-
-          try {
-            const audio = new Audio("/sounds/notification.mp3");
-            audio.play().catch(() => {});
-          } catch (e) {}
         });
       })
       .catch((err) => console.error("🔴 SignalR Error:", err));
@@ -113,10 +126,21 @@ export function WardenNotificationBell() {
     };
   }, [token]);
 
-  const handleMarkAsRead = () => {
-    setUnreadCount(0);
+  const handleMarkAllAsRead = async () => {
+    if (unreadCount === 0) return;
+    const previousNotifications = [...notifications];
+    const previousUnreadCount = unreadCount;
+
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    // TODO: Gọi API PUT /WardensHome/notifications/read nếu backend hỗ trợ
+    setUnreadCount(0);
+    try {
+      await axiosInstance.put('/WardensHome/read-all');
+    } catch (error) {
+      console.error("Lỗi cập nhật trạng thái đã đọc:", error);
+      setNotifications(previousNotifications);
+      setUnreadCount(previousUnreadCount);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    }
   };
 
   return (
@@ -146,11 +170,15 @@ export function WardenNotificationBell() {
           <span className="font-bold text-gray-800">Thông báo Warden</span>
           {unreadCount > 0 && (
             <button
-              onClick={handleMarkAsRead}
-              className="text-xs font-medium text-orange-600 hover:text-orange-700 flex items-center gap-1 hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                handleMarkAllAsRead();
+              }}
+              className="text-xs flex items-center gap-1 text-orange-600 hover:text-orange-700 font-medium transition-colors"
+              title="Đánh dấu tất cả là đã đọc"
             >
-              <CheckCheck className="w-3 h-3" />
-              Đánh dấu đã đọc
+              <CheckCheck size={14} />
+              Đã đọc tất cả
             </button>
           )}
         </div>
@@ -195,10 +223,7 @@ export function WardenNotificationBell() {
                     </span>
                   </div>
                   <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
-                    {formatDistanceToNow(new Date(item.createdAt), {
-                      addSuffix: true,
-                      locale: vi,
-                    })}
+                    {formatNotificationTime(item.createdAt)}
                   </span>
                 </div>
                 <p
@@ -212,12 +237,6 @@ export function WardenNotificationBell() {
               </DropdownMenuItem>
             ))
           )}
-        </div>
-
-        <div className="p-2 bg-gray-50 border-t text-center rounded-b-xl">
-          <button className="text-xs text-gray-500 hover:text-orange-600 font-medium transition-colors w-full py-1">
-            Xem tất cả
-          </button>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

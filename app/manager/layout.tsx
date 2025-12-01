@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Building,
   Home,
@@ -20,6 +20,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { getInitials } from "@/helpers";
+import ManagerNotificationBell from "@/components/layouts/manager/ManagerNotificationBell";
 
 export default function ManagerLayout({
   children,
@@ -281,7 +282,7 @@ export default function ManagerLayout({
             </div>
 
             <div className="flex items-center space-x-4">
-
+              <ManagerNotificationBell />
               <div className="relative">
                 <button
                   onClick={() => setShowAccountMenu((prev) => !prev)}

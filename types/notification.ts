@@ -4,10 +4,11 @@ export interface ManagerNotification {
   title: string;
   content: string;
   attachmentUrl?: string;
-  sendType: "Immediate" | "Scheduled" | "Recurring";
+  sendType: string;
   scheduleCron?: string;
   createdAt: string;
   totalRecipients: number;
+  isSent: boolean
 }
 
 export interface CreateNotificationRequest {
@@ -19,4 +20,11 @@ export interface CreateNotificationRequest {
   sendToKitchenStaff: boolean;
   sendType: string;
   scheduleCron?: string;
+}
+
+export interface PaginatedNotificationResponse {
+  page: number;
+  pageSize: number;
+  count: number;
+  data: ManagerNotification[];
 }

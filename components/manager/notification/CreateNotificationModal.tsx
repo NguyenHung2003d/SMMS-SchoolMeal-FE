@@ -3,6 +3,7 @@ import React from "react";
 import { X, Send, Users, User, ChefHat, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateNotificationRequest } from "@/types/notification";
+import SentNotificationsTable from "./SentNotificationsTable";
 
 export default function CreateNotificationModal({
   open,
@@ -178,7 +179,11 @@ export default function CreateNotificationModal({
                     }
                   />
                   <p className="text-xs text-gray-600 mt-2 font-medium">
-                    Ví dụ: <code className="bg-white px-2 py-1 rounded border border-gray-200">0 8 * * *</code> (8h00 sáng hàng ngày)
+                    Ví dụ:{" "}
+                    <code className="bg-white px-2 py-1 rounded border border-gray-200">
+                      0 8 * * *
+                    </code>{" "}
+                    (8h00 sáng hàng ngày)
                   </p>
                 </div>
               )}

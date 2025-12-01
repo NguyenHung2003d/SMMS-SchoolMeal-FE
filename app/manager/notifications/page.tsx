@@ -1,57 +1,18 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
-import {
-  CreateNotificationRequest,
-  ManagerNotification,
-} from "@/types/notification";
-import NotificationTable from "@/components/manager/notification/NotificationTable";
+import { CreateNotificationRequest } from "@/types/notification";
+
+import SentNotificationsTable from "@/components/manager/notification/SentNotificationsTable";
 import CreateNotificationModal from "@/components/manager/notification/CreateNotificationModal";
-import DeleteConfirmModal from "@/components/manager/notification/DeleteConfirmModal";
 
 export default function ManagerNotifications() {
-  const [notifications, setNotifications] = useState<ManagerNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await axiosInstance.get("/ManagerNotifications");
-      setNotifications(res.data.data || []);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-
-    try {
-      await axiosInstance.delete(`/ManagerNotifications/${deleteId}`);
-      toast.success("Đã xóa thông báo!");
-
-      setNotifications((prev) =>
-        prev.filter((n) => n.notificationId !== deleteId)
-      );
-    } catch {
-      toast.error("Xóa thất bại!");
-    } finally {
-      setShowDeleteModal(false);
-    }
-  };
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [formData, setFormData] = useState<CreateNotificationRequest>({
     title: "",
@@ -68,11 +29,13 @@ export default function ManagerNotifications() {
     e.preventDefault();
 
     try {
-      const res = await axiosInstance.post("/ManagerNotifications", formData);
+      await axiosInstance.post("/ManagerNotifications", formData);
       toast.success("Đã tạo thông báo!");
 
-      setNotifications((prev) => [res.data.data, ...prev]);
       setShowCreateModal(false);
+
+      setRefreshKey((prev) => prev + 1);
+
       setFormData({
         title: "",
         content: "",
@@ -108,25 +71,7 @@ export default function ManagerNotifications() {
           </Button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">Đang tải dữ liệu...</p>
-            </div>
-          </div>
-        ) : (
-          <NotificationTable
-            data={notifications}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onDeleteClick={(id) => {
-              setDeleteId(id);
-              setShowDeleteModal(true);
-            }}
-            onRefresh={fetchData}
-          />
-        )}
+        <SentNotificationsTable key={refreshKey} />
 
         <CreateNotificationModal
           open={showCreateModal}
@@ -146,12 +91,6 @@ export default function ManagerNotifications() {
               scheduleCron: "",
             });
           }}
-        />
-
-        <DeleteConfirmModal
-          open={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDelete}
         />
       </div>
     </div>

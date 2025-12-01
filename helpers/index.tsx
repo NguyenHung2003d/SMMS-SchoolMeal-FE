@@ -12,8 +12,10 @@ import {
   School,
   User,
   UserPlus,
+  Users,
   Utensils,
 } from "lucide-react";
+import { ManagerNotification } from "@/types/notification";
 
 export function AllergyPill({
   label,
@@ -326,3 +328,38 @@ export const getSendTypeInfo = (type: string) => {
     icon: Clock,
   };
 };
+
+export const renderRecipientsInfo = (notif: ManagerNotification) => {
+    const n = notif as any;
+    const count = n.totalRecipients || n.TotalRecipients || 0;
+    
+    const sendToParents = n.sendToParents || n.SendToParents;
+    const sendToTeachers = n.sendToTeachers || n.SendToTeachers;
+    const sendToKitchenStaff = n.sendToKitchenStaff || n.SendToKitchenStaff;
+
+    const groups = [];
+    if (sendToParents) groups.push("Phụ huynh");
+    if (sendToTeachers) groups.push("Giáo viên");
+    if (sendToKitchenStaff) groups.push("Bếp");
+
+    return (
+      <div className="flex flex-col">
+        <div className="flex items-center font-semibold text-gray-800">
+          <Users size={16} className="mr-1.5 text-blue-500" />
+          <span>{count} người</span>
+        </div>
+        
+        <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-1">
+          {groups.length > 0 ? (
+            groups.map((g, i) => (
+              <span key={i} className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                {g}
+              </span>
+            ))
+          ) : (
+            <span className="italic">Chưa gửi</span>
+          )}
+        </div>
+      </div>
+    );
+  };

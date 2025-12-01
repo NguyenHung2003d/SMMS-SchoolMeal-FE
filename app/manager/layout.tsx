@@ -281,12 +281,6 @@ export default function ManagerLayout({
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-2 text-orange-600 hover:from-orange-100 hover:to-amber-100 cursor-pointer transition-all">
-                <Bell size={20} />
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-md">
-                  3
-                </span>
-              </div>
 
               <div className="relative">
                 <button

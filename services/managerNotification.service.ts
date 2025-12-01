@@ -1,6 +1,7 @@
 import {
   CreateNotificationRequest,
   ManagerNotification,
+  PaginatedNotificationResponse,
 } from "@/types/notification";
 import { axiosInstance } from "@/lib/axiosInstance";
 
@@ -33,6 +34,19 @@ export const notificationService = {
 
   delete: async (id: number) => {
     const response = await axiosInstance.delete(`/ManagerNotifications/${id}`);
+    return response.data;
+  },
+
+  getMyNotifications: async (page: number = 1, pageSize: number = 10) => {
+    const response = await axiosInstance.get<PaginatedNotificationResponse>(
+      "/ManagerNotifications",
+      {
+        params: {
+          page,
+          pageSize,
+        },
+      }
+    );
     return response.data;
   },
 };

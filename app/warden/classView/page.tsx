@@ -12,10 +12,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AttendanceSummaryDto, StudentDto } from "@/types/warden";
-import { formatDateForInput } from "@/helpers";
-import { getWardenIdFromToken } from "@/utils";
 import { wardenDashboardService } from "@/services/wardenDashborad.service";
 import { wardenClassService } from "@/services/wardenClassView.service";
+import { formatDate } from "@/helpers";
 
 export default function TeacherClassView() {
   const [loading, setLoading] = useState(true);
@@ -28,32 +27,19 @@ export default function TeacherClassView() {
 
   useEffect(() => {
     const initializeClass = async () => {
-      const storedClassId = localStorage.getItem("currentClassId");
+      try {
+        const classes = await wardenDashboardService.getClasses();
 
-      if (storedClassId) {
-        setClassId(storedClassId);
-      } else {
-        try {
-          const wardenId = getWardenIdFromToken();
-          if (wardenId) {
-            const classes = await wardenDashboardService.getClasses();
-
-            if (classes && classes.length > 0) {
-              const defaultClassId = classes[0].classId.toString();
-              setClassId(defaultClassId);
-              localStorage.setItem("currentClassId", defaultClassId);
-            } else {
-              console.warn("Giáo viên này chưa được phân công lớp nào.");
-              setLoading(false);
-            }
-          } else {
-            console.error("Không tìm thấy Warden ID trong token");
-            setLoading(false);
-          }
-        } catch (error) {
-          console.error("Lỗi khi tự động lấy danh sách lớp:", error);
+        if (classes && classes.length > 0) {
+          const defaultClassId = classes[0].classId.toString();
+          setClassId(defaultClassId);
+        } else {
+          console.warn("Giáo viên này chưa được phân công lớp nào.");
           setLoading(false);
         }
+      } catch (error) {
+        console.error("Lỗi khi tự động lấy danh sách lớp:", error);
+        setLoading(false);
       }
     };
 
@@ -319,7 +305,7 @@ export default function TeacherClassView() {
                           </span>
                           <div className="flex items-center text-xs text-gray-500">
                             <Calendar size={12} className="mr-1" />
-                            {formatDateForInput(student.dateOfBirth)}
+                            {formatDate(student.dateOfBirth)}
                           </div>
                         </div>
                       </td>

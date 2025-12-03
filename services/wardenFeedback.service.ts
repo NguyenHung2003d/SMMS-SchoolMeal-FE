@@ -2,11 +2,9 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { CreateFeedbackRequest, FeedbackDto } from "@/types/warden-feedback";
 
 export const wardenFeedbackService = {
-  getFeedbacks: async (wardenId: string): Promise<FeedbackDto[]> => {
-    const response = await axiosInstance.get(
-      `/WardensFeedback/${wardenId}/list`
-    );
-    return response.data.data;
+  getFeedbacks: async (): Promise<FeedbackDto[]> => {
+    const response = await axiosInstance.get(`/WardensFeedback/list`);
+    return response.data.data || [];
   },
 
   createFeedback: async (data: CreateFeedbackRequest): Promise<FeedbackDto> => {
@@ -25,12 +23,7 @@ export const wardenFeedbackService = {
     return response.data;
   },
 
-  deleteFeedback: async (
-    feedbackId: number,
-    wardenId: string
-  ): Promise<void> => {
-    await axiosInstance.delete(`/WardensFeedback/${feedbackId}`, {
-      params: { wardenId },
-    });
+  deleteFeedback: async (feedbackId: number): Promise<void> => {
+    await axiosInstance.delete(`/WardensFeedback/${feedbackId}`);
   },
 };

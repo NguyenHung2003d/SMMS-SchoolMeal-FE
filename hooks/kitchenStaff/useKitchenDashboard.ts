@@ -8,19 +8,19 @@ export const useKitchenDashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchDashboard = useCallback(async (date?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const result = await kitchenDashboardService.getKitchenDashboard();
+      const result = await kitchenDashboardService.getKitchenDashboard(date);
       setData(result);
     } catch (err: any) {
       console.error("Failed to fetch kitchen dashboard", err);
 
       if (err.response?.status === 401) {
-        setError("Phiên đăng nhập hết hạn hoặc không hợp lệ.");
+        setError("Phiên đăng nhập hết hạn.");
       } else if (err.response?.status === 403) {
-        setError("Bạn không có quyền truy cập dữ liệu trường này.");
+        setError("Bạn không có quyền truy cập dữ liệu bếp.");
       } else {
         setError("Không thể tải dữ liệu bảng điều khiển.");
       }
@@ -37,6 +37,6 @@ export const useKitchenDashboard = () => {
     data,
     loading,
     error,
-    refresh: fetchDashboard,
+    refresh: () => fetchDashboard(),
   };
 };

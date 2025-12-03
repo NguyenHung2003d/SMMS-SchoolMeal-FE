@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { wardenClassService } from "@/services/wardenClassView.service";
 import { StudentDto, AttendanceSummaryDto } from "@/types/warden";
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 
 interface ClassDetailModalProps {
   classId: string | null;
@@ -217,7 +217,7 @@ export default function ClassDetailModal({
                                     className="flex-shrink-0"
                                   />
                                   <span>
-                                    {formatDateForInput(student.dateOfBirth)}
+                                    {formatDate(student.dateOfBirth)}
                                   </span>
                                 </div>
                               </div>

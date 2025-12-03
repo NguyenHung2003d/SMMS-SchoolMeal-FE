@@ -10,6 +10,11 @@ export const wardenClassService = {
     return res.data;
   },
 
+  getClasses: async () => {
+    const response = await axiosInstance.get("/WardensViewClass/my-classes");
+    return response.data;
+  },
+
   getClassAttendance: async (classId: string): Promise<ClassAttendanceDto> => {
     const res = await axiosInstance.get(
       `/WardensViewClass/classes/${classId}/attendance`

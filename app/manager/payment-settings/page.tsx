@@ -7,29 +7,26 @@ import {
   SchoolPaymentSettingDto,
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
-import { getSchoolId } from "@/utils";
 import { paymentService } from "@/services/managerPayment.service";
 import { PaymentSettingCard } from "@/components/manager/paymentSettings/PaymentSettingCard";
 import { PaymentSettingModal } from "@/components/manager/paymentSettings/PaymentSettingModal";
 
 export default function ManagerPaymentSettings() {
-  const [settingsList, setSettingsList] = useState<SchoolPaymentSettingDto[]>([]);
+  const [settingsList, setSettingsList] = useState<SchoolPaymentSettingDto[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<SchoolPaymentSettingDto | null>(null);
+  const [editingItem, setEditingItem] =
+    useState<SchoolPaymentSettingDto | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const schoolId = getSchoolId();
-      if (!schoolId) {
-        toast.error("Không tìm thấy thông tin trường học.");
-        return;
-      }
-      const data = await paymentService.getBySchool(schoolId);
-      setSettingsList(data.sort((a, b) => a.fromMonth - b.fromMonth));
+      const data = await paymentService.getBySchool();
+      setSettingsList(data.sort((a: any, b: any) => a.fromMonth - b.fromMonth));
     } catch (err: any) {
       console.error(err);
       toast.error("Không thể tải danh sách cấu hình.");
@@ -53,16 +50,18 @@ export default function ManagerPaymentSettings() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xoá cấu hình này không?")) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xoá cấu hình này không?"))
+      return;
 
     await toast.promise(
       paymentService.delete(id).then(() => {
-         loadData();
+        loadData();
       }),
       {
-        loading: 'Đang xoá...',
-        success: 'Xoá thành công!',
-        error: (err) => `Xoá thất bại: ${err.response?.data?.message || err.message}`,
+        loading: "Đang xoá...",
+        success: "Xoá thành công!",
+        error: (err) =>
+          `Xoá thất bại: ${err.response?.data?.message || err.message}`,
       }
     );
   };
@@ -70,9 +69,6 @@ export default function ManagerPaymentSettings() {
   const handleSave = async (formData: any) => {
     setIsSaving(true);
     try {
-      const schoolId = getSchoolId();
-      if (!schoolId) return;
-
       if (editingItem) {
         const updatePayload: UpdateSchoolPaymentSettingRequest = {
           fromMonth: formData.fromMonth,
@@ -84,8 +80,7 @@ export default function ManagerPaymentSettings() {
         await paymentService.update(editingItem.settingId, updatePayload);
         toast.success("Cập nhật thành công!");
       } else {
-        const createPayload: CreateSchoolPaymentSettingRequest = {
-          schoolId: schoolId,
+        const createPayload = {
           fromMonth: formData.fromMonth,
           toMonth: formData.toMonth,
           totalAmount: formData.totalAmount,

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { wardenFeedbackService } from "@/services/wardenFeedback.service";
-import { getWardenIdFromToken } from "@/utils";
 import { FeedbackDto } from "@/types/warden-feedback";
 import toast from "react-hot-toast";
 import { FeedbackFilterBar } from "@/components/warden/feedback/FeedbackFilterBar";
@@ -24,17 +23,13 @@ export default function TeacherFeedbackPage() {
 
   const fetchFeedbacks = async () => {
     try {
-      const wardenId = getWardenIdFromToken();
-      if (wardenId) {
-        const data = await wardenFeedbackService.getFeedbacks(wardenId);
-        // Map data nếu cần thiết (như trong code gốc)
-        const mappedData = data.map((item) => ({
-          ...item,
-          status: item.status || "pending",
-          targetType: item.targetType || "other",
-        }));
-        setFeedbacks(mappedData);
-      }
+      const data = await wardenFeedbackService.getFeedbacks();
+      const mappedData = data.map((item) => ({
+        ...item,
+        status: item.status || "pending",
+        targetType: item.targetType || "other",
+      }));
+      setFeedbacks(mappedData);
     } catch (error) {
       console.error("Lỗi tải danh sách phản hồi:", error);
     } finally {
@@ -48,10 +43,8 @@ export default function TeacherFeedbackPage() {
 
   const handleDelete = async (feedbackId: number) => {
     if (!confirm("Bạn có chắc chắn muốn xóa báo cáo này không?")) return;
-    const wardenId = getWardenIdFromToken();
-    if (!wardenId) return;
     try {
-      await wardenFeedbackService.deleteFeedback(feedbackId, wardenId);
+      await wardenFeedbackService.deleteFeedback(feedbackId);
       setFeedbacks((prev) => prev.filter((f) => f.feedbackId !== feedbackId));
       toast.success("Đã xóa thành công");
     } catch (error) {
@@ -61,18 +54,10 @@ export default function TeacherFeedbackPage() {
   };
 
   const handleCreateOrUpdate = async (formData: any) => {
-    const wardenId = getWardenIdFromToken();
-    if (!wardenId) {
-      toast.error("Phiên đăng nhập không hợp lệ");
-      return;
-    }
-
     setSubmitting(true);
     try {
       const payload = {
         ...formData,
-        wardenId,
-        senderId: wardenId,
       };
 
       if (editingItem) {
@@ -106,7 +91,6 @@ export default function TeacherFeedbackPage() {
     setShowModal(true);
   };
 
-  // Logic lọc danh sách
   const filteredIssues = feedbacks.filter((issue) => {
     let statusMatch = true;
     const status = (issue.status || "").toLowerCase();

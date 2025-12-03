@@ -12,7 +12,7 @@ export interface SchoolPaymentSettingDto {
 }
 
 export interface CreateSchoolPaymentSettingRequest {
-  schoolId: string;
+  // schoolId: string;
   fromMonth: number;
   toMonth: number;
   totalAmount: number;

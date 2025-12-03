@@ -6,15 +6,11 @@ import {
 } from "@/types/manager-payment";
 
 export const paymentService = {
-  getBySchool: async (schoolId: string): Promise<SchoolPaymentSettingDto[]> => {
-    try {
-      const response = await axiosInstance.get(
-        `/ManagerPaymentSetting/school/${schoolId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      throw error;
-    }
+  getBySchool: async () => {
+    const response = await axiosInstance.get(
+      "/ManagerPaymentSetting/school/current"
+    );
+    return response.data.data;
   },
 
   getById: async (settingId: number): Promise<SchoolPaymentSettingDto> => {

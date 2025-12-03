@@ -18,7 +18,6 @@ import {
   wardenGalleryService,
   GalleryImageDto,
 } from "@/services/wardenGallery.service";
-import { getWardenIdFromToken } from "@/utils";
 import { ClassDto } from "@/types/warden";
 import { format } from "date-fns";
 import { wardenDashboardService } from "@/services/wardenDashborad.service";
@@ -49,11 +48,8 @@ export default function TeacherGallery() {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const wardenId = getWardenIdFromToken();
-        if (wardenId) {
-          const data = await wardenDashboardService.getClasses();
-          setClasses(data);
-        }
+        const data = await wardenDashboardService.getClasses();
+        setClasses(data);
       } catch (error) {
         console.error("Lỗi lấy danh sách lớp:", error);
         toast.error("Không thể tải danh sách lớp học.");
@@ -63,7 +59,6 @@ export default function TeacherGallery() {
     };
     fetchClasses();
   }, []);
-
   const handleViewAlbum = async (cls: ClassDto) => {
     setSelectedClass(cls);
     setLoadingImages(true);
@@ -92,17 +87,10 @@ export default function TeacherGallery() {
     if (!files || files.length === 0 || !selectedClass) return;
 
     const file = files[0];
-    const wardenId = getWardenIdFromToken();
-
-    if (!wardenId) {
-      toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
-      return;
-    }
 
     const formData = new FormData();
     formData.append("File", file);
     formData.append("ClassId", selectedClass.classId);
-    formData.append("UploaderId", wardenId);
 
     setUploading(true);
     try {

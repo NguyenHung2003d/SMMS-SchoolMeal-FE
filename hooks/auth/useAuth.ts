@@ -12,7 +12,18 @@ export const useAuth = () => {
 
   const userQuery = useQuery<User | null>({
     queryKey: USER_QUERY_KEY,
-    queryFn: authService.getCurrentUser,
+    queryFn: async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        // if (user) {
+        //   localStorage.setItem("currentUser", JSON.stringify(user));
+        // }
+        return user;
+      } catch (error) {
+        // localStorage.removeItem("currentUser");
+        throw error;
+      }
+    },
     enabled: true,
     retry: false,
     staleTime: 7 * 24 * 60 * 60 * 1000,
@@ -24,6 +35,7 @@ export const useAuth = () => {
   useEffect(() => {
     const handleExpired = () => {
       queryClient.setQueryData(USER_QUERY_KEY, null);
+      // localStorage.removeItem("currentUser");
       window.location.href = "/login";
     };
 
@@ -36,6 +48,16 @@ export const useAuth = () => {
     loginMutation.mutate({ data, rememberMe });
   };
 
+  const logout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        // localStorage.removeItem("currentUser");
+        queryClient.setQueryData(USER_QUERY_KEY, null);
+        window.location.href = "/login";
+      },
+    });
+  };
+
   return {
     user: userQuery.data,
     isAuthenticated: !!userQuery.data,
@@ -43,7 +65,7 @@ export const useAuth = () => {
     isError: userQuery.isError,
 
     login,
-    logout: logoutMutation.mutate,
+    logout: logout,
 
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,

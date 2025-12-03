@@ -1,9 +1,10 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import {
   AcademicYearDto,
-  CreateClassRequest,
-  UpdateClassRequest,
-} from "@/types/manager-class";
+  CreateAcademicYearRequest,
+  UpdateAcademicYearRequest,
+} from "@/types/academic-year";
+import { CreateClassRequest, UpdateClassRequest } from "@/types/manager-class";
 
 export const managerClassService = {
   getAcademicYears: async (): Promise<AcademicYearDto[]> => {
@@ -35,6 +36,33 @@ export const managerClassService = {
   getTeacherStatus: async () => {
     const res = await axiosInstance.get(
       "/ManagerClass/teachers/assignment-status"
+    );
+    return res.data;
+  },
+
+  getAllAcademicYear: async () => {
+    const res = await axiosInstance.get<AcademicYearDto[]>(
+      "/ManagerClass/academic-years"
+    );
+    return res.data;
+  },
+
+  createAcademicYear: async (data: CreateAcademicYearRequest) => {
+    const res = await axiosInstance.post("/ManagerClass/academic-years", data);
+    return res.data;
+  },
+
+  updateAcademicYear: async (id: number, data: UpdateAcademicYearRequest) => {
+    const res = await axiosInstance.put(
+      `/ManagerClass/academic-years/${id}`,
+      data
+    );
+    return res.data;
+  },
+
+  deleteAcademicYear: async (id: number) => {
+    const res = await axiosInstance.delete(
+      `/ManagerClass/academic-years/${id}`
     );
     return res.data;
   },

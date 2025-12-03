@@ -12,7 +12,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { ManagerNotification } from "@/types/notification";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 
 export default function ManagerNotificationBell() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -157,7 +157,7 @@ export default function ManagerNotificationBell() {
                           {notif.content}
                         </p>
                         <p className="text-[10px] text-gray-400">
-                          {formatDateForInput(notif.createdAt)}
+                          {formatDate(notif.createdAt)}
                         </p>
                       </div>
                     </div>

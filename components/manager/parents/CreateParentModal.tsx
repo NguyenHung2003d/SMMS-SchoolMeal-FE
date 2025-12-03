@@ -35,6 +35,7 @@ import { CreateParentRequest, CreateChildDto } from "@/types/manager-parent";
 import { useQuery } from "@tanstack/react-query";
 import { managerClassService } from "@/services/managerClass.service";
 import { managerParentService } from "@/services/managerParent.service";
+import { formatDateForInput } from "@/helpers";
 
 interface CreateParentModalProps {
   open: boolean;
@@ -122,11 +123,58 @@ export function CreateParentModal({
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
+  const calculateClassAge = (className: string | undefined) => {
+    if (!className) return null;
+
+    const match = className.match(/\d+/);
+    if (!match) return null;
+
+    const grade = parseInt(match[0]);
+    const currentYear = new Date().getFullYear();
+
+    const targetYear = currentYear - (grade + 5);
+
+    return {
+      targetDate: `${targetYear}-01-01`,
+      min: `${targetYear - 2}-01-01`,
+      max: `${targetYear + 1}-12-31`,
+      suggestedYear: targetYear,
+    };
   };
+
+  const getDateConstraints = () => {
+    if (!newChild.classId)
+      return {
+        min: undefined,
+        max: undefined,
+      };
+
+    const selectedClass = classesList.find(
+      (c: any) => c.classId === newChild.classId
+    );
+    if (!selectedClass) return { min: undefined, max: undefined };
+    const match = selectedClass.className.match(/\d+/);
+    if (!match) return { min: undefined, max: undefined };
+    const grade = parseInt(match[0]);
+    const currentYear = new Date().getFullYear();
+    const targetYear = currentYear - (grade + 5);
+    const minYear = targetYear - 2;
+    const maxYear = targetYear + 1;
+    return {
+      min: `${minYear}-01-01`,
+      max: `${maxYear}-12-31`,
+      suggestedYear: targetYear,
+    };
+  };
+
+  const dateConstraints = getDateConstraints();
+
+  const currentClass = classesList.find(
+    (c: any) => c.classId === newChild.classId
+  );
+  const ageConstraints = currentClass
+    ? calculateClassAge(currentClass.className)
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -290,7 +338,7 @@ export function CreateParentModal({
                           {child.dateOfBirth && (
                             <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200 font-medium">
                               <CalendarDays className="w-3.5 h-3.5" />
-                              {formatDate(child.dateOfBirth)}
+                              {formatDateForInput(child.dateOfBirth)}
                             </span>
                           )}
 
@@ -336,6 +384,45 @@ export function CreateParentModal({
                   />
                 </div>
 
+                <div>
+                  <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                    Lớp học
+                  </label>
+                  <Select
+                    value={newChild.classId}
+                    onValueChange={(val) => {
+                      const selectedClass = classesList.find(
+                        (c: any) => c.classId === val
+                      );
+                      const constraints = calculateClassAge(
+                        selectedClass?.className
+                      );
+                      setNewChild({
+                        ...newChild,
+                        classId: val,
+                        dateOfBirth: constraints ? constraints.targetDate : "",
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base">
+                      <SelectValue placeholder="Chọn lớp" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classesList.length === 0 ? (
+                        <div className="p-2 text-xs text-center text-gray-500">
+                          Không có lớp nào
+                        </div>
+                      ) : (
+                        classesList.map((c: any) => (
+                          <SelectItem key={c.classId} value={c.classId}>
+                            {c.className}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-5">
                   <div>
                     <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
@@ -367,6 +454,8 @@ export function CreateParentModal({
                       </div>
                       <Input
                         type="date"
+                        min={ageConstraints?.min}
+                        max={ageConstraints?.max}
                         value={newChild.dateOfBirth || ""}
                         onChange={(e) =>
                           setNewChild({
@@ -374,50 +463,21 @@ export function CreateParentModal({
                             dateOfBirth: e.target.value,
                           })
                         }
-                        className="pl-12 h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base w-full"
+                        className="pl-12 h-12 bg-white border-blue-300 focus:border-blue-500 rounded-lg text-base w-full"
                       />
-                    </div>
+                    </div>  
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
-                <div>
-                  <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
-                    Lớp học
-                  </label>
-                  <Select
-                    value={newChild.classId}
-                    onValueChange={(val) =>
-                      setNewChild({ ...newChild, classId: val })
-                    }
-                  >
-                    <SelectTrigger className="h-12 bg-white border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-base">
-                      <SelectValue placeholder="Chọn lớp" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classesList.length === 0 ? (
-                        <div className="p-2 text-xs text-center text-gray-500">
-                          Không có lớp nào
-                        </div>
-                      ) : (
-                        classesList.map((c: any) => (
-                          <SelectItem key={c.classId} value={c.classId}>
-                            {c.className}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <Button
                   type="button"
                   onClick={handleAddChild}
                   className="h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
                 >
                   <Plus size={20} className="mr-2" />
-                  Thêm
+                  Thêm học sinh
                 </Button>
               </div>
             </div>

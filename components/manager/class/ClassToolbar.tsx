@@ -1,7 +1,7 @@
 import React from "react";
-import { Search, Plus, School, RefreshCcw } from "lucide-react";
-import { AcademicYearDto } from "@/types/manager-class";
+import { Search, Plus, School, RefreshCcw, CalendarCog } from "lucide-react"; // <--- 1. Thêm import CalendarCog
 import { Button } from "@/components/ui/button";
+import { AcademicYearDto } from "@/types/academic-year";
 
 interface ClassToolbarProps {
   searchQuery: string;
@@ -10,6 +10,7 @@ interface ClassToolbarProps {
   setSelectedYear: (val: string) => void;
   academicYears: AcademicYearDto[];
   onAddClick: () => void;
+  onManageYears: () => void;
   handleRefresh: () => void;
   isRefreshing: boolean;
   loading: boolean;
@@ -22,9 +23,10 @@ export default function ClassToolbar({
   setSelectedYear,
   academicYears,
   onAddClick,
+  onManageYears,
   handleRefresh,
   isRefreshing,
-  loading, 
+  loading,
 }: ClassToolbarProps) {
   return (
     <>
@@ -53,11 +55,20 @@ export default function ClassToolbar({
           </Button>
 
           <Button
+            variant="outline"
+            onClick={onManageYears}
+            className="bg-white hover:bg-orange-50 text-orange-600 border-orange-200"
+            title="Quản lý niên khóa"
+          >
+            <CalendarCog size={18} className="mr-2" />
+            <span className="hidden sm:inline">Niên khóa</span>
+          </Button>
+          <Button
             onClick={onAddClick}
             className="bg-orange-600 hover:bg-orange-700 text-white flex items-center shadow-md transition-all"
           >
             <Plus size={18} className="mr-2" />
-            Tạo lớp mới
+            <span className="hidden sm:inline">Tạo lớp mới</span>
           </Button>
         </div>
       </div>

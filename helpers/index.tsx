@@ -101,14 +101,6 @@ export const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-export const formatDateForInput = (dateString?: string) => {
-  if (!dateString) return "";
-  if (dateString.length === 10) return dateString;
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toISOString().split("T")[0];
-};
-
 export const parseDate = (dateString: string) => {
   if (!dateString) return new Date();
   if (!dateString.endsWith("Z")) {
@@ -330,36 +322,54 @@ export const getSendTypeInfo = (type: string) => {
 };
 
 export const renderRecipientsInfo = (notif: ManagerNotification) => {
-    const n = notif as any;
-    const count = n.totalRecipients || n.TotalRecipients || 0;
-    
-    const sendToParents = n.sendToParents || n.SendToParents;
-    const sendToTeachers = n.sendToTeachers || n.SendToTeachers;
-    const sendToKitchenStaff = n.sendToKitchenStaff || n.SendToKitchenStaff;
+  const n = notif as any;
+  const count = n.totalRecipients || n.TotalRecipients || 0;
 
-    const groups = [];
-    if (sendToParents) groups.push("Phụ huynh");
-    if (sendToTeachers) groups.push("Giáo viên");
-    if (sendToKitchenStaff) groups.push("Bếp");
+  const sendToParents = n.sendToParents || n.SendToParents;
+  const sendToTeachers = n.sendToTeachers || n.SendToTeachers;
+  const sendToKitchenStaff = n.sendToKitchenStaff || n.SendToKitchenStaff;
 
-    return (
-      <div className="flex flex-col">
-        <div className="flex items-center font-semibold text-gray-800">
-          <Users size={16} className="mr-1.5 text-blue-500" />
-          <span>{count} người</span>
-        </div>
-        
-        <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-1">
-          {groups.length > 0 ? (
-            groups.map((g, i) => (
-              <span key={i} className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
-                {g}
-              </span>
-            ))
-          ) : (
-            <span className="italic">Chưa gửi</span>
-          )}
-        </div>
+  const groups = [];
+  if (sendToParents) groups.push("Phụ huynh");
+  if (sendToTeachers) groups.push("Giáo viên");
+  if (sendToKitchenStaff) groups.push("Bếp");
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center font-semibold text-gray-800">
+        <Users size={16} className="mr-1.5 text-blue-500" />
+        <span>{count} người</span>
       </div>
-    );
-  };
+
+      <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-1">
+        {groups.length > 0 ? (
+          groups.map((g, i) => (
+            <span
+              key={i}
+              className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200"
+            >
+              {g}
+            </span>
+          ))
+        ) : (
+          <span className="italic">Chưa gửi</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const formatDate = (dateString?: string | null) => {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return null;
+  }
+};

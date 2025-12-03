@@ -17,7 +17,6 @@ export default function ManagerNotifications() {
   const [formData, setFormData] = useState<CreateNotificationRequest>({
     title: "",
     content: "",
-    attachmentUrl: "",
     sendToParents: true,
     sendToTeachers: false,
     sendToKitchenStaff: false,
@@ -39,7 +38,6 @@ export default function ManagerNotifications() {
       setFormData({
         title: "",
         content: "",
-        attachmentUrl: "",
         sendToParents: true,
         sendToTeachers: false,
         sendToKitchenStaff: false,

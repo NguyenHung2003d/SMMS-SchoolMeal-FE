@@ -30,8 +30,3 @@ export interface TeacherStatusResponse {
   teachersWithClass: TeacherSimpleDto[];
   teachersWithoutClass: TeacherSimpleDto[];
 }
-
-export interface AcademicYearDto {
-  yearId: number;
-  yearName: string;
-}

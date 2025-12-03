@@ -24,6 +24,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  Pencil,
   Phone,
   Plus,
   Trash2,
@@ -53,6 +54,8 @@ export function EditParentModal({
   });
   const classesList = classesResponse?.data || [];
 
+  const canEdit = parentToEdit?.password === "@1";
+
   const [formData, setFormData] = useState<UpdateParentRequest>({
     fullName: "",
     email: "",
@@ -76,7 +79,6 @@ export function EditParentModal({
         phone: parentToEdit.phone || "",
         password: "",
         relationName: parentToEdit.relationName || "Phụ huynh",
-
         children:
           parentToEdit.children?.map((child: any) => ({
             fullName: child.fullName,
@@ -110,11 +112,12 @@ export function EditParentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     setLoading(true);
     try {
       await managerParentService.update(parentToEdit.userId, formData);
       toast.success("Cập nhật thành công!");
-      queryClient.invalidateQueries({ queryKey: ["parents"] }); // Refresh bảng
+      queryClient.invalidateQueries({ queryKey: ["parents"] });
       onClose();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Lỗi cập nhật");
@@ -126,9 +129,20 @@ export function EditParentModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="border-b pb-4">
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <User className="text-orange-600" /> Cập nhật thông tin Phụ huynh
+        <DialogHeader
+          className={`border-b pb-4 -mx-6 -mt-6 px-6 py-5 rounded-t-lg ${
+            canEdit ? "bg-orange-600" : "bg-gray-500"
+          }`}
+        >
+          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-white">
+            {canEdit ? (
+              <Pencil className="w-6 h-6" />
+            ) : (
+              <Lock className="w-6 h-6" />
+            )}
+            {canEdit
+              ? "Cập nhật thông tin Phụ huynh"
+              : "Thông tin Phụ huynh (Chỉ xem)"}
           </DialogTitle>
         </DialogHeader>
 
@@ -138,6 +152,7 @@ export function EditParentModal({
               <label className="text-sm font-medium">Họ tên phụ huynh</label>
               <Input
                 required
+                disabled={!canEdit}
                 value={formData.fullName}
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
@@ -147,6 +162,7 @@ export function EditParentModal({
             <div className="space-y-2">
               <label className="text-sm font-medium">Quan hệ</label>
               <Select
+                disabled={!canEdit}
                 value={formData.relationName}
                 onValueChange={(v) =>
                   setFormData({ ...formData, relationName: v })
@@ -167,6 +183,7 @@ export function EditParentModal({
                 <Mail size={14} /> Email
               </label>
               <Input
+                disabled={!canEdit}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -179,6 +196,7 @@ export function EditParentModal({
               </label>
               <Input
                 required
+                disabled={!canEdit}
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
@@ -191,11 +209,15 @@ export function EditParentModal({
               </label>
               <Input
                 type="password"
+                disabled={!canEdit}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                placeholder="Nhập mật khẩu mới..."
+                placeholder={
+                  canEdit ? "Nhập mật khẩu mới..." : "Không thể đổi mật khẩu"
+                }
+                className="bg-white disabled:bg-gray-100"
               />
             </div>
           </div>
@@ -234,6 +256,7 @@ export function EditParentModal({
                     <Button
                       type="button"
                       variant="ghost"
+                      disabled={!canEdit}
                       size="sm"
                       onClick={() => handleRemoveChild(index)}
                       className="text-red-500"
@@ -252,6 +275,7 @@ export function EditParentModal({
                 <Input
                   className="bg-white h-9"
                   value={newChild.fullName}
+                  disabled={!canEdit}
                   onChange={(e) =>
                     setNewChild({ ...newChild, fullName: e.target.value })
                   }
@@ -263,6 +287,7 @@ export function EditParentModal({
                 </label>
                 <Input
                   type="date"
+                  disabled={!canEdit}
                   className="bg-white h-9"
                   value={newChild.dateOfBirth}
                   onChange={(e) =>
@@ -275,6 +300,7 @@ export function EditParentModal({
                   Giới tính
                 </label>
                 <Select
+                  disabled={!canEdit}
                   value={newChild.gender}
                   onValueChange={(v) => setNewChild({ ...newChild, gender: v })}
                 >
@@ -292,6 +318,7 @@ export function EditParentModal({
                   Lớp
                 </label>
                 <Select
+                  disabled={!canEdit}
                   value={newChild.classId}
                   onValueChange={(v) =>
                     setNewChild({ ...newChild, classId: v })
@@ -312,6 +339,7 @@ export function EditParentModal({
               <div className="col-span-12 mt-2">
                 <Button
                   type="button"
+                  disabled={!canEdit}
                   onClick={handleAddChild}
                   className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white"
                 >

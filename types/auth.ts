@@ -20,29 +20,12 @@ export interface AuthResponse {
   message: string;
   requirePasswordReset?: boolean;
 }
-
-export interface TokenPayload {
-  id: string;
-  role: Role;
-}
-
-export interface AuthContextProps {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (data: LoginFormData) => void;
-  logout: () => void;
-}
-
 export interface LoginFormData {
   PhoneOrEmail: string;
   password: string;
 }
 
-export interface UpdateAccountRequest {
-  fullName: string;
-  email: string;
-  phone: string;
-  role: string;
-  password?: string;
-}
+export type LoginVariables = {
+  data: LoginFormData;
+  rememberMe?: boolean;
+};

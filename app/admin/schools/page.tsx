@@ -25,7 +25,8 @@ import {
 } from "@/types/admin-school";
 
 import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
-import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal"; // ✅ Import Modal mới
+import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal";
+import { adminSchoolRevenueService } from "@/services/adminRevenue.service";
 
 export default function SchoolManagementPage() {
   const [schools, setSchools] = useState<SchoolDTO[]>([]);
@@ -74,24 +75,52 @@ export default function SchoolManagementPage() {
   });
 
   const handleCreateOrUpdate = async (
-    data: CreateSchoolDto | UpdateSchoolDto
+    schoolData: CreateSchoolDto | UpdateSchoolDto,
+    contractData?: any
   ) => {
     try {
       setIsSubmitting(true);
+      let newSchoolId = "";
+
       if (editingSchool) {
         await adminSchoolService.update(
           editingSchool.schoolId,
-          data as UpdateSchoolDto
+          schoolData as UpdateSchoolDto
         );
+        const createdSchool = await adminSchoolService.create(
+          schoolData as CreateSchoolDto
+        );
+
+        newSchoolId = createdSchool?.id;
+
         toast.success("Cập nhật trường học thành công");
       } else {
-        await adminSchoolService.create(data as CreateSchoolDto);
+        const response = await adminSchoolService.create(
+          schoolData as CreateSchoolDto
+        );
+        newSchoolId =
+          response?.id || (typeof response === "string" ? response : "");
+
         toast.success("Thêm trường học thành công");
+        if (contractData && newSchoolId) {
+          try {
+            await adminSchoolRevenueService.create({
+              ...contractData,
+              schoolId: newSchoolId,
+            });
+            toast.success("Đã tạo hợp đồng liên kết");
+          } catch (contractErr) {
+            console.error(contractErr);
+            toast.error("Tạo trường thành công, nhưng LỖI tạo hợp đồng");
+          }
+        }
       }
       setIsModalOpen(false);
       loadSchools();
-    } catch (error) {
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -283,7 +312,6 @@ export default function SchoolManagementPage() {
           </div>
         </>
       )}
-      ={" "}
       <SchoolFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

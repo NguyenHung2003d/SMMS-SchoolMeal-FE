@@ -16,7 +16,7 @@ export const adminSchoolService = {
     return res.data;
   },
 
-  create: async (dto: CreateSchoolDto): Promise<string> => {
+  create: async (dto: CreateSchoolDto): Promise<{ id: string }> => {
     const res = await axiosInstance.post("/SchoolsControllerA", dto);
     return res.data;
   },

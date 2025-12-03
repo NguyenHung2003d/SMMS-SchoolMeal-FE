@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Building,
   Home,
@@ -16,7 +16,7 @@ import {
   BarChart3,
   UserPlus,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { getInitials } from "@/helpers";
@@ -31,8 +31,14 @@ export default function ManagerLayout({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading, isAuthenticated } = useAuth();
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   const handleLogout = () => {
     if (logout) {

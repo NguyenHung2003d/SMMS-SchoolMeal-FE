@@ -3,7 +3,17 @@ import { PATHS, ROLES } from "./constants/auth";
 
 function parseJwt(token: string) {
   try {
-    return JSON.parse(atob(token.split(".")[1]));
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
   } catch (e) {
     return null;
   }
@@ -13,56 +23,61 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
   const { pathname } = req.nextUrl;
   const user = token ? parseJwt(token) : null;
-  const userRole = user?.role;
 
-  if (["/login", "/register"].some((r) => pathname.startsWith(r)) && token) {
-    if (userRole === ROLES.MANAGER)
-      return NextResponse.redirect(new URL(PATHS.MANAGER_DASHBOARD, req.url));
-    if (userRole === ROLES.TEACHER)
-      return NextResponse.redirect(new URL(PATHS.WARDEN_DASHBOARD, req.url));
-    if (userRole === ROLES.PARENT)
-      return NextResponse.redirect(new URL(PATHS.PARENT_DASHBOARD, req.url));
-    if (userRole === ROLES.KITCHEN_STAFF)
-      return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
-    if (userRole === ROLES.ADMIN)
-      return NextResponse.redirect(new URL(PATHS.ADMIN_DASHBOARD, req.url));
-    if (userRole === ROLES.KITCHEN_STAFF)
-      return NextResponse.redirect(new URL(PATHS.KITCHEN_DASHBOARD, req.url));
+  const role = user?.role;
+
+  if (
+    token &&
+    (pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/forgot-password")
+  ) {
+    let redirectUrl = PATHS.PARENT_DASHBOARD;
+    if (role === ROLES.ADMIN) redirectUrl = PATHS.ADMIN_DASHBOARD;
+    else if (role === ROLES.MANAGER) redirectUrl = PATHS.MANAGER_DASHBOARD;
+    else if (role === ROLES.TEACHER) redirectUrl = PATHS.WARDEN_DASHBOARD;
+    else if (role === ROLES.KITCHEN_STAFF)
+      redirectUrl = PATHS.KITCHEN_DASHBOARD;
+
+    const url = req.nextUrl.clone();
+    url.pathname = redirectUrl;
+    return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith("/manager")) {
-    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.MANAGER && userRole !== ROLES.ADMIN) {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-  }
+  const protectedPaths = [
+    "/manager",
+    "/warden",
+    "/kitchen-staff",
+    "/parent",
+    "/admin",
+  ];
 
-  if (pathname.startsWith("/warden")) {
-    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.TEACHER) {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+  if (protectedPaths.some((p) => pathname.startsWith(p))) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
     }
-  }
 
-  if (pathname.startsWith("/kitchen-staff")) {
-    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.KITCHEN_STAFF) {
+    if (pathname.startsWith("/manager") && role !== ROLES.MANAGER)
       return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-  }
 
-  if (pathname.startsWith("/parent")) {
-    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.PARENT) {
+    if (pathname.startsWith("/warden") && role !== ROLES.TEACHER)
       return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-  }
 
-  if (pathname.startsWith("/admin")) {
-    if (!token) return NextResponse.redirect(new URL(PATHS.LOGIN, req.url));
-    if (userRole !== ROLES.ADMIN) {
+    if (pathname.startsWith("/kitchen-staff") && role !== ROLES.KITCHEN_STAFF)
       return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
+
+    if (
+      pathname.startsWith("/parent") &&
+      role !== "Parent" &&
+      role !== "PARENT"
+    )
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+
+    if (pathname.startsWith("/admin") && role !== ROLES.ADMIN)
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
   }
 
   return NextResponse.next();
@@ -70,12 +85,12 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/parent/:path*",
-    "/manager/:path*",
-    "/warden/:path*",
     "/login",
     "/register",
     "/forgot-password",
+    "/parent/:path*",
+    "/manager/:path*",
+    "/warden/:path*",
     "/kitchen-staff/:path*",
     "/admin/:path*",
   ],

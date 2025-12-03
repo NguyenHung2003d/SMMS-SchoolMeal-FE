@@ -4,17 +4,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { useLoginForm } from "@/hooks/auth/useLoginForm";
+import { useLoginForm } from "@/schema/LoginForm";
 import { LoginFormData } from "@/types/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { PATHS, ROLES } from "@/constants/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { login, isLoginLoading } = useAuth();
   const { register, handleSubmit } = useLoginForm();
 
@@ -22,58 +18,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
 
   const onLoginSubmit = (data: LoginFormData) => {
-    login(data, rememberMe, {
-      onSuccess: (res) => {
-        const role = res?.user?.role;
-
-        if (res.requirePasswordReset) {
-          toast.error(
-            "Bạn đang dùng mật khẩu mặc định, vui lòng đổi mật khẩu."
-          );
-          router.push(`/reset-password?phone=${data.PhoneOrEmail}`);
-          return;
-        }
-
-        switch (role) {
-          case ROLES.MANAGER:
-            toast.success(`Xin chào quản lý: ${res?.user?.fullName}`);
-            router.push(PATHS.MANAGER_DASHBOARD);
-            break;
-          case ROLES.TEACHER:
-            toast.success(`Xin chào giám thị: ${res?.user?.fullName}`);
-            router.push(PATHS.WARDEN_DASHBOARD);
-            break;
-          case ROLES.KITCHEN_STAFF:
-            toast.success(`Xin chào bếp: ${res?.user?.fullName}`);
-            router.push(PATHS.KITCHEN_DASHBOARD);
-            break;
-          case ROLES.ADMIN:
-            toast.success(`Xin chào quản trị viên: ${res?.user?.fullName}`);
-            router.push(PATHS.ADMIN_DASHBOARD);
-            break;
-          default:
-            toast.success("Đăng nhập thành công!");
-            router.push(PATHS.PARENT_DASHBOARD);
-        }
-      },
-
-      onError: (error: any) => {
-        let message = "Đã xảy ra lỗi. Vui lòng thử lại.";
-
-        if (error.response) {
-          message =
-            error.response.data?.message ||
-            error.response.data?.error ||
-            `Lỗi server (${error.response.status})`;
-        } else if (error.request) {
-          message = "Không thể kết nối đến máy chủ. Kiểm tra mạng.";
-        } else {
-          message = error.message || "Lỗi không xác định.";
-        }
-
-        toast.error(message);
-      },
-    });
+    login(data, rememberMe);
   };
 
   return (

@@ -9,6 +9,7 @@ import { ClassDto } from "@/types/manager-class";
 import { useClassData } from "@/hooks/manager/useClassData";
 import { useClassMutations } from "@/hooks/manager/useClassMutations";
 import { useClassFilter } from "@/hooks/manager/useClassFilter";
+import AcademicYearManagerModal from "@/components/manager/class/AcademicYearManagerModal";
 
 export default function ManagerClasses() {
   const {
@@ -35,6 +36,7 @@ export default function ManagerClasses() {
   });
 
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showYearModal, setShowYearModal] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassDto | null>(null);
   const [classToDelete, setClassToDelete] = useState<ClassDto | null>(null);
 
@@ -70,6 +72,7 @@ export default function ManagerClasses() {
         academicYears={academicYears}
         onAddClick={openAddModal}
         handleRefresh={refreshData}
+        onManageYears={() => setShowYearModal(true)}
         isRefreshing={isRefreshing}
         loading={loading}
       />
@@ -98,6 +101,13 @@ export default function ManagerClasses() {
         onClose={() => setClassToDelete(null)}
         onConfirm={onConfirmDelete}
       />
+
+      {showYearModal && (
+        <AcademicYearManagerModal
+          onClose={() => setShowYearModal(false)}
+          onRefresh={refreshData}
+        />
+      )}
     </div>
   );
 }

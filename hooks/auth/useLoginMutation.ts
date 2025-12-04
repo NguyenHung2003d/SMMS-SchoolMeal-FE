@@ -12,7 +12,7 @@ export const useLoginMutation = () => {
   return useMutation<AuthResponse, AxiosError, LoginVariables>({
     mutationFn: ({ data }) => authService.login(data),
 
-    onSuccess: (res, variables) => {
+    onSuccess: (res) => {
       queryClient.setQueryData(USER_QUERY_KEY, res.user);
 
       // if (res.user) {

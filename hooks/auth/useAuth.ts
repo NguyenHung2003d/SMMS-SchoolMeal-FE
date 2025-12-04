@@ -1,13 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
-import { User } from "@/types/auth";
 import { useEffect } from "react";
 import { useLoginMutation } from "./useLoginMutation";
 import { useLogoutMutation } from "./useLogoutMutation";
 
 export const USER_QUERY_KEY = ["user"] as const;
 
-export const useAuth = () => {
+export const useAuth = (options?: { enabled?: boolean }) => {
   const queryClient = useQueryClient();
 
   const userQuery = useQuery({
@@ -16,9 +15,8 @@ export const useAuth = () => {
     retry: false,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    throwOnError: false,
+    enabled: options?.enabled !== undefined ? options.enabled : true,
   });
-
   const loginMutation = useLoginMutation();
   const logoutMutation = useLogoutMutation();
 
@@ -38,13 +36,7 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        queryClient.setQueryData(USER_QUERY_KEY, null);
-        localStorage.removeItem("currentUser");
-        window.location.href = "/login";
-      },
-    });
+    logoutMutation.mutate();
   };
 
   return {

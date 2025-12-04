@@ -11,7 +11,7 @@ import { LoginFormData } from "@/types/auth";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
-  const { login, isLoginLoading } = useAuth();
+  const { login, isLoginLoading } = useAuth({ enabled: false });
   const { register, handleSubmit } = useLoginForm();
 
   const [showPassword, setShowPassword] = useState(false);

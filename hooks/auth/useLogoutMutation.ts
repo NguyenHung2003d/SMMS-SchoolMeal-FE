@@ -6,6 +6,7 @@ import {
 import { authService } from "@/services/auth.service";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { USER_QUERY_KEY } from "./useAuth";
 
 export const useLogoutMutation = (
   options?: Omit<UseMutationOptions<void, AxiosError, void>, "mutationFn">
@@ -15,19 +16,17 @@ export const useLogoutMutation = (
   return useMutation<void, AxiosError, void>({
     mutationFn: authService.logout,
     onSuccess: () => {
+      queryClient.setQueryData(USER_QUERY_KEY, null);
       toast.success("Đăng xuất thành công!");
-      queryClient.clear();
       setTimeout(() => {
         window.location.href = "/login";
       }, 100);
     },
     onError: (error) => {
       console.log("Logout error:", error);
-      toast.success("Đăng xuất thành công!");
-      queryClient.clear();
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 100);
+      queryClient.setQueryData(USER_QUERY_KEY, null);
+      localStorage.removeItem("currentUser");
+      window.location.href = "/login";
     },
     ...options,
   });

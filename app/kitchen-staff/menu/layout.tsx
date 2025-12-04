@@ -1,9 +1,6 @@
 "use client";
 import Link from "next/link";
-import {
-  Plus,
-  Download,
-} from "lucide-react";
+import { Plus, Download } from "lucide-react";
 
 export default function MenuLayout({
   children,
@@ -29,23 +26,6 @@ export default function MenuLayout({
           </Link>
         </div>
       </div>
-
-      <div className="bg-white rounded-lg shadow-sm mb-6 border border-gray-100">
-        <div className="p-4 flex justify-end items-center bg-gray-50/30">
-          {/* === CỤM CONTROL BÊN PHẢI === */}
-          <div className="flex items-center space-x-3">
-            <select
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-sm 
-          focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="all">Tất cả danh mục</option>
-              <option value="main">Món chính</option>
-              <option value="dessert">Tráng miệng</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
       <div className="min-h-[500px]">{children}</div>
     </div>
   );

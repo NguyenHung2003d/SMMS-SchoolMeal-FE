@@ -1,67 +1,67 @@
-"use client";
-import { useState, useEffect, useCallback } from "react";
-import { kitchenFeedbackService } from "@/services/kitchenFeedback.service";
-import {
-  FeedbackDto,
-  FeedbackDetailDto,
-  FeedbackSearchParams,
-} from "@/types/kitchen-feedback";
+import { useState, useEffect } from "react";
+import { axiosInstance } from "@/lib/axiosInstance";
+import { FeedbackDto, FeedbackSearchParams } from "@/types/kitchen-feedback";
 
 export const useKitchenFeedback = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchParams, setSearchParams] = useState<FeedbackSearchParams>({
-    keyword: "",
-    sortDesc: true,
-    sortBy: "CreatedAt",
-  });
-
-  const [selectedFeedback, setSelectedFeedback] =
-    useState<FeedbackDetailDto | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackDto | null>(
+    null
+  );
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  const fetchFeedbacks = useCallback(async () => {
+  const [filters, setFilters] = useState<FeedbackSearchParams>({
+    sortBy: "CreatedAt",
+    sortDesc: true,
+  });
+
+  const fetchFeedbacks = async () => {
     setLoading(true);
     try {
-      const data = await kitchenFeedbackService.searchFeedbacks(searchParams);
-      setFeedbacks(data);
+      const params = new URLSearchParams();
+      if (filters.keyword) params.append("keyword", filters.keyword);
+      if (filters.targetType && filters.targetType !== "all")
+        params.append("targetType", filters.targetType);
+      if (filters.sortBy) params.append("sortBy", filters.sortBy);
+      params.append("sortDesc", String(filters.sortDesc));
+
+      const res = await axiosInstance.get<FeedbackDto[]>(
+        `/Feedbacks?${params.toString()}`
+      );
+      setFeedbacks(res.data);
     } catch (error) {
-      console.error("Failed to fetch feedbacks", error);
+      console.error("Lỗi tải feedback:", error);
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
-
-  useEffect(() => {
-    fetchFeedbacks();
-  }, [fetchFeedbacks]);
+  };
 
   const fetchFeedbackDetail = async (id: number) => {
     setLoadingDetail(true);
     try {
-      const data = await kitchenFeedbackService.getFeedbackById(id);
-      setSelectedFeedback(data);
+      const res = await axiosInstance.get<FeedbackDto>(`/Feedbacks/${id}`);
+      setSelectedFeedback(res.data);
     } catch (error) {
-      console.error("Failed to fetch feedback detail", error);
+      console.error("Lỗi tải chi tiết:", error);
     } finally {
       setLoadingDetail(false);
     }
   };
 
-  const handleSearch = (keyword: string) => {
-    setSearchParams((prev) => ({ ...prev, keyword }));
-  };
-
-  const clearDetail = () => setSelectedFeedback(null);
-
+  useEffect(() => {
+    fetchFeedbacks();
+  }, [filters]);
   return {
     feedbacks,
     loading,
-    selectedFeedback,
-    loadingDetail,
     refresh: fetchFeedbacks,
-    onSearch: handleSearch,
+    onSearch: (term: string) =>
+      setFilters((prev) => ({ ...prev, keyword: term })),
+    onFilterType: (type: string) =>
+      setFilters((prev) => ({ ...prev, targetType: type })),
+    selectedFeedback,
     onSelectFeedback: fetchFeedbackDetail,
-    onClearDetail: clearDetail,
+    loadingDetail,
+    onClearDetail: () => setSelectedFeedback(null),
   };
 };

@@ -1,118 +1,146 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Package,
   Search,
   Filter,
-  Plus,
-  Trash2,
   Edit,
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
   ShoppingCart,
-  RefreshCw,
-  BarChart2,
   Clock,
-  AlertCircle,
+  AlertTriangle,
+  Loader2,
+  X,
+  Save,
 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+import { format, differenceInDays, parseISO } from "date-fns";
+import { formatQuantity, getExpiryStatus } from "@/helpers";
+import { InventoryItemDto } from "@/types/kitchen-inventory";
+import { kitchenInventoryService } from "@/services/kitchenInventory.service";
+
 export default function KitchenStaffInventoryPage() {
   const [activeTab, setActiveTab] = useState("inventory");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const [items, setItems] = useState<InventoryItemDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize] = useState(10);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItemDto | null>(null);
+
+  const [editForm, setEditForm] = useState({
+    quantityGram: 0,
+    expirationDate: "",
+    batchNo: "",
+    origin: "",
+  });
+
+  useEffect(() => {
+    if (activeTab === "inventory") {
+      fetchInventory();
+    }
+  }, [activeTab, pageIndex]);
+
+  const fetchInventory = async () => {
+    setLoading(true);
+    try {
+      const data = await kitchenInventoryService.getAll(pageIndex, pageSize);
+      setItems(data.items);
+      setTotalCount(data.totalCount);
+    } catch (error) {
+      console.error("Lỗi tải kho:", error);
+      toast.error("Không thể tải dữ liệu kho");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = (item: InventoryItemDto) => {
+    setEditingItem(item);
+    setEditForm({
+      quantityGram: item.quantityGram,
+      expirationDate: item.expirationDate || "",
+      batchNo: item.batchNo || "",
+      origin: item.origin || "",
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveUpdate = async () => {
+    if (!editingItem) return;
+
+    try {
+      await kitchenInventoryService.update(editingItem.itemId, {
+        quantityGram: editForm.quantityGram,
+        expirationDate: editForm.expirationDate || undefined,
+        batchNo: editForm.batchNo,
+        origin: editForm.origin,
+      });
+
+      toast.success("Cập nhật kho thành công!");
+      setIsEditModalOpen(false);
+      fetchInventory();
+    } catch (error) {
+      console.error(error);
+      toast.error("Cập nhật thất bại.");
+    }
+  };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <Toaster position="top-right" />
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Quản lý kho nguyên liệu
         </h1>
-        <button
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-          onClick={() => setIsAddModalOpen(true)}
-        >
-          <Plus size={18} className="mr-2" />
-          <span>Thêm nguyên liệu</span>
-        </button>
       </div>
-      {/* Inventory stats */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">
-                Tổng số nguyên liệu
+                Tổng mặt hàng
               </p>
-              <h3 className="text-3xl font-bold text-gray-800">6</h3>
-              <p className="mt-2 text-sm flex items-center">
-                <span className="text-green-500 flex items-center mr-1">
-                  <ArrowUp size={14} className="mr-0.5" /> 2
-                </span>
-                <span className="text-gray-500">từ tháng trước</span>
-              </p>
+              <h3 className="text-3xl font-bold text-gray-800">{totalCount}</h3>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <Package size={24} className="text-blue-500" />
             </div>
           </div>
         </div>
+
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">
-                Nguyên liệu sắp hết
+                Cảnh báo hết hạn
               </p>
-              <h3 className="text-3xl font-bold text-gray-800">3</h3>
-              <p className="mt-2 text-sm flex items-center">
-                <span className="text-red-500 flex items-center mr-1">
-                  <ArrowUp size={14} className="mr-0.5" /> 1
-                </span>
-                <span className="text-gray-500">cần đặt hàng</span>
-              </p>
-            </div>
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <AlertTriangle size={24} className="text-yellow-500" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">
-                Sắp hết hạn
-              </p>
-              <h3 className="text-3xl font-bold text-gray-800">3</h3>
-              <p className="mt-2 text-sm flex items-center">
-                <span className="text-orange-500 flex items-center mr-1">
-                  <Clock size={14} className="mr-0.5" /> 3-4
-                </span>
-                <span className="text-gray-500">ngày còn lại</span>
-              </p>
+              <h3 className="text-3xl font-bold text-gray-800">
+                {
+                  items.filter(
+                    (i) =>
+                      i.expirationDate &&
+                      differenceInDays(
+                        parseISO(i.expirationDate),
+                        new Date()
+                      ) <= 3
+                  ).length
+                }
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">Trong trang này</p>
             </div>
             <div className="bg-orange-100 p-3 rounded-lg">
-              <AlertCircle size={24} className="text-orange-500" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">
-                Đơn đặt hàng
-              </p>
-              <h3 className="text-3xl font-bold text-gray-800">2</h3>
-              <p className="mt-2 text-sm flex items-center">
-                <span className="text-blue-500 flex items-center mr-1">
-                  <RefreshCw size={14} className="mr-0.5" /> Đang xử lý
-                </span>
-              </p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <ShoppingCart size={24} className="text-green-500" />
+              <Clock size={24} className="text-orange-500" />
             </div>
           </div>
         </div>
       </div>
-      {/* Tabs */}
+
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="border-b border-gray-200">
           <nav className="flex">
@@ -134,11 +162,11 @@ export default function KitchenStaffInventoryPage() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Đơn đặt hàng
+              Đơn đặt hàng (Link tới trang History)
             </button>
           </nav>
         </div>
-        {/* Search and filter */}
+
         <div className="p-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="relative w-full md:w-64">
             <input
@@ -153,17 +181,9 @@ export default function KitchenStaffInventoryPage() {
           </div>
           <div className="flex items-center space-x-2">
             <select className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-              <option value="all">Tất cả danh mục</option>
-              <option value="staples">Nguyên liệu chính</option>
-              <option value="meat">Thịt & Hải sản</option>
-              <option value="vegetables">Rau củ</option>
-              <option value="dairy">Sữa & Trứng</option>
-            </select>
-            <select className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
               <option value="all">Tất cả trạng thái</option>
-              <option value="sufficient">Đầy đủ</option>
-              <option value="low">Thấp</option>
-              <option value="out">Hết hàng</option>
+              <option value="low">Sắp hết</option>
+              <option value="expired">Hết hạn</option>
             </select>
             <button className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors">
               <Filter size={18} />
@@ -171,221 +191,246 @@ export default function KitchenStaffInventoryPage() {
           </div>
         </div>
       </div>
-      {/* Inventory table */}
+
       {activeTab === "inventory" && (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Tên nguyên liệu
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Danh mục
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Số lượng
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Trạng thái
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Hạn sử dụng
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Cập nhật cuối
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Thao tác
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200"></tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      {/* Orders table */}
-      {activeTab === "orders" && (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-medium">Đơn đặt hàng</h2>
-            <button className="flex items-center text-sm text-orange-500 hover:text-orange-600">
-              <ShoppingCart size={16} className="mr-1" />
-              Tạo đơn đặt hàng mới
+          {loading ? (
+            <div className="p-12 text-center text-gray-500 flex justify-center items-center gap-2">
+              <Loader2 className="animate-spin" /> Đang tải dữ liệu kho...
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mã #
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tên nguyên liệu
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số lượng tồn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hạn sử dụng
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Lô / Xuất xứ
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                  {items.length > 0 ? (
+                    items.map((item) => {
+                      const expiry = getExpiryStatus(item.expirationDate);
+                      return (
+                        <tr key={item.itemId} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                            #{item.itemId}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
+                            {item.ingredientName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded-md font-medium ${
+                                item.quantityGram < 1000
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-green-100 text-green-700"
+                              }`}
+                            >
+                              {formatQuantity(item.quantityGram)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`flex items-center gap-1 ${expiry.color}`}
+                            >
+                              {expiry.label}
+                              {differenceInDays(
+                                parseISO(item.expirationDate || ""),
+                                new Date()
+                              ) <= 3 && <AlertTriangle size={14} />}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-500 text-xs">
+                            <div>Batch: {item.batchNo || "-"}</div>
+                            <div>Origin: {item.origin || "-"}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="text-orange-600 hover:text-orange-900 bg-orange-50 hover:bg-orange-100 p-2 rounded transition-colors"
+                              title="Cập nhật kho"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="text-center py-8 text-gray-500"
+                      >
+                        Kho trống
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+            <button
+              disabled={pageIndex === 1}
+              onClick={() => setPageIndex((p) => p - 1)}
+              className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+            >
+              Trước
+            </button>
+            <span className="px-3 py-1 text-sm flex items-center">
+              Trang {pageIndex}
+            </span>
+            <button
+              disabled={items.length < pageSize} // Logic đơn giản, nên dùng totalPages từ BE
+              onClick={() => setPageIndex((p) => p + 1)}
+              className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+            >
+              Sau
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Nhà cung cấp
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Các mặt hàng
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Ngày đặt
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Ngày giao dự kiến
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Trạng thái
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Tổng tiền
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200"></tbody>
-            </table>
-          </div>
         </div>
       )}
-      {/* Expiry alerts */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium flex items-center">
-            <AlertCircle className="mr-2 text-orange-500" size={20} />
-            Cảnh báo hạn sử dụng
-          </h2>
+
+      {activeTab === "orders" && (
+        <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+          <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium text-gray-800">
+            Quản lý Đơn đặt hàng
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Vui lòng truy cập trang Lịch sử mua hàng để quản lý chi tiết.
+          </p>
+          <a
+            href="/kitchen-staff/purchase-history"
+            className="text-orange-600 font-medium hover:underline"
+          >
+            Đi tới Lịch sử mua hàng &rarr;
+          </a>
         </div>
-        <div className="p-4">
-          <div className="space-y-4"></div>
-        </div>
-      </div>
-      {/* Add inventory modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-800">
-                Thêm nguyên liệu mới
+      )}
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-5 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Edit size={18} className="text-orange-500" />
+                Cập nhật kho
               </h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
             </div>
+
             <div className="p-6 space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-800 mb-2">
+                Đang sửa: <strong>{editingItem?.ingredientName}</strong> (ID:{" "}
+                {editingItem?.itemId})
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên nguyên liệu
+                  Số lượng (Gram)
                 </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="Nhập tên nguyên liệu"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Danh mục
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">Chọn danh mục</option>
-                  <option value="staples">Nguyên liệu chính</option>
-                  <option value="meat">Thịt & Hải sản</option>
-                  <option value="vegetables">Rau củ</option>
-                  <option value="dairy">Sữa & Trứng</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số lượng
-                  </label>
+                <div className="relative">
                   <input
                     type="number"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={editForm.quantityGram}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        quantityGram: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                  <span className="absolute right-3 top-2 text-gray-400 text-sm">
+                    g
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  ~ {(editForm.quantityGram / 1000).toFixed(3)} kg
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số lô (Batch No)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={editForm.batchNo}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, batchNo: e.target.value })
+                    }
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Đơn vị
+                    Xuất xứ
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="l">lít</option>
-                    <option value="ml">ml</option>
-                    <option value="piece">cái/quả</option>
-                  </select>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={editForm.origin}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, origin: e.target.value })
+                    }
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mức tối thiểu
-                </label>
-                <input
-                  type="number"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="Nhập mức tối thiểu"
-                />
-              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Hạn sử dụng
                 </label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                  value={editForm.expirationDate}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, expirationDate: e.target.value })
+                  }
                 />
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+
+            <div className="p-5 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50">
               <button
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                onClick={() => setIsAddModalOpen(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium"
+                onClick={() => setIsEditModalOpen(false)}
               >
                 Hủy
               </button>
-              <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-                Thêm nguyên liệu
+              <button
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium flex items-center gap-2 shadow-sm"
+                onClick={handleSaveUpdate}
+              >
+                <Save size={18} /> Lưu thay đổi
               </button>
             </div>
           </div>

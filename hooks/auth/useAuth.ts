@@ -10,23 +10,13 @@ export const USER_QUERY_KEY = ["user"] as const;
 export const useAuth = () => {
   const queryClient = useQueryClient();
 
-  const userQuery = useQuery<User | null>({
+  const userQuery = useQuery({
     queryKey: USER_QUERY_KEY,
-    queryFn: async () => {
-      try {
-        const user = await authService.getCurrentUser();
-        // if (user) {
-        //   localStorage.setItem("currentUser", JSON.stringify(user));
-        // }
-        return user;
-      } catch (error) {
-        // localStorage.removeItem("currentUser");
-        throw error;
-      }
-    },
-    enabled: true,
+    queryFn: authService.getCurrentUser,
     retry: false,
-    staleTime: 7 * 24 * 60 * 60 * 1000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    throwOnError: false,
   });
 
   const loginMutation = useLoginMutation();
@@ -35,7 +25,6 @@ export const useAuth = () => {
   useEffect(() => {
     const handleExpired = () => {
       queryClient.setQueryData(USER_QUERY_KEY, null);
-      // localStorage.removeItem("currentUser");
       window.location.href = "/login";
     };
 
@@ -51,8 +40,8 @@ export const useAuth = () => {
   const logout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        // localStorage.removeItem("currentUser");
         queryClient.setQueryData(USER_QUERY_KEY, null);
+        localStorage.removeItem("currentUser");
         window.location.href = "/login";
       },
     });
@@ -65,7 +54,7 @@ export const useAuth = () => {
     isError: userQuery.isError,
 
     login,
-    logout: logout,
+    logout,
 
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,

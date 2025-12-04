@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { format, parseISO } from "date-fns";
+import { differenceInDays, format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
   Activity,
@@ -372,4 +372,30 @@ export const formatDate = (dateString?: string | null) => {
   } catch {
     return null;
   }
+};
+
+export const formatQuantity = (gram: number) => {
+  if (gram >= 1000) return `${(gram / 1000).toFixed(2)} kg`;
+  return `${gram} g`;
+};
+
+export const getExpiryStatus = (dateStr?: string) => {
+  if (!dateStr)
+    return { label: "Không có HSD", color: "text-gray-500", bg: "bg-gray-100" };
+
+  const daysLeft = differenceInDays(parseISO(dateStr), new Date());
+
+  if (daysLeft < 0)
+    return { label: "Đã hết hạn", color: "text-red-600", bg: "bg-red-100" };
+  if (daysLeft <= 3)
+    return {
+      label: `Còn ${daysLeft} ngày`,
+      color: "text-orange-600",
+      bg: "bg-orange-100",
+    };
+  return {
+    label: format(parseISO(dateStr), "dd/MM/yyyy"),
+    color: "text-gray-600",
+    bg: "bg-transparent",
+  };
 };

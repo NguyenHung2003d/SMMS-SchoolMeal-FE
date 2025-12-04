@@ -20,28 +20,31 @@ function parseJwt(token: string) {
 }
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("accessToken")?.value;
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
   const { pathname } = req.nextUrl;
-  const user = token ? parseJwt(token) : null;
-
-  const role = user?.role;
 
   if (
-    token &&
-    (pathname === "/login" ||
-      pathname === "/register" ||
-      pathname === "/forgot-password")
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password"
   ) {
-    let redirectUrl = PATHS.PARENT_DASHBOARD;
-    if (role === ROLES.ADMIN) redirectUrl = PATHS.ADMIN_DASHBOARD;
-    else if (role === ROLES.MANAGER) redirectUrl = PATHS.MANAGER_DASHBOARD;
-    else if (role === ROLES.TEACHER) redirectUrl = PATHS.WARDEN_DASHBOARD;
-    else if (role === ROLES.KITCHEN_STAFF)
-      redirectUrl = PATHS.KITCHEN_DASHBOARD;
+    if (accessToken) {
+      const user = parseJwt(accessToken);
+      const role = user?.role;
 
-    const url = req.nextUrl.clone();
-    url.pathname = redirectUrl;
-    return NextResponse.redirect(url);
+      if (role) {
+        let redirectUrl = PATHS.PARENT_DASHBOARD;
+        if (role === ROLES.ADMIN) redirectUrl = PATHS.ADMIN_DASHBOARD;
+        else if (role === ROLES.MANAGER) redirectUrl = PATHS.MANAGER_DASHBOARD;
+        else if (role === ROLES.TEACHER) redirectUrl = PATHS.WARDEN_DASHBOARD;
+        else if (role === ROLES.KITCHEN_STAFF)
+          redirectUrl = PATHS.KITCHEN_DASHBOARD;
+
+        return NextResponse.redirect(new URL(redirectUrl, req.url));
+      }
+    }
+    return NextResponse.next();
   }
 
   const protectedPaths = [
@@ -53,31 +56,40 @@ export function middleware(req: NextRequest) {
   ];
 
   if (protectedPaths.some((p) => pathname.startsWith(p))) {
-    if (!token) {
+    if (!accessToken && !refreshToken) {
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(url);
     }
 
-    if (pathname.startsWith("/manager") && role !== ROLES.MANAGER)
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    if (!accessToken && refreshToken) {
+      return NextResponse.next();
+    }
 
-    if (pathname.startsWith("/warden") && role !== ROLES.TEACHER)
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    if (accessToken) {
+      const user = parseJwt(accessToken);
+      const role = user?.role;
 
-    if (pathname.startsWith("/kitchen-staff") && role !== ROLES.KITCHEN_STAFF)
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+      if (pathname.startsWith("/manager") && role !== ROLES.MANAGER)
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
 
-    if (
-      pathname.startsWith("/parent") &&
-      role !== "Parent" &&
-      role !== "PARENT"
-    )
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+      if (pathname.startsWith("/warden") && role !== ROLES.TEACHER)
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
 
-    if (pathname.startsWith("/admin") && role !== ROLES.ADMIN)
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+      if (pathname.startsWith("/kitchen-staff") && role !== ROLES.KITCHEN_STAFF)
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+
+      if (
+        pathname.startsWith("/parent") &&
+        role !== "Parent" &&
+        role !== "PARENT"
+      )
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+
+      if (pathname.startsWith("/admin") && role !== ROLES.ADMIN)
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
   }
 
   return NextResponse.next();

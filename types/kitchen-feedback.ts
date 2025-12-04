@@ -3,28 +3,17 @@ export interface FeedbackDto {
   title: string; // [ClassName] + [TeacherName] + [Date]
   senderName: string;
   content: string;
-  targetType?: string; // "kitchen" | "parents"
-  targetRef?: string; // studentName
-  createdAt: string; // DateTime
-  dailyMealId?: number;
-}
-
-export interface FeedbackDetailDto {
-  feedbackId: number;
-  senderId: string; // Guid
-  targetType?: string;
-  targetRef?: string;
-  content: string;
-  createdAt: string;
+  targetType?: string; // "kitchen" / "parents"
+  targetRef?: string; // Tên học sinh (nếu có)
+  createdAt: string; // ISO Date string
   dailyMealId?: number;
 }
 
 export interface FeedbackSearchParams {
   keyword?: string;
+  targetType?: string;
   fromCreatedAt?: string;
   toCreatedAt?: string;
   sortBy?: string;
   sortDesc?: boolean;
-  pageIndex?: number;
-  pageSize?: number;
 }

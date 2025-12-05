@@ -170,9 +170,6 @@ export default function KitchenStaffPurchaseHistoryPage() {
               className="text-sm outline-none text-gray-600 cursor-pointer"
             />
           </div>
-          <button className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg flex items-center transition-colors shadow-sm font-medium">
-            <Download size={18} className="mr-2" /> Xuất Excel
-          </button>
         </div>
       </div>
 
@@ -496,7 +493,6 @@ export default function KitchenStaffPurchaseHistoryPage() {
                             </tr>
                           ))}
                         </tbody>
-                        {/* Footer Tổng Tiền */}
                         <tfoot className="bg-gray-50 border-t border-gray-200">
                           <tr>
                             <td
@@ -520,7 +516,6 @@ export default function KitchenStaffPurchaseHistoryPage() {
               )}
             </div>
 
-            {/* Modal Footer */}
             <div className="p-5 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => setIsDetailModalOpen(false)}

@@ -1,7 +1,7 @@
 import { LucideIcon } from "lucide-react";
 
 export interface Student {
-  studentId: number;
+  studentId: string;
   fullName: string;
   avatar?: LucideIcon;
   avatarUrl: string;

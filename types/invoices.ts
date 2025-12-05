@@ -1,17 +1,16 @@
 import { Student } from "./student";
 
-export type InvoiceDto = {
+export type InvoiceDto =  {
   invoiceId: number;
-  studentId: number;
+  studentId?: string; // Optional because API might not return it in the list
   studentName: string;
   monthNo: number;
   dateFrom: string;
   dateTo: string;
   absentDay: number;
   status: string;
-  totalAmount?: number;
-  pricePerDay?: number;
-};
+  amountToPay: number; // Correct field name from backend
+}
 
 export type ViewInvoiceProps = {
   selectedChild: Student | null;

@@ -1,6 +1,6 @@
 "use client";
 import { useSelectedChild } from "@/context/SelectedChildContext";
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { AttendanceRequestDto, AttendanceResponseDto } from "@/types/parent";
 
@@ -254,7 +254,7 @@ export default function LeaveApplication() {
                             <div className="flex items-center gap-2">
                               <Calendar className="text-blue-500" size={20} />
                               <p className="font-bold text-gray-800 text-lg">
-                                {formatDateForInput(item.absentDate)}
+                                {formatDate(item.absentDate)}
                               </p>
                             </div>
                             <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useParentProfile } from "@/hooks/useParentProfile"; // Import Hook vừa tạo
+import { useParentProfile } from "@/hooks/useParentProfile";
 import { ParentInfoForm } from "@/components/parents/updateInfo/ParentInfoForm";
 import { ParentInfoDisplay } from "@/components/parents/updateInfo/ParentInfoDisplay";
 import { StudentsInfo } from "@/components/parents/updateInfo/StudentsInfo";

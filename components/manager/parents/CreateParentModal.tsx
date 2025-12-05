@@ -35,7 +35,7 @@ import { CreateParentRequest, CreateChildDto } from "@/types/manager-parent";
 import { useQuery } from "@tanstack/react-query";
 import { managerClassService } from "@/services/managerClass.service";
 import { managerParentService } from "@/services/managerParent.service";
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 
 interface CreateParentModalProps {
   open: boolean;
@@ -338,7 +338,7 @@ export function CreateParentModal({
                           {child.dateOfBirth && (
                             <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200 font-medium">
                               <CalendarDays className="w-3.5 h-3.5" />
-                              {formatDateForInput(child.dateOfBirth)}
+                              {formatDate(child.dateOfBirth)}
                             </span>
                           )}
 
@@ -465,7 +465,7 @@ export function CreateParentModal({
                         }
                         className="pl-12 h-12 bg-white border-blue-300 focus:border-blue-500 rounded-lg text-base w-full"
                       />
-                    </div>  
+                    </div>
                   </div>
                 </div>
               </div>

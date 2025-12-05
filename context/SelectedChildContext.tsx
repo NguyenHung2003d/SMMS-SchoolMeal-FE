@@ -25,18 +25,26 @@ export function SelectedChildProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("selectedChild");
     if (saved) {
       try {
-        setSelectedChild(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.studentId) {
+          parsed.studentId = String(parsed.studentId);
+        }
+        setSelectedChild(parsed);
       } catch (e) {
         console.error("Lỗi parse student từ storage", e);
+        localStorage.removeItem("selectedChild");
       }
     }
   }, []);
 
   const handleSetSelectedChild = (child: Child | null) => {
-    setSelectedChild(child);
+    // Đảm bảo tính nhất quán dữ liệu trước khi lưu
     if (child) {
-      localStorage.setItem("selectedChild", JSON.stringify(child));
+      const sanitizedChild = { ...child, studentId: String(child.studentId) };
+      setSelectedChild(sanitizedChild);
+      localStorage.setItem("selectedChild", JSON.stringify(sanitizedChild));
     } else {
+      setSelectedChild(null);
       localStorage.removeItem("selectedChild");
     }
   };

@@ -11,20 +11,8 @@ export const useLoginMutation = () => {
 
   return useMutation<AuthResponse, AxiosError, LoginVariables>({
     mutationFn: ({ data }) => authService.login(data),
-
     onSuccess: (res) => {
       queryClient.setQueryData(USER_QUERY_KEY, res.user);
-
-      // if (res.user) {
-      //   localStorage.setItem("currentUser", JSON.stringify(res.user));
-      // }
-
-      // if (variables.rememberMe) {
-      //   localStorage.setItem("rememberMe", "true");
-      // } else {
-      //   localStorage.removeItem("rememberMe");
-      // }
-
       if (res.requirePasswordReset) {
         toast("Vui lòng đổi mật khẩu lần đầu", { icon: "🔑" });
         window.location.href = `/reset-first-password?phoneOrEmail=${encodeURIComponent(

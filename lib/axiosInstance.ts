@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: process.env.NEXT_PUBLIC_URL_API,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -55,21 +55,26 @@ axiosInstance.interceptors.response.use(
 
     try {
       await axios.post(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-        }/auth/refresh-token`,
+        `${process.env.NEXT_PUBLIC_URL_API}/Auth/refresh-token`,
         {},
         { withCredentials: true }
       );
-      processQueue(null);
 
+      processQueue(null);
       return axiosInstance(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
 
       if (typeof window !== "undefined") {
         localStorage.removeItem("currentUser");
-        window.location.href = "/login";
+        const path = window.location.pathname;
+        if (
+          !path.startsWith("/login") &&
+          !path.startsWith("/register") &&
+          !path.startsWith("/forgot-password")
+        ) {
+          window.location.href = "/login";
+        }
       }
       return Promise.reject(refreshError);
     } finally {

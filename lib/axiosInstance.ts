@@ -1,7 +1,10 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_URL_API,
+  baseURL:
+    process.env.NEXT_PUBLIC_URL_API ||
+    "http://localhost:5000/api" ||
+    "https://localhost:5000/api",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -55,7 +58,11 @@ axiosInstance.interceptors.response.use(
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_URL_API}/Auth/refresh-token`,
+        `${
+          process.env.NEXT_PUBLIC_URL_API ||
+          "http://localhost:5000/api" ||
+          "https://localhost:5000/api"
+        }/Auth/refresh-token`,
         {},
         { withCredentials: true }
       );

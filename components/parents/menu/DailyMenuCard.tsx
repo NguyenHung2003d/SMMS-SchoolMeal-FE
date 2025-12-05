@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { formatDateForInput, getDayName } from "@/helpers";
+import { formatDate, getDayName } from "@/helpers";
 import { DailyMenuCardProps } from "@/types/parent";
 
 export default function DailyMenuCard({
@@ -18,7 +18,7 @@ export default function DailyMenuCard({
         <p className="font-bold text-orange-700 text-base">
           {getDayName(date)}
         </p>
-        <p className="text-sm text-gray-600">{formatDateForInput(date)}</p>
+        <p className="text-sm text-gray-600">{formatDate(date)}</p>
       </div>
 
       <div className="flex-1 p-4 flex flex-col">

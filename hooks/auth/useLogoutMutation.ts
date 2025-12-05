@@ -17,15 +17,16 @@ export const useLogoutMutation = (
     mutationFn: authService.logout,
     onSuccess: () => {
       queryClient.setQueryData(USER_QUERY_KEY, null);
+      queryClient.removeQueries({ queryKey: USER_QUERY_KEY });
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+      }
       toast.success("Đăng xuất thành công!");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 100);
+      window.location.href = "/login";
     },
     onError: (error) => {
       console.log("Logout error:", error);
       queryClient.setQueryData(USER_QUERY_KEY, null);
-      localStorage.removeItem("currentUser");
       window.location.href = "/login";
     },
     ...options,

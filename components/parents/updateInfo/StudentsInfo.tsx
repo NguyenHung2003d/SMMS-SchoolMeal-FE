@@ -11,7 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { StudentsInfoProps } from "@/types/student";
-import { AllergyPill, formatDateForInput } from "@/helpers";
+import { AllergyPill } from "@/helpers";
 import toast from "react-hot-toast";
 import { getImageUrl } from "@/lib/utils";
 import { ALLERGY_LIST } from "@/data/nutrition/allergies";
@@ -213,7 +213,7 @@ export function StudentsInfo({
                   <input
                     type="date"
                     name="dateOfBirth"
-                    value={formatDateForInput(selectedStudent.dateOfBirth)}
+                    value={selectedStudent.dateOfBirth}
                     onChange={handleInfoChange}
                     className="w-full pl-12 p-3 border-2 rounded-lg"
                   />

@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDateForInput, getDayName } from "@/helpers";
+import {  formatDate, getDayName } from "@/helpers";
 import { MealDetailModalProps, MenuFoodItemDto } from "@/types/parent";
 import { axiosInstance } from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
@@ -53,7 +53,7 @@ export default function MealDetailModal({
           <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             {getDayName(mealDate)}
             <span className="text-gray-400 font-normal text-sm">
-              | {formatDateForInput(mealDate)}
+              | {formatDate(mealDate)}
             </span>
           </h3>
           <button

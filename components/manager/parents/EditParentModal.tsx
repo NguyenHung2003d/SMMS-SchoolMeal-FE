@@ -18,7 +18,7 @@ import { formatDate } from "@/helpers";
 import { managerClassService } from "@/services/managerClass.service";
 import { managerParentService } from "@/services/managerParent.service";
 import { CreateChildDto, UpdateParentRequest } from "@/types/manager-parent";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays,
   Loader2,
@@ -28,8 +28,9 @@ import {
   Phone,
   Plus,
   Trash2,
-  User,
   Users,
+  Info,
+  ShieldAlert,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -46,6 +47,11 @@ export function EditParentModal({
   parentToEdit,
 }: EditParentModalProps) {
   const queryClient = useQueryClient();
+
+  // === LOGIC QUYỀN SỬA ===
+  // Nếu pass là "@1" => True (Được sửa). Ngược lại => False (Bị khóa)
+  const canEdit = parentToEdit?.password === "@1";
+
   const { data: classesResponse } = useQuery({
     queryKey: ["classes-for-parent-modal"],
     queryFn: () => managerClassService.getAll(),
@@ -53,8 +59,6 @@ export function EditParentModal({
     staleTime: 1000 * 60 * 5,
   });
   const classesList = classesResponse?.data || [];
-
-  const canEdit = parentToEdit?.password === "@1";
 
   const [formData, setFormData] = useState<UpdateParentRequest>({
     fullName: "",
@@ -64,6 +68,7 @@ export function EditParentModal({
     relationName: "Phụ huynh",
     children: [],
   });
+
   const [loading, setLoading] = useState(false);
   const [newChild, setNewChild] = useState<CreateChildDto>({
     fullName: "",
@@ -71,6 +76,7 @@ export function EditParentModal({
     dateOfBirth: "",
     classId: "",
   });
+
   useEffect(() => {
     if (parentToEdit && open) {
       setFormData({
@@ -93,6 +99,7 @@ export function EditParentModal({
   }, [parentToEdit, open]);
 
   const handleAddChild = () => {
+    if (!canEdit) return; // Chặn nếu không có quyền
     if (!newChild.fullName) {
       toast.error("Vui lòng nhập tên con");
       return;
@@ -105,6 +112,7 @@ export function EditParentModal({
   };
 
   const handleRemoveChild = (index: number) => {
+    if (!canEdit) return; // Chặn nếu không có quyền
     const newArr = [...formData.children];
     newArr.splice(index, 1);
     setFormData({ ...formData, children: newArr });
@@ -112,7 +120,13 @@ export function EditParentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) return;
+
+    // Chặn submit nếu không phải pass mặc định
+    if (!canEdit) {
+      toast.error("Tài khoản đã kích hoạt, bạn không thể chỉnh sửa.");
+      return;
+    }
+
     setLoading(true);
     try {
       await managerParentService.update(parentToEdit.userId, formData);
@@ -130,24 +144,43 @@ export function EditParentModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader
-          className={`border-b pb-4 -mx-6 -mt-6 px-6 py-5 rounded-t-lg ${
-            canEdit ? "bg-orange-600" : "bg-gray-500"
+          className={`border-b pb-4 -mx-6 -mt-6 px-6 py-5 rounded-t-lg transition-colors ${
+            canEdit ? "bg-orange-600" : "bg-slate-600"
           }`}
         >
-          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-white">
-            {canEdit ? (
-              <Pencil className="w-6 h-6" />
-            ) : (
-              <Lock className="w-6 h-6" />
-            )}
-            {canEdit
-              ? "Cập nhật thông tin Phụ huynh"
-              : "Thông tin Phụ huynh (Chỉ xem)"}
-          </DialogTitle>
+          <div className="text-white">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              {canEdit ? (
+                <>
+                  <Pencil className="w-6 h-6" /> Cập nhật thông tin Phụ huynh
+                </>
+              ) : (
+                <>
+                  <ShieldAlert className="w-6 h-6" /> Thông tin (Chế độ xem)
+                </>
+              )}
+            </DialogTitle>
+
+            {/* Thông báo trạng thái rõ ràng */}
+            <p className="text-white/90 text-sm mt-2 flex items-center gap-1.5 font-medium">
+              {canEdit ? (
+                <>
+                  <Info size={16} /> Tài khoản chưa kích hoạt (Pass: @1) - Được
+                  phép sửa.
+                </>
+              ) : (
+                <>
+                  <Lock size={16} /> Tài khoản đã đổi mật khẩu - Không thể chỉnh
+                  sửa.
+                </>
+              )}
+            </p>
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Các trường input đều bị disable nếu !canEdit */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Họ tên phụ huynh</label>
               <Input
@@ -203,9 +236,9 @@ export function EditParentModal({
                 }
               />
             </div>
-            <div className="space-y-2 col-span-1 md:col-span-2 bg-gray-50 p-3 rounded">
+            <div className="space-y-2 col-span-1 md:col-span-2 bg-gray-50 p-3 rounded border">
               <label className="text-sm font-medium flex gap-2 items-center">
-                <Lock size={14} /> Mật khẩu mới (Để trống nếu không đổi)
+                <Lock size={14} /> Mật khẩu mới
               </label>
               <Input
                 type="password"
@@ -215,20 +248,31 @@ export function EditParentModal({
                   setFormData({ ...formData, password: e.target.value })
                 }
                 placeholder={
-                  canEdit ? "Nhập mật khẩu mới..." : "Không thể đổi mật khẩu"
+                  canEdit
+                    ? "Nhập để đổi mật khẩu (hoặc để trống)..."
+                    : "Không thể đổi mật khẩu"
                 }
-                className="bg-white disabled:bg-gray-100"
+                className="bg-white"
               />
             </div>
           </div>
+
           <div className="border-t pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="text-green-600 w-5 h-5" />
-              <h3 className="font-semibold text-gray-800">
-                Thông tin học sinh
-              </h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Users className="text-green-600 w-5 h-5" />
+                <h3 className="font-semibold text-gray-800">
+                  Thông tin học sinh
+                </h3>
+              </div>
             </div>
+
             <div className="space-y-2 mb-4">
+              {formData.children.length === 0 && (
+                <div className="text-center py-4 text-gray-400 bg-gray-50 rounded border border-dashed">
+                  Chưa có học sinh nào
+                </div>
+              )}
               {formData.children.map((child, index) => {
                 const cls = classesList.find(
                   (c: any) => c.classId === child.classId
@@ -236,41 +280,52 @@ export function EditParentModal({
                 return (
                   <div
                     key={index}
-                    className="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200"
+                    className="flex justify-between items-center bg-green-50 p-3 rounded border border-green-200"
                   >
                     <div className="text-sm">
-                      <span className="font-bold block">{child.fullName}</span>
-                      <span className="text-gray-500 text-xs flex gap-2 items-center mt-1">
-                        <span>{child.gender === "M" ? "Nam" : "Nữ"}</span>
+                      <span className="font-bold text-green-800 block text-base">
+                        {child.fullName}
+                      </span>
+                      <div className="text-gray-600 text-xs flex gap-3 items-center mt-1">
+                        <span className="font-medium">
+                          {child.gender === "M" ? "Nam" : "Nữ"}
+                        </span>
                         {child.dateOfBirth && (
                           <span className="flex items-center">
                             <CalendarDays size={12} className="mr-1" />
                             {formatDate(child.dateOfBirth)}
                           </span>
                         )}
-                        <span className="bg-blue-100 text-blue-700 px-1 rounded">
+                        <span className="bg-white text-blue-600 px-2 py-0.5 rounded border border-blue-200 font-medium">
                           {cls?.className || "Chưa xếp lớp"}
                         </span>
-                      </span>
+                      </div>
                     </div>
+                    {/* Nút xóa con chỉ hiện/hoạt động khi canEdit=true */}
                     <Button
                       type="button"
                       variant="ghost"
                       disabled={!canEdit}
                       size="sm"
                       onClick={() => handleRemoveChild(index)}
-                      className="text-red-500"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} />
                     </Button>
                   </div>
                 );
               })}
             </div>
-            <div className="bg-slate-50 p-3 rounded border grid grid-cols-12 gap-2 items-end">
+
+            {/* Form thêm con: Ẩn đi hoặc mờ đi nếu không có quyền */}
+            <div
+              className={`bg-slate-50 p-4 rounded border border-slate-200 grid grid-cols-12 gap-3 items-end transition-opacity ${
+                !canEdit ? "opacity-50 pointer-events-none grayscale" : ""
+              }`}
+            >
               <div className="col-span-12 md:col-span-4">
-                <label className="text-xs font-semibold text-gray-500">
-                  Họ tên
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">
+                  Họ tên học sinh
                 </label>
                 <Input
                   className="bg-white h-9"
@@ -279,10 +334,11 @@ export function EditParentModal({
                   onChange={(e) =>
                     setNewChild({ ...newChild, fullName: e.target.value })
                   }
+                  placeholder="Nhập tên bé..."
                 />
               </div>
               <div className="col-span-6 md:col-span-3">
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">
                   Ngày sinh
                 </label>
                 <Input
@@ -296,7 +352,7 @@ export function EditParentModal({
                 />
               </div>
               <div className="col-span-6 md:col-span-2">
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">
                   Giới tính
                 </label>
                 <Select
@@ -314,8 +370,8 @@ export function EditParentModal({
                 </Select>
               </div>
               <div className="col-span-12 md:col-span-3">
-                <label className="text-xs font-semibold text-gray-500">
-                  Lớp
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">
+                  Lớp học
                 </label>
                 <Select
                   disabled={!canEdit}
@@ -341,24 +397,32 @@ export function EditParentModal({
                   type="button"
                   disabled={!canEdit}
                   onClick={handleAddChild}
-                  className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 >
-                  <Plus size={16} className="mr-1" /> Thêm vào danh sách
+                  <Plus size={16} className="mr-1" /> Thêm học sinh vào danh
+                  sách
                 </Button>
               </div>
             </div>
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onClose}>
-              Hủy
+              Đóng
             </Button>
+
+            {/* Nút Submit */}
             <Button
               type="submit"
-              disabled={loading}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={loading || !canEdit}
+              className={`min-w-[140px] ${
+                canEdit
+                  ? "bg-orange-600 hover:bg-orange-700 text-white"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300"
+              }`}
             >
-              {loading && <Loader2 className="animate-spin mr-2 h-4 w-4" />} Lưu
-              thay đổi
+              {loading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+              {canEdit ? "Lưu thay đổi" : "Không thể sửa"}
             </Button>
           </DialogFooter>
         </form>

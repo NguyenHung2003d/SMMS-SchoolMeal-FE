@@ -15,6 +15,7 @@ import {
   FileText,
   BarChart3,
   UserPlus,
+  PackageCheck, // <--- 1. Thêm import icon này
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -77,7 +78,7 @@ export default function ManagerLayout({
             <Menu size={20} />
           </button>
         </div>
-        <nav className="p-4">
+        <nav className="p-4 overflow-y-auto h-[calc(100vh-70px)] scrollbar-thin">
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -176,6 +177,7 @@ export default function ManagerLayout({
               </li>
             </ul>
           </div>
+
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -219,6 +221,37 @@ export default function ManagerLayout({
               </li>
             </ul>
           </div>
+
+          {/* 2. Thêm Section mới: KHO & BẾP */}
+          <div className="mb-4">
+            <p
+              className={`text-xs font-medium text-gray-400 mb-2 ${
+                !isSidebarOpen && "text-center"
+              }`}
+            >
+              {isSidebarOpen ? "KHO & BẾP" : ""}
+            </p>
+            <ul className="space-y-1">
+              <li>
+                <Link
+                  href="/manager/purchase-orders"
+                  className={`flex items-center w-full ${
+                    isSidebarOpen ? "justify-start px-4" : "justify-center"
+                  } py-3 rounded-lg ${
+                    isActive("/manager/purchase-orders")
+                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
+                      : "text-gray-600 hover:bg-orange-50"
+                  }`}
+                >
+                  <PackageCheck size={20} />
+                  {isSidebarOpen && (
+                    <span className="ml-3">Duyệt đơn mua hàng</span>
+                  )}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 import { managerClassService } from "@/services/managerClass.service";
 import { managerParentService } from "@/services/managerParent.service";
 import { CreateChildDto, UpdateParentRequest } from "@/types/manager-parent";
@@ -245,7 +245,7 @@ export function EditParentModal({
                         {child.dateOfBirth && (
                           <span className="flex items-center">
                             <CalendarDays size={12} className="mr-1" />
-                            {formatDateForInput(child.dateOfBirth)}
+                            {formatDate(child.dateOfBirth)}
                           </span>
                         )}
                         <span className="bg-blue-100 text-blue-700 px-1 rounded">

@@ -29,3 +29,11 @@ export type LoginVariables = {
   data: LoginFormData;
   rememberMe?: boolean;
 };
+
+export interface UpdateAccountRequest {
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string;
+  password?: string;
+}

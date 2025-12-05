@@ -374,6 +374,19 @@ export const formatDate = (dateString?: string | null) => {
   }
 };
 
+export const getStatusBadge = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "confirmed":
+      return <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold border border-green-200">Đã nhập kho</span>;
+    case "rejected":
+      return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">Đã từ chối</span>;
+    case "draft":
+      return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">Chờ duyệt</span>;
+    default:
+      return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{status}</span>;
+  }
+};
+
 export const formatQuantity = (gram: number) => {
   if (gram >= 1000) return `${(gram / 1000).toFixed(2)} kg`;
   return `${gram} g`;

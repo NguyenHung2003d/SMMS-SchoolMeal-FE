@@ -114,8 +114,8 @@ export default function StaffTable({
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600">
-                      {staff.createdDate
-                        ? new Date(staff.createdDate).toLocaleDateString(
+                      {staff.createdAt
+                        ? new Date(staff.createdAt).toLocaleDateString(
                             "vi-VN"
                           )
                         : "-"}

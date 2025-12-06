@@ -27,7 +27,7 @@ export interface StaffDto {
   role: string;
   isActive: boolean;
   avatarUrl?: string;
-  createdDate?: string;
+  createdAt?: string;
   password?: string;
 }
 

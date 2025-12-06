@@ -46,15 +46,29 @@ export default function MenuAndFeedbackPage() {
       setLoadingMenu(true);
       setSelectedMeal(null);
       try {
+        const dateParam = selectedDateInWeek.includes("T")
+          ? selectedDateInWeek.split("T")[0]
+          : selectedDateInWeek;
+        console.log(">>> [FE Request] Gửi lên:", {
+          studentId: selectedChild.studentId,
+          date: dateParam,
+        });
         const res = await axiosInstance.get<WeekMenuDto>(
           "/weekly-menu/week-menu",
           {
             params: {
               studentId: selectedChild.studentId,
-              date: selectedDateInWeek,
+              date: dateParam,
             },
           }
         );
+        console.log(">>> [FE Response] Dữ liệu nhận về:", res.data);
+        if (res.data && res.data.days) {
+          console.log(">>> List Days:", res.data.days);
+          res.data.days.forEach((d) =>
+            console.log(`   Day: ${d.mealDate} - Type: ${d.mealType}`)
+          );
+        }
         setMenuData(res.data);
       } catch (error) {
         console.error("Lỗi tải menu:", error);

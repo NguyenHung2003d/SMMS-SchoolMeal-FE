@@ -142,33 +142,6 @@ export function CreateParentModal({
     };
   };
 
-  const getDateConstraints = () => {
-    if (!newChild.classId)
-      return {
-        min: undefined,
-        max: undefined,
-      };
-
-    const selectedClass = classesList.find(
-      (c: any) => c.classId === newChild.classId
-    );
-    if (!selectedClass) return { min: undefined, max: undefined };
-    const match = selectedClass.className.match(/\d+/);
-    if (!match) return { min: undefined, max: undefined };
-    const grade = parseInt(match[0]);
-    const currentYear = new Date().getFullYear();
-    const targetYear = currentYear - (grade + 5);
-    const minYear = targetYear - 2;
-    const maxYear = targetYear + 1;
-    return {
-      min: `${minYear}-01-01`,
-      max: `${maxYear}-12-31`,
-      suggestedYear: targetYear,
-    };
-  };
-
-  const dateConstraints = getDateConstraints();
-
   const currentClass = classesList.find(
     (c: any) => c.classId === newChild.classId
   );
@@ -187,7 +160,6 @@ export function CreateParentModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6 px-2">
-          {/* Parent Info Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-5 pb-2 border-b-2 border-blue-100">
               <div className="p-2 bg-blue-50 rounded-lg">

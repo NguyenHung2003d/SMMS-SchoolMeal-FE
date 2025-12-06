@@ -232,6 +232,7 @@ export default function ManagerParentsPage() {
           open={showEditModal}
           onClose={() => setShowEditModal(false)}
           parentToEdit={parentToEdit}
+          onSuccess={fetchParents}
         />
       )}
 

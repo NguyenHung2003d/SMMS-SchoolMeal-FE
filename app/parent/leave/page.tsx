@@ -118,7 +118,7 @@ export default function LeaveApplication() {
             </div>
             <div>
               <p className="text-yellow-800 font-bold text-lg">
-                Vui lòng chọn học sinh
+                Vui lòng  ọc sinh
               </p>
               <p className="text-yellow-700 text-sm mt-1">
                 Chọn học sinh từ danh sách bên trái để tạo đơn xin nghỉ

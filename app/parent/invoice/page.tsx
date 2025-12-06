@@ -17,9 +17,7 @@ export default function InvoicePage() {
     null
   );
 
-  // 1. Fetch dữ liệu khi đổi bé
   useEffect(() => {
-    // Nếu chưa chọn bé hoặc studentId rỗng thì dừng
     if (!selectedChild?.studentId) {
       setInvoices([]);
       setSelectedInvoiceId(null); // Reset selection ngay khi không có bé
@@ -29,9 +27,8 @@ export default function InvoicePage() {
     const fetchInvoices = async () => {
       try {
         setLoading(true);
-        // Reset danh sách cũ để tránh hiển thị nhầm trong lúc loading
-        setInvoices([]); 
-        
+        setInvoices([]);
+
         const res = await axiosInstance.get<InvoiceDto[]>(
           "/Invoice/my-invoices",
           {
@@ -43,13 +40,13 @@ export default function InvoicePage() {
         setInvoices(res.data);
       } catch (error: any) {
         console.error("Lỗi tải hóa đơn:", error);
-        // Nếu lỗi 404 (không có hóa đơn) thì không cần báo lỗi đỏ lòm, chỉ cần set rỗng
         if (error.response?.status === 404) {
-            setInvoices([]);
+          setInvoices([]);
         } else {
-            const msg = error.response?.data?.message || "Không thể tải danh sách hóa đơn.";
-            toast.error(msg);
-            setInvoices([]);
+          const msg =
+            error.response?.data?.message || "Không thể tải danh sách hóa đơn.";
+          toast.error(msg);
+          setInvoices([]);
         }
       } finally {
         setLoading(false);
@@ -58,26 +55,21 @@ export default function InvoicePage() {
     fetchInvoices();
   }, [selectedChild?.studentId]);
 
-  // API đã lọc theo studentId rồi nên dùng trực tiếp
   const childInvoices = invoices;
 
-  // 2. Logic tự động chọn hóa đơn mới nhất (ĐÃ FIX LỖI)
   useEffect(() => {
     if (childInvoices.length > 0) {
-      // Kiểm tra xem invoice đang chọn (của bé cũ) có nằm trong danh sách mới (của bé mới) không?
-      const currentIdExists = childInvoices.some(inv => inv.invoiceId === selectedInvoiceId);
+      const currentIdExists = childInvoices.some(
+        (inv) => inv.invoiceId === selectedInvoiceId
+      );
 
-      // Nếu chưa chọn gì (null) HOẶC ID đang chọn không thuộc về danh sách mới
       if (selectedInvoiceId === null || !currentIdExists) {
-        // Sắp xếp ID giảm dần để lấy cái mới nhất
         const sorted = [...childInvoices].sort(
           (a, b) => b.invoiceId - a.invoiceId
         );
-        // Chọn cái đầu tiên (mới nhất)
         setSelectedInvoiceId(sorted[0].invoiceId);
       }
     } else {
-      // Nếu danh sách rỗng thì reset về null
       setSelectedInvoiceId(null);
     }
   }, [childInvoices, selectedInvoiceId]);

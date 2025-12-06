@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AttendanceSummaryDto, StudentDto } from "@/types/warden";
-import { wardenDashboardService } from "@/services/wardenDashborad.service";
-import { wardenClassService } from "@/services/wardenClassView.service";
+import { wardenDashboardService } from "@/services/wardens/wardenDashborad.service";
+import { wardenClassService } from "@/services/wardens/wardenClassView.service";
 import { formatDate } from "@/helpers";
 
 export default function TeacherClassView() {

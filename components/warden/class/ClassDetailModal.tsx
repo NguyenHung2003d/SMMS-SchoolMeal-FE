@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { wardenClassService } from "@/services/wardenClassView.service";
+import { wardenClassService } from "@/services/wardens/wardenClassView.service";
 import { StudentDto, AttendanceSummaryDto } from "@/types/warden";
 import { formatDate } from "@/helpers";
 

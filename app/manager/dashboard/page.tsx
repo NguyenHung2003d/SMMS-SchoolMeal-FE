@@ -7,8 +7,8 @@ import { ManagerOverviewDto, RecentPurchaseDto } from "@/types/manager";
 import StatsGrid from "@/components/manager/dashboard/StatsGrid";
 import QuickAccessGrid from "@/components/manager/dashboard/QuickAccessGrid";
 import ReportsGrid from "@/components/manager/dashboard/ReportsGrid";
-import { managerDashboardService } from "@/services/managerDashboard.service";
-import { managerPurchasesService } from "@/services/managerPurchases.service";
+import { managerDashboardService } from "@/services/manager/managerDashboard.service";
+import { managerPurchasesService } from "@/services/manager/managerPurchases.service";
 import RecentPurchasesTable from "@/components/manager/dashboard/RecentPurchasesTable";
 
 export default function ManagerDashboardPage() {

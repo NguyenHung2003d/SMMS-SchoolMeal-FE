@@ -1,4 +1,4 @@
-import { notificationService } from "@/services/managerNotification.service";
+import { notificationService } from "@/services/manager/managerNotification.service";
 import { ManagerNotification } from "@/types/notification";
 import { format } from "date-fns";
 import {

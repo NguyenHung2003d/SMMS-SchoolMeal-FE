@@ -20,7 +20,7 @@ import {
   FoodItemDto,
   IngredientDto,
 } from "@/types/kitchen-nutrition";
-import { kitchenNutritionService } from "@/services/kitchenNutrion.service";
+import { kitchenNutritionService } from "@/services/kitchenStaff/kitchenNutrion.service";
 
 interface SelectedIngredientUI {
   id: number;

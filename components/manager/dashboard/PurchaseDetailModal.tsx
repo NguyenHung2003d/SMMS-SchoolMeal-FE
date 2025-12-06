@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { X, Loader2, Package, User, FileText } from "lucide-react";
 import { formatCurrency } from "@/helpers"; 
-import { managerPurchasesService } from "@/services/managerPurchases.service";
+import { managerPurchasesService } from "@/services/manager/managerPurchases.service";
 
 interface ModalProps {
   orderId: number | null;

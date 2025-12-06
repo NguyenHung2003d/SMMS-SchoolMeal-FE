@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { StaffDto } from "@/types/manager";
-import { managerService } from "@/services/managerStaff.service";
+import { managerService } from "@/services/manager/managerStaff.service";
 import StaffToolbar from "@/components/manager/staff/StaffToolbar";
 import StaffTable from "@/components/manager/staff/StaffTable";
 import StatusStaffModal from "@/components/manager/staff/StatusStaffModal";

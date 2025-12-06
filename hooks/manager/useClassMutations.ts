@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { managerClassService } from "@/services/managerClass.service";
+import { managerClassService } from "@/services/manager/managerClass.service";
 import { authService } from "@/services/auth.service";
 import { ClassDto } from "@/types/manager-class";
 

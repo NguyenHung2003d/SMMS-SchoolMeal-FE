@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { format, parseISO, addDays, startOfWeek } from "date-fns";
 import { vi } from "date-fns/locale";
-import { kitchenMenuService } from "@/services/kitchenMenu.service";
+import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
 import { WeeklyScheduleDto } from "@/types/kitchen-menu";
 import {
   DayMenuRow,

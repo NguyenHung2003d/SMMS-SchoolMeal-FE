@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { adminSchoolService } from "@/services/adminSchool.service";
+import { adminSchoolService } from "@/services/admin/adminSchool.service";
 import {
   CreateSchoolDto,
   SchoolDTO,
@@ -26,7 +26,7 @@ import {
 
 import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
 import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal";
-import { adminSchoolRevenueService } from "@/services/adminRevenue.service";
+import { adminSchoolRevenueService } from "@/services/admin/adminRevenue.service";
 
 export default function SchoolManagementPage() {
   const [schools, setSchools] = useState<SchoolDTO[]>([]);

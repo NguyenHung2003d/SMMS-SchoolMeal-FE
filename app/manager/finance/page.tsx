@@ -8,13 +8,13 @@ import {
   InvoiceDto,
   PurchaseOrderDto,
 } from "@/types/manager-finance";
-import { managerFinanceService } from "@/services/managerFinance.service";
+import { managerFinanceService } from "@/services/manager/managerFinance.service";
 import { Button } from "@/components/ui/button";
 import { FinanceStats } from "@/components/manager/finance/FinanceStats";
 import { FinanceCharts } from "@/components/manager/finance/FinanceCharts";
 import { InvoicesTable } from "@/components/manager/finance/InvoicesTable";
 import { InvoiceDetailModal } from "@/components/manager/finance/FinanceModals";
-import { managerPurchasesService } from "@/services/managerPurchases.service";
+import { managerPurchasesService } from "@/services/manager/managerPurchases.service";
 import { ShoppingOrdersModal } from "@/components/manager/finance/ShoppingOrdersModal";
 
 export default function ManagerFinance() {

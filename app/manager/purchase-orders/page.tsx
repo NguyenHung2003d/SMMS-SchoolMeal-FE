@@ -13,7 +13,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { toast } from "react-hot-toast"; // Hoặc library toast bạn dùng
-import { managerAcceptPurchaseService } from "@/services/managerAcceptPurchase.service";
+import { managerAcceptPurchaseService } from "@/services/kitchenStaff/managerAcceptPurchase.service";
 import {
   PurchaseOrderDetail,
   PurchaseOrderSummary,

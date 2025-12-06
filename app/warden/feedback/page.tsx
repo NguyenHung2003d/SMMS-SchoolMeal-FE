@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Plus, Loader2 } from "lucide-react";
-import { wardenFeedbackService } from "@/services/wardenFeedback.service";
+import { wardenFeedbackService } from "@/services/wardens/wardenFeedback.service";
 import { FeedbackDto } from "@/types/warden-feedback";
 import toast from "react-hot-toast";
 import { FeedbackFilterBar } from "@/components/warden/feedback/FeedbackFilterBar";

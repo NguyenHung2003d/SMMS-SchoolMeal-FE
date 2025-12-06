@@ -12,7 +12,7 @@ import { StatsCard } from "@/components/warden/StatsCard";
 import { ClassOverview } from "@/components/warden/class/ClassOverview";
 import { QuickAccessCard } from "@/components/warden/QuickAccessCard";
 import { ClassDto, WardenStats } from "@/types/warden";
-import { wardenDashboardService } from "@/services/wardenDashborad.service";
+import { wardenDashboardService } from "@/services/wardens/wardenDashborad.service";
 
 export default function WardenDashboardPage() {
   const [loading, setLoading] = useState(true);

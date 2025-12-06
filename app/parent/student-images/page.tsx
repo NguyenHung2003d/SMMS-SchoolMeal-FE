@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSelectedChild } from "@/context/SelectedChildContext"; // Context lấy con đang chọn
-import { parentStudentImageService } from "@/services/parentStudentImage.service";
+import { parentStudentImageService } from "@/services/parent/parentStudentImage.service";
 import { StudentImageDto } from "@/types/parent";
 import { Loader2, Image as ImageIcon, Calendar, X, ZoomIn } from "lucide-react";
 import { formatDate } from "@/helpers"; // Hàm format ngày (nếu chưa có xem bên dưới)

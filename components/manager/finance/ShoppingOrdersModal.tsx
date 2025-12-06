@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/helpers";
-import { managerFinanceService } from "@/services/managerFinance.service";
+import { managerFinanceService } from "@/services/manager/managerFinance.service";
 import { PurchaseOrderDto } from "@/types/manager-finance";
 import { Download, Eye, Printer, X } from "lucide-react";
 import { useState } from "react";

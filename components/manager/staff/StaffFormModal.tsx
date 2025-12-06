@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CreateAccountRequest, StaffDto } from "@/types/manager";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { managerService } from "@/services/managerStaff.service";
+import { managerService } from "@/services/manager/managerStaff.service";
 import { UpdateAccountRequest } from "@/types/auth";
 
 interface StaffFormModalProps {

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { KitchenDashboardDto } from "@/types/kitchen-dashboard";
-import { kitchenDashboardService } from "@/services/kitchenDashboard.service";
+import { kitchenDashboardService } from "@/services/kitchenStaff/kitchenDashboard.service";
 
 export const useKitchenDashboard = () => {
   const [data, setData] = useState<KitchenDashboardDto | null>(null);

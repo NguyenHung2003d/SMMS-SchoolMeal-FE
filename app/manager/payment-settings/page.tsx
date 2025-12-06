@@ -7,7 +7,7 @@ import {
   SchoolPaymentSettingDto,
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
-import { paymentService } from "@/services/managerPayment.service";
+import { paymentService } from "@/services/manager/managerPayment.service";
 import { PaymentSettingCard } from "@/components/manager/paymentSettings/PaymentSettingCard";
 import { PaymentSettingModal } from "@/components/manager/paymentSettings/PaymentSettingModal";
 

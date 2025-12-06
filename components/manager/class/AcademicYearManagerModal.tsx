@@ -1,4 +1,4 @@
-import { managerClassService } from "@/services/managerClass.service";
+import { managerClassService } from "@/services/manager/managerClass.service";
 import { AcademicYearDto } from "@/types/academic-year";
 import { Calendar, Edit2, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";

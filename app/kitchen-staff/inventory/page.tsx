@@ -16,7 +16,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { formatQuantity, getExpiryStatus } from "@/helpers";
 import { InventoryItemDto } from "@/types/kitchen-inventory";
-import { kitchenInventoryService } from "@/services/kitchenInventory.service";
+import { kitchenInventoryService } from "@/services/kitchenStaff/kitchenInventory.service";
 
 export default function KitchenStaffInventoryPage() {
   const [activeTab, setActiveTab] = useState("inventory");

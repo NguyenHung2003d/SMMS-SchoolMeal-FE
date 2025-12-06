@@ -4,7 +4,7 @@ import NotificationDetailModal from "@/components/admin/notifications/Notificati
 import NotificationHeader from "@/components/admin/notifications/NotificationHeader";
 import NotificationList from "@/components/admin/notifications/NotificationList";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { adminNotificationService } from "@/services/adminNotification.service";
+import { adminNotificationService } from "@/services/admin/adminNotification.service";
 import {
   CreateNotificationDto,
   NotificationDetailDto,

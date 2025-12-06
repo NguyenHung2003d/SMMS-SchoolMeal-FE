@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Package,
 } from "lucide-react";
-import { kitchenPurchaseOrderService } from "@/services/kitchenPurchaseOrder.service";
+import { kitchenPurchaseOrderService } from "@/services/kitchenStaff/kitchenPurchaseOrder.service";
 import {
   PurchaseOrderDetailDto,
   PurchaseOrderSummaryDto,

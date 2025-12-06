@@ -12,7 +12,7 @@ import {
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { FinanceReportDto, UserReportDto } from "@/types/admin-report";
-import { adminReportService } from "@/services/adminReport.service";
+import { adminReportService } from "@/services/admin/adminReport.service";
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<"users" | "finance">("users");

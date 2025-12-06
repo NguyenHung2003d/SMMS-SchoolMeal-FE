@@ -16,7 +16,7 @@ import {
   Save,
 } from "lucide-react";
 import { PurchasePlan } from "@/types/kitchen-purchasePlan";
-import { kitchenPurchasePlanService } from "@/services/kitchenPurchasePlan.service";
+import { kitchenPurchasePlanService } from "@/services/kitchenStaff/kitchenPurchasePlan.service";
 import toast from "react-hot-toast"; // 1. Import toast
 
 export default function KitchenStaffPurchasePlanPage() {

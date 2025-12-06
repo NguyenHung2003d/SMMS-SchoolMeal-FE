@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
-import { managerParentService } from "@/services/managerParent.service";
+import { managerParentService } from "@/services/manager/managerParent.service";
 
 interface ImportExcelModalProps {
   open: boolean;

@@ -2,7 +2,7 @@
 import DashboardCharts from "@/components/admin/dashboard/DashboardCharts";
 import { DashboardStats } from "@/components/admin/dashboard/DashboardStats";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { adminDashboardService } from "@/services/adminDashboard.service";
+import { adminDashboardService } from "@/services/admin/adminDashboard.service";
 import { AdminDashboardOverview } from "@/types/admin-dashboard"; // Import type
 import { AlertCircle, FilePlus, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";

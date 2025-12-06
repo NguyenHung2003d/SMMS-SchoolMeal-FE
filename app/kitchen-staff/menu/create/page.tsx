@@ -21,7 +21,7 @@ import {
   AiMenuResponse,
   AiDishDto,
 } from "@/types/kitchen-menu-create";
-import { kitchenMenuService } from "@/services/kitchenMenu.service";
+import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
 import { useRouter } from "next/navigation";
 
 // --- CẤU HÌNH NGÀY & BỮA ---

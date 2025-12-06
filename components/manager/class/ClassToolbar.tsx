@@ -1,5 +1,5 @@
-import React from "react";
-import { Search, Plus, School, RefreshCcw, CalendarCog } from "lucide-react"; // <--- 1. Thêm import CalendarCog
+import React, { useEffect, useState } from "react";
+import { Search, Plus, School, RefreshCcw, CalendarCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AcademicYearDto } from "@/types/academic-year";
 
@@ -16,7 +16,7 @@ interface ClassToolbarProps {
   loading: boolean;
 }
 
-export default function ClassToolbar({
+const ClassToolbar = React.memo(function ClassToolbar({
   searchQuery,
   setSearchQuery,
   selectedYear,
@@ -28,6 +28,20 @@ export default function ClassToolbar({
   isRefreshing,
   loading,
 }: ClassToolbarProps) {
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(localSearch);
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [localSearch, setSearchQuery]);
+
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
   return (
     <>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -80,8 +94,8 @@ export default function ClassToolbar({
               type="text"
               placeholder="Tìm kiếm theo tên lớp..."
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
             />
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
           </div>
@@ -104,4 +118,6 @@ export default function ClassToolbar({
       </div>
     </>
   );
-}
+});
+
+export default ClassToolbar;

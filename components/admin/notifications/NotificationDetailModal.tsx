@@ -1,4 +1,4 @@
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 import { NotificationDetailDto } from "@/types/admin-notification";
 import { Check, FileText, User, Users, X } from "lucide-react";
 
@@ -24,7 +24,7 @@ export default function NotificationDetailModal({
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               ID: #{notification.notificationId} - Gửi ngày:{" "}
-              {formatDateForInput(notification.createdAt)}
+              {formatDate(notification.createdAt)}
             </p>
           </div>
           <button
@@ -89,7 +89,7 @@ export default function NotificationDetailModal({
                         </td>
                         <td className="px-4 py-3 text-right text-gray-500">
                           {recipient.isRead
-                            ? formatDateForInput(recipient.readAt!)
+                            ? formatDate(recipient.readAt!)
                             : "-"}
                         </td>
                       </tr>

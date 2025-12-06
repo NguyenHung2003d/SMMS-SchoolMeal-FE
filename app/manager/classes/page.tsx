@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import ClassToolbar from "@/components/manager/class/ClassToolbar";
 import ClassList from "@/components/manager/class/ClassList";
 import ClassFormModal from "@/components/manager/class/ClassFormModal";
@@ -40,27 +40,30 @@ export default function ManagerClasses() {
   const [editingClass, setEditingClass] = useState<ClassDto | null>(null);
   const [classToDelete, setClassToDelete] = useState<ClassDto | null>(null);
 
-  const openAddModal = () => {
+  const openAddModal = useCallback(() => {
     setEditingClass(null);
     setShowFormModal(true);
-  };
+  }, []);
 
-  const openEditModal = (cls: ClassDto) => {
+  const openEditModal = useCallback((cls: ClassDto) => {
     setEditingClass(cls);
     setShowFormModal(true);
-  };
+  }, []);
 
-  const onSubmitForm = async (formData: any) => {
-    await handleFormSubmit(formData, editingClass, () =>
-      setShowFormModal(false)
-    );
-  };
+  const onSubmitForm = useCallback(
+    async (formData: any) => {
+      await handleFormSubmit(formData, editingClass, () =>
+        setShowFormModal(false)
+      );
+    },
+    [handleFormSubmit, editingClass]
+  );
 
-  const onConfirmDelete = () => {
+  const onConfirmDelete = useCallback(() => {
     if (classToDelete) {
       handleDeleteClass(classToDelete.classId, () => setClassToDelete(null));
     }
-  };
+  }, [classToDelete, handleDeleteClass]);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -96,11 +99,13 @@ export default function ManagerClasses() {
         />
       )}
 
-      <DeleteClassModal
-        classData={classToDelete}
-        onClose={() => setClassToDelete(null)}
-        onConfirm={onConfirmDelete}
-      />
+      {classToDelete && (
+        <DeleteClassModal
+          classData={classToDelete}
+          onClose={() => setClassToDelete(null)}
+          onConfirm={onConfirmDelete}
+        />
+      )}
 
       {showYearModal && (
         <AcademicYearManagerModal

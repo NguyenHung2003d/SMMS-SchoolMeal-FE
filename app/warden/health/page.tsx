@@ -1,112 +1,100 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Activity, Download, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { HealthRecord, HealthFormData } from "@/types/warden-health";
 
 import { HealthCharts } from "@/components/warden/health/HealthCharts";
 import { StudentHealthTable } from "@/components/warden/health/StudentHealthTable";
 import { UpdateHealthModal } from "@/components/warden/health/UpdateHealthModal";
 import { StudentHistoryModal } from "@/components/warden/health/StudentHistoryModal";
-import { WardenClassDto } from "@/types/warden-class";
+import { wardenHealthService } from "@/services/wardens/wardenHealth.service";
 
 export default function TeacherHealthTracking() {
-  const [loading, setLoading] = useState(true);
-  const [currentClass, setCurrentClass] = useState<WardenClassDto | null>(null);
-  const [healthData, setHealthData] = useState<HealthRecord[]>([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const queryClient = useQueryClient();
 
   const [selectedStudent, setSelectedStudent] = useState<HealthRecord | null>(
     null
   );
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+
   const [formData, setFormData] = useState<HealthFormData>({
     heightCm: "",
     weightKg: "",
     recordDate: format(new Date(), "yyyy-MM-dd"),
   });
 
-  const [historyData, setHistoryData] = useState<HealthRecord[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const { data: currentClass, isLoading: loadingClass } = useQuery({
+    queryKey: ["wardenClass"],
+    queryFn: wardenHealthService.getMyClass,
+    staleTime: 1000 * 60 * 30,
+  });
 
-  useEffect(() => {
-    const fetchMyClass = async () => {
-      try {
-        setLoading(true);
-        const res = await axiosInstance.get<WardenClassDto[]>(
-          "/WardensHome/classes"
-        );
+  const { data: healthData = [], isLoading: loadingHealth } = useQuery({
+    queryKey: ["classHealth", currentClass?.classId],
+    queryFn: () => wardenHealthService.getClassHealth(currentClass!.classId),
+    enabled: !!currentClass?.classId,
+  });
 
-        if (res.data && res.data.length > 0) {
-          setCurrentClass(res.data[0]);
-        } else {
-          toast.error("Bạn chưa được phân công phụ trách lớp nào.");
-        }
-      } catch (error) {
-        console.error("Lỗi lấy thông tin lớp:", error);
-        toast.error("Không thể tải thông tin lớp học.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: historyData = [], isLoading: loadingHistory } = useQuery({
+    queryKey: ["studentHistory", selectedStudent?.studentId],
+    queryFn: () =>
+      wardenHealthService.getStudentHistory(selectedStudent!.studentId),
+    enabled: !!selectedStudent?.studentId && showHistoryModal,
+  });
 
-    fetchMyClass();
-  }, []);
+  const updateMutation = useMutation({
+    mutationFn: wardenHealthService.updateBMI,
+    onSuccess: () => {
+      toast.success("Cập nhật chỉ số thành công!");
+      setShowCreateModal(false);
+      queryClient.invalidateQueries({
+        queryKey: ["classHealth", currentClass?.classId],
+      });
+    },
+    onError: () => toast.error("Cập nhật thất bại. Vui lòng thử lại."),
+  });
 
-  // Tự động load data khi có currentClass
-  useEffect(() => {
-    if (currentClass?.classId) {
-      fetchHealthData(currentClass.classId);
-    }
-  }, [currentClass]);
+  const deleteMutation = useMutation({
+    mutationFn: wardenHealthService.deleteBMI,
+    onSuccess: () => {
+      toast.success("Đã xóa bản ghi.");
+      queryClient.invalidateQueries({
+        queryKey: ["studentHistory", selectedStudent?.studentId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["classHealth", currentClass?.classId],
+      });
+    },
+    onError: () => toast.error("Xóa thất bại."),
+  });
 
-  const fetchHealthData = async (id: string) => {
-    try {
-      setLoading(true);
-      const res = await axiosInstance.get(`/WardensHealth/class/${id}/health`);
-      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-      setHealthData(data);
-    } catch (error) {
-      console.error("Lỗi tải dữ liệu sức khỏe:", error);
-      toast.error("Không thể tải dữ liệu sức khỏe.");
-    } finally {
-      setLoading(false);
-    }
+  const handleCreateSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!selectedStudent) return;
+    updateMutation.mutate({
+      studentId: selectedStudent.studentId,
+      data: formData,
+    });
   };
 
-  const fetchStudentHistory = async (studentId: string) => {
-    try {
-      setHistoryLoading(true);
-      const res = await axiosInstance.get(
-        `/WardensHealth/student/${studentId}/bmi-history`
-      );
-      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-      const sorted = data.sort(
-        (a: HealthRecord, b: HealthRecord) =>
-          new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
-      );
-      setHistoryData(sorted);
-    } catch (error) {
-      toast.error("Lỗi tải lịch sử đo.");
-    } finally {
-      setHistoryLoading(false);
+  const handleDeleteRecord = (recordId: string) => {
+    if (confirm("Bạn có chắc chắn muốn xóa lần đo này?")) {
+      deleteMutation.mutate(recordId);
     }
   };
 
   const handleExport = async () => {
     if (!currentClass?.classId) return;
     try {
-      const response = await axiosInstance.get(
-        `/WardensHealth/class/${currentClass.classId}/health/export`,
-        {
-          responseType: "blob",
-        }
-      );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await wardenHealthService.exportReport(currentClass.classId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute(
@@ -117,45 +105,8 @@ export default function TeacherHealthTracking() {
       link.click();
       link.remove();
       toast.success("Đã xuất báo cáo thành công!");
-    } catch (error) {
+    } catch {
       toast.error("Xuất báo cáo thất bại.");
-    }
-  };
-
-  const handleCreateSubmit = async (e?: React.FormEvent) => {
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
-
-    if (!selectedStudent || !currentClass?.classId) return;
-
-    try {
-      await axiosInstance.post(
-        `/WardensHealth/student/${selectedStudent.studentId}/bmi`,
-        {
-          heightCm: parseFloat(formData.heightCm),
-          weightKg: parseFloat(formData.weightKg),
-          recordDate: new Date(formData.recordDate).toISOString(),
-        }
-      );
-
-      toast.success("Cập nhật chỉ số thành công!");
-      setShowCreateModal(false);
-      fetchHealthData(currentClass.classId);
-    } catch (error) {
-      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
-    }
-  };
-
-  const handleDeleteRecord = async (recordId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa lần đo này?")) return;
-    try {
-      await axiosInstance.delete(`/WardensHealth/bmi/${recordId}`);
-      toast.success("Đã xóa bản ghi.");
-      if (selectedStudent) fetchStudentHistory(selectedStudent.studentId);
-      if (currentClass?.classId) fetchHealthData(currentClass.classId);
-    } catch (error) {
-      toast.error("Xóa thất bại.");
     }
   };
 
@@ -172,10 +123,9 @@ export default function TeacherHealthTracking() {
   const openHistoryModal = (student: HealthRecord) => {
     setSelectedStudent(student);
     setShowHistoryModal(true);
-    fetchStudentHistory(student.studentId);
   };
 
-  if (loading && !healthData.length) {
+  if (loadingClass || (loadingHealth && !healthData.length)) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
@@ -183,7 +133,7 @@ export default function TeacherHealthTracking() {
     );
   }
 
-  if (!currentClass && !loading) {
+  if (!currentClass) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center text-gray-500">
         <AlertCircle size={48} className="mb-3 text-orange-300" />
@@ -194,13 +144,14 @@ export default function TeacherHealthTracking() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 font-sans">
+    <div className="min-h-screen bg-gray-50/50 p-6 font-sans animate-in fade-in duration-500">
       <div className="mx-auto max-w-7xl space-y-6">
+        {/* Header */}
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
               <Activity className="text-orange-500" />
-              Theo dõi sức khỏe - {currentClass?.className}
+              Theo dõi sức khỏe - {currentClass.className}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               Quản lý chỉ số BMI và sự phát triển thể chất của học sinh.
@@ -231,13 +182,14 @@ export default function TeacherHealthTracking() {
         setFormData={setFormData}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateSubmit}
+        loading={updateMutation.isPending}
       />
 
       <StudentHistoryModal
         open={showHistoryModal}
         student={selectedStudent}
         historyData={historyData}
-        loading={historyLoading}
+        loading={loadingHistory || deleteMutation.isPending}
         onClose={() => setShowHistoryModal(false)}
         onDelete={handleDeleteRecord}
       />

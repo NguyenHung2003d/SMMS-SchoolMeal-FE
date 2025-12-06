@@ -5,13 +5,13 @@ import toast from "react-hot-toast";
 
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { InvoiceDto } from "@/types/invoices";
+import { Invoice } from "@/types/invoices";
 import { formatCurrency, formatDate } from "@/helpers";
 
 export default function InvoicePage() {
   const { selectedChild } = useSelectedChild();
 
-  const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
     null
@@ -20,7 +20,7 @@ export default function InvoicePage() {
   useEffect(() => {
     if (!selectedChild?.studentId) {
       setInvoices([]);
-      setSelectedInvoiceId(null); // Reset selection ngay khi không có bé
+      setSelectedInvoiceId(null); 
       return;
     }
 
@@ -29,7 +29,7 @@ export default function InvoicePage() {
         setLoading(true);
         setInvoices([]);
 
-        const res = await axiosInstance.get<InvoiceDto[]>(
+        const res = await axiosInstance.get<Invoice[]>(
           "/Invoice/my-invoices",
           {
             params: {

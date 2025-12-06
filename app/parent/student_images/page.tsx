@@ -5,7 +5,7 @@ import { useSelectedChild } from "@/context/SelectedChildContext"; // Context l�
 import { parentStudentImageService } from "@/services/parent/parentStudentImage.service";
 import { StudentImageDto } from "@/types/parent";
 import { Loader2, Image as ImageIcon, Calendar, X, ZoomIn } from "lucide-react";
-import { formatDate } from "@/helpers"; // Hàm format ngày (nếu chưa có xem bên dưới)
+import { formatDate } from "@/helpers";
 
 export default function StudentGalleryPage() {
   const { selectedChild } = useSelectedChild();
@@ -51,7 +51,6 @@ export default function StudentGalleryPage() {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <ImageIcon className="text-blue-600" />
@@ -62,13 +61,11 @@ export default function StudentGalleryPage() {
         </p>
       </div>
 
-      {/* Loading State */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="animate-spin text-blue-500 w-10 h-10" />
         </div>
       ) : images.length === 0 ? (
-        // Empty State
         <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl border border-dashed border-gray-300">
           <div className="bg-gray-100 p-4 rounded-full mb-3">
             <ImageIcon className="w-8 h-8 text-gray-400" />
@@ -76,7 +73,6 @@ export default function StudentGalleryPage() {
           <p className="text-gray-500 font-medium">Chưa có hình ảnh nào.</p>
         </div>
       ) : (
-        // Grid Gallery
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {images.map((img) => (
             <div
@@ -84,7 +80,6 @@ export default function StudentGalleryPage() {
               className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-all duration-300"
               onClick={() => setSelectedImage(img)}
             >
-              {/* Image Container */}
               <div className="relative aspect-square overflow-hidden bg-gray-100">
                 <img
                   src={img.imageUrl}
@@ -93,13 +88,11 @@ export default function StudentGalleryPage() {
                   loading="lazy"
                 />
 
-                {/* Overlay Icon Zoom */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <ZoomIn className="text-white w-8 h-8 drop-shadow-md" />
                 </div>
               </div>
 
-              {/* Info Footer */}
               <div className="p-3">
                 <div className="flex items-center text-xs text-gray-500 mb-1">
                   <Calendar size={12} className="mr-1" />

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { X, Ruler, Weight, Save } from "lucide-react";
+import { X, Ruler, Weight, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HealthRecord, HealthFormData } from "@/types/warden-health";
 
@@ -11,6 +11,7 @@ interface UpdateHealthModalProps {
   setFormData: (data: HealthFormData) => void;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
+  loading?: boolean;
 }
 
 export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
@@ -20,6 +21,7 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
   setFormData,
   onClose,
   onSubmit,
+  loading = false,
 }) => {
   if (!open || !student) return null;
 
@@ -30,7 +32,8 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
           <h3 className="text-lg font-bold text-gray-800">Cập nhật sức khỏe</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            disabled={loading}
+            className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -54,7 +57,8 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
                   type="number"
                   step="0.1"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pl-9 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  disabled={loading}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pl-9 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none disabled:bg-gray-100"
                   value={formData.heightCm}
                   onChange={(e) =>
                     setFormData({ ...formData, heightCm: e.target.value })
@@ -72,7 +76,8 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
                   type="number"
                   step="0.1"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pl-9 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  disabled={loading}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pl-9 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none disabled:bg-gray-100"
                   value={formData.weightKg}
                   onChange={(e) =>
                     setFormData({ ...formData, weightKg: e.target.value })
@@ -90,7 +95,8 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
             <input
               type="date"
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              disabled={loading}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100"
               value={formData.recordDate}
               onChange={(e) =>
                 setFormData({ ...formData, recordDate: e.target.value })
@@ -102,15 +108,26 @@ export const UpdateHealthModal: React.FC<UpdateHealthModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              disabled={loading}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
             >
               Hủy bỏ
             </button>
+
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 min-w-[140px] justify-center"
             >
-              <Save size={16} /> Lưu thông tin
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> Lưu thông tin
+                </>
+              )}
             </Button>
           </div>
         </form>

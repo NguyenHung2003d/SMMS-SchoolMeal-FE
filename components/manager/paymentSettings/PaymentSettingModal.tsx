@@ -1,46 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { X, DollarSign, Loader2 } from "lucide-react";
-import { formatCurrency, months } from "@/helpers";
+import { X, Loader2 } from "lucide-react";
 import { SchoolPaymentSettingDto } from "@/types/manager-payment";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
-interface FormData {
-  fromMonth: number;
-  toMonth: number;
-  totalAmount: number;
-  note: string;
-  isActive: boolean;
-}
-
-interface Props {
+interface PaymentSettingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (data: any) => void;
   initialData: SchoolPaymentSettingDto | null;
   isSaving: boolean;
 }
 
-const defaultFormData: FormData = {
-  fromMonth: 9,
-  toMonth: 12,
-  totalAmount: 0,
-  note: "",
-  isActive: true,
-};
-
-export const PaymentSettingModal: React.FC<Props> = ({
+export const PaymentSettingModal = ({
   isOpen,
   onClose,
   onSubmit,
   initialData,
   isSaving,
-}) => {
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
+}: PaymentSettingModalProps) => {
+  const [form, setForm] = useState({
+    fromMonth: 1,
+    toMonth: 1,
+    totalAmount: 0,
+    note: "",
+    isActive: true,
+  });
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        setFormData({
+        setForm({
           fromMonth: initialData.fromMonth,
           toMonth: initialData.toMonth,
           totalAmount: initialData.totalAmount,
@@ -48,55 +37,65 @@ export const PaymentSettingModal: React.FC<Props> = ({
           isActive: initialData.isActive,
         });
       } else {
-        setFormData(defaultFormData);
+        const currentMonth = new Date().getMonth() + 1;
+        setForm({
+          fromMonth: currentMonth,
+          toMonth: currentMonth,
+          totalAmount: 0,
+          note: "",
+          isActive: true,
+        });
       }
     }
   }, [isOpen, initialData]);
 
-  const handleSubmit = () => {
-    if (formData.totalAmount < 0) {
-      toast.error("Số tiền không hợp lệ.");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate cơ bản
+    if (form.fromMonth > form.toMonth) {
+      toast.error("Tháng bắt đầu không được lớn hơn tháng kết thúc");
       return;
     }
-    onSubmit(formData);
+    if (form.totalAmount <= 0) {
+      toast.error("Số tiền phải lớn hơn 0");
+      return;
+    }
+    onSubmit(form);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="font-bold text-lg text-gray-800">
-            {initialData ? "Chỉnh sửa đợt thu" : "Tạo đợt thu mới"}
-          </h3>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <h2 className="text-xl font-bold text-gray-800">
+            {initialData ? "Cập nhật cấu hình" : "Thêm đợt thu mới"}
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Từ tháng
               </label>
               <select
-                value={formData.fromMonth}
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                value={form.fromMonth}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    fromMonth: Number(e.target.value),
-                  })
+                  setForm({ ...form, fromMonth: Number(e.target.value) })
                 }
-                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                {months.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
+                {[...Array(12)].map((_, i) => (
+                  <option key={i} value={i + 1}>
+                    Tháng {i + 1}
                   </option>
                 ))}
               </select>
@@ -106,15 +105,15 @@ export const PaymentSettingModal: React.FC<Props> = ({
                 Đến tháng
               </label>
               <select
-                value={formData.toMonth}
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                value={form.toMonth}
                 onChange={(e) =>
-                  setFormData({ ...formData, toMonth: Number(e.target.value) })
+                  setForm({ ...form, toMonth: Number(e.target.value) })
                 }
-                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                {months.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
+                {[...Array(12)].map((_, i) => (
+                  <option key={i} value={i + 1}>
+                    Tháng {i + 1}
                   </option>
                 ))}
               </select>
@@ -123,29 +122,18 @@ export const PaymentSettingModal: React.FC<Props> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tổng số tiền (VND)
+              Số tiền (VNĐ)
             </label>
-            <div className="relative">
-              <input
-                type="number"
-                value={formData.totalAmount}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    totalAmount: Number(e.target.value),
-                  })
-                }
-                className="w-full border border-gray-300 rounded-lg p-2.5 pl-10 focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-                placeholder="0"
-              />
-              <DollarSign
-                size={18}
-                className="absolute left-3 top-3 text-gray-400"
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1 text-right">
-              {formatCurrency(formData.totalAmount)}
-            </p>
+            <input
+              type="number"
+              min="0"
+              required
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-medium"
+              value={form.totalAmount}
+              onChange={(e) =>
+                setForm({ ...form, totalAmount: Number(e.target.value) })
+              }
+            />
           </div>
 
           <div>
@@ -153,55 +141,55 @@ export const PaymentSettingModal: React.FC<Props> = ({
               Ghi chú
             </label>
             <textarea
-              value={formData.note}
-              onChange={(e) =>
-                setFormData({ ...formData, note: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
-              placeholder="Nhập ghi chú (tùy chọn)..."
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 min-h-[80px]"
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              placeholder="Nhập ghi chú cho đợt thu này..."
             />
           </div>
 
           {initialData && (
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="isActive"
-                checked={formData.isActive}
+                className="h-4 w-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
+                checked={form.isActive}
                 onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
+                  setForm({ ...form, isActive: e.target.checked })
                 }
-                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
               />
-              <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium text-gray-700 select-none cursor-pointer"
+              >
                 Đang kích hoạt
               </label>
             </div>
           )}
-        </div>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-            disabled={isSaving}
-          >
-            Hủy
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSaving}
-            className="px-4 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors font-medium flex items-center shadow-sm disabled:opacity-70"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 size={18} className="mr-2 animate-spin" /> Đang lưu...
-              </>
-            ) : (
-              "Lưu thay đổi"
-            )}
-          </button>
-        </div>
+          <div className="pt-4 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex-1 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium shadow-md transition-colors flex items-center justify-center disabled:opacity-70"
+            >
+              {isSaving ? (
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              ) : (
+                "Lưu cấu hình"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

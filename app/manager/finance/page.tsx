@@ -1,95 +1,49 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
-import { Calendar, Download } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, Download, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import {
-  FinanceSummaryDto,
-  InvoiceDetailDto,
-  InvoiceDto,
-  PurchaseOrderDto,
-} from "@/types/manager-finance";
-import { managerFinanceService } from "@/services/manager/managerFinance.service";
+
 import { Button } from "@/components/ui/button";
 import { FinanceStats } from "@/components/manager/finance/FinanceStats";
 import { FinanceCharts } from "@/components/manager/finance/FinanceCharts";
 import { InvoicesTable } from "@/components/manager/finance/InvoicesTable";
 import { InvoiceDetailModal } from "@/components/manager/finance/FinanceModals";
-import { managerPurchasesService } from "@/services/manager/managerPurchases.service";
 import { ShoppingOrdersModal } from "@/components/manager/finance/ShoppingOrdersModal";
+import { managerFinanceService } from "@/services/manager/managerFinance.service";
+import { InvoiceDetailDto } from "@/types/manager-finance";
+
+import { useFinanceData } from "@/hooks/manager/useFinanceData";
 
 export default function ManagerFinance() {
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const [summary, setSummary] = useState<FinanceSummaryDto | null>(null);
-  const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderDto[]>([]);
-
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] =
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
+    null
+  );
+  const [selectedInvoiceDetail, setSelectedInvoiceDetail] =
     useState<InvoiceDetailDto | null>(null);
   const [showShoppingModal, setShowShoppingModal] = useState(false);
 
-  const fetchPeriodicData = useCallback(async () => {
-    try {
-      const summaryRes = await managerFinanceService.getSummary(
-        selectedMonth,
-        selectedYear
-      );
-      setSummary(summaryRes);
-      try {
-        const ordersRes = await managerPurchasesService.getPurchaseOrders(
-          selectedMonth,
-          selectedYear
-        );
-        setPurchaseOrders(ordersRes || []);
-      } catch (err) {
-        console.error("❌ Lỗi lấy Orders:", err);
-        setPurchaseOrders([]);
-      }
-    } catch (error) {
-      console.error("❌ Lỗi lấy Summary:", error);
-      toast.error("Không thể tải dữ liệu tài chính.");
-    }
-  }, [selectedMonth, selectedYear]);
-
-  const fetchInvoices = useCallback(async () => {
-    setLoading(true);
-    try {
-      let data: InvoiceDto[] = [];
-      if (searchQuery.trim())
-        data = await managerFinanceService.searchInvoices(searchQuery);
-      else if (selectedStatus !== "all")
-        data = await managerFinanceService.filterInvoices(selectedStatus);
-      else data = await managerFinanceService.getAllInvoices();
-      setInvoices(data || []);
-    } catch (e) {
-      console.error("❌ Lỗi lấy Invoices:", e);
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, selectedStatus]);
-
-  useEffect(() => {
-    fetchPeriodicData();
-  }, [fetchPeriodicData]);
-  useEffect(() => {
-    const timer = setTimeout(() => fetchInvoices(), 500);
-    return () => clearTimeout(timer);
-  }, [fetchInvoices]);
+  const { summary, purchaseOrders, invoices, loadingInvoices, loadingStats } =
+    useFinanceData(selectedMonth, selectedYear, searchQuery, selectedStatus);
 
   const handleViewInvoice = async (id: number) => {
+    setSelectedInvoiceId(id);
     try {
       const details = await managerFinanceService.getInvoiceDetail(id);
-      setSelectedInvoice(details);
-      setShowInvoiceModal(true);
+      setSelectedInvoiceDetail(details);
     } catch {
       toast.error("Không thể tải chi tiết hóa đơn");
+      setSelectedInvoiceId(null); // Đóng nếu lỗi
     }
+  };
+
+  const handleCloseInvoiceModal = () => {
+    setSelectedInvoiceId(null);
+    setSelectedInvoiceDetail(null);
   };
 
   const handleExportReport = async () => {
@@ -102,14 +56,18 @@ export default function ManagerFinance() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `BaoCaoTaiChinh_${selectedMonth}_${selectedYear}.xlsx`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     } catch {
       toast.error("Lỗi xuất báo cáo");
     }
   };
 
+  //
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
@@ -119,11 +77,12 @@ export default function ManagerFinance() {
             Theo dõi thu nhập, chi phí, và chi tiết hóa đơn
           </p>
         </div>
+
         <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
+          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
             <Calendar size={16} className="text-gray-500" />
             <select
-              className="bg-transparent text-sm outline-none"
+              className="bg-transparent text-sm outline-none cursor-pointer"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
             >
@@ -135,46 +94,66 @@ export default function ManagerFinance() {
             </select>
             <span className="text-gray-400">/</span>
             <select
-              className="bg-transparent text-sm outline-none"
+              className="bg-transparent text-sm outline-none cursor-pointer"
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             >
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
+              {[2023, 2024, 2025, 2026].map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </select>
           </div>
+
           <Button
             onClick={handleExportReport}
-            className="flex items-center bg-blue-600 hover:bg-blue-700"
+            className="flex items-center bg-blue-600 hover:bg-blue-700 shadow-md transition-all"
           >
             <Download size={16} className="mr-2" /> Xuất báo cáo
           </Button>
         </div>
       </div>
 
-      <FinanceStats
-        summary={summary}
-        onOpenShopping={() => setShowShoppingModal(true)}
-        selectedMonth={selectedMonth}
-      />
-      <FinanceCharts summary={summary} />
-      <InvoicesTable
-        invoices={invoices}
-        loading={loading}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedStatus={selectedStatus}
-        setSelectedStatus={setSelectedStatus}
-        onViewInvoice={handleViewInvoice}
-      />
+      <div className="space-y-6">
+        {loadingStats && !summary ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-32 bg-gray-200 rounded-xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : (
+          <FinanceStats
+            summary={summary}
+            onOpenShopping={() => setShowShoppingModal(true)}
+            selectedMonth={selectedMonth}
+          />
+        )}
 
-      {showInvoiceModal && (
+        <FinanceCharts summary={summary} />
+
+        <InvoicesTable
+          invoices={invoices}
+          loading={loadingInvoices}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          onViewInvoice={handleViewInvoice}
+        />
+      </div>
+
+      {selectedInvoiceId !== null && (
         <InvoiceDetailModal
-          invoice={selectedInvoice}
-          onClose={() => setShowInvoiceModal(false)}
+          invoice={selectedInvoiceDetail}
+          onClose={handleCloseInvoiceModal}
+          isLoading={!selectedInvoiceDetail}
         />
       )}
+
       {showShoppingModal && (
         <ShoppingOrdersModal
           orders={purchaseOrders}

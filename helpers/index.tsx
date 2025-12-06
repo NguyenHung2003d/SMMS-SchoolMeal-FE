@@ -374,16 +374,100 @@ export const formatDate = (dateString?: string | null) => {
   }
 };
 
+export const StudentAvatar = ({
+  src,
+  alt,
+  gender,
+}: {
+  src?: string;
+  alt: string;
+  gender?: string;
+}) => {
+  const [imgSrc, setImgSrc] = useState<string>(src || "");
+  const [hasError, setHasError] = useState(false);
+
+  const fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    alt
+  )}&background=random&color=fff`;
+
+  const displaySrc = hasError || !imgSrc ? fallbackSrc : imgSrc;
+
+  return (
+    <div className="h-12 w-12 rounded-full overflow-hidden mr-4 ring-2 ring-orange-100 bg-gray-100">
+      <img
+        src={displaySrc}
+        alt={alt}
+        className="h-full w-full object-cover"
+        onError={() => setHasError(true)} // Quan trọng: Bắt lỗi khi ảnh die
+      />
+    </div>
+  );
+};
+
+export const getNormalizedCategory = (type: string | undefined | null) => {
+  const t = (type || "").toLowerCase();
+  if (t.includes("kitchen") || t.includes("food") || t.includes("meal"))
+    return "food";
+  if (t.includes("facility") || t.includes("repair")) return "facility";
+  if (t.includes("health") || t.includes("medical")) return "health";
+  if (t.includes("activity") || t.includes("event")) return "activity";
+  return "other";
+};
+
+export const DateInput = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+}) => (
+  <div className="flex items-center gap-2 px-2">
+    <span className="text-xs font-medium text-gray-500 uppercase">{label}</span>
+    <input
+      type="date"
+      className="text-sm border border-gray-300 rounded-md px-2 py-1.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-200 transition-all bg-gray-50 hover:bg-white"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+);
+
+export const formatMonth = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear().toString().slice(2);
+  return `T${month}/${year}`;
+};
+
 export const getStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case "confirmed":
-      return <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold border border-green-200">Đã nhập kho</span>;
+      return (
+        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold border border-green-200">
+          Đã nhập kho
+        </span>
+      );
     case "rejected":
-      return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">Đã từ chối</span>;
+      return (
+        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">
+          Đã từ chối
+        </span>
+      );
     case "draft":
-      return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">Chờ duyệt</span>;
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
+          Chờ duyệt
+        </span>
+      );
     default:
-      return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{status}</span>;
+      return (
+        <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+          {status}
+        </span>
+      );
   }
 };
 

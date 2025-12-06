@@ -1,6 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useMemo } from "react";
 import { Plus, Loader2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { wardenFeedbackService } from "@/services/wardens/wardenFeedback.service";
 import { FeedbackDto } from "@/types/warden-feedback";
 import toast from "react-hot-toast";
@@ -8,77 +10,88 @@ import { FeedbackFilterBar } from "@/components/warden/feedback/FeedbackFilterBa
 import { FeedbackItem } from "@/components/warden/feedback/FeedbackItem";
 import { EmptyFeedbackState } from "@/components/warden/feedback/EmptyFeedbackState";
 import { CreateFeedbackModal } from "@/components/warden/feedback/CreateFeedbackModal";
+import { getNormalizedCategory } from "@/helpers";
 
 export default function TeacherFeedbackPage() {
-  const [loading, setLoading] = useState(true);
-  const [feedbacks, setFeedbacks] = useState<FeedbackDto[]>([]);
+  const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showModal, setShowModal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [editingItem, setEditingItem] = useState<FeedbackDto | null>(null);
 
-  const fetchFeedbacks = async () => {
-    try {
+  const { data: feedbacks = [], isLoading } = useQuery({
+    queryKey: ["wardenFeedbacks"],
+    queryFn: async () => {
       const data = await wardenFeedbackService.getFeedbacks();
-      const mappedData = data.map((item) => ({
+      return data.map((item) => ({
         ...item,
         status: item.status || "pending",
         targetType: item.targetType || "other",
       }));
-      setFeedbacks(mappedData);
-    } catch (error) {
-      console.error("Lỗi tải danh sách phản hồi:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    staleTime: 1000 * 60 * 5, 
+  });
 
-  useEffect(() => {
-    fetchFeedbacks();
-  }, []);
-
-  const handleDelete = async (feedbackId: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa báo cáo này không?")) return;
-    try {
-      await wardenFeedbackService.deleteFeedback(feedbackId);
-      setFeedbacks((prev) => prev.filter((f) => f.feedbackId !== feedbackId));
+  const deleteMutation = useMutation({
+    mutationFn: wardenFeedbackService.deleteFeedback,
+    onSuccess: () => {
       toast.success("Đã xóa thành công");
-    } catch (error) {
-      console.error("Lỗi xóa:", error);
-      toast.error("Xóa thất bại");
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ["wardenFeedbacks"] });
+    },
+    onError: () => toast.error("Xóa thất bại"),
+  });
 
-  const handleCreateOrUpdate = async (formData: any) => {
-    setSubmitting(true);
-    try {
-      const payload = {
-        ...formData,
-      };
-
+  const saveMutation = useMutation({
+    mutationFn: async (formData: any) => {
       if (editingItem) {
-        await wardenFeedbackService.updateFeedback(
+        return wardenFeedbackService.updateFeedback(
           editingItem.feedbackId,
-          payload
+          formData
         );
-        toast.success("Cập nhật báo cáo thành công");
       } else {
-        await wardenFeedbackService.createFeedback(payload);
-        toast.success("Tạo báo cáo thành công");
+        return wardenFeedbackService.createFeedback(formData);
+      }
+    },
+    onSuccess: () => {
+      toast.success(
+        editingItem ? "Cập nhật thành công" : "Tạo báo cáo thành công"
+      );
+      setShowModal(false);
+      queryClient.invalidateQueries({ queryKey: ["wardenFeedbacks"] });
+    },
+    onError: () => toast.error("Thao tác thất bại"),
+  });
+
+  const filteredIssues = useMemo(() => {
+    return feedbacks.filter((issue) => {
+      let categoryMatch = true;
+      if (filterCategory !== "all") {
+        const issueCategory = getNormalizedCategory(issue.targetType);
+        categoryMatch = issueCategory === filterCategory;
       }
 
-      setShowModal(false);
-      fetchFeedbacks();
-    } catch (error) {
-      console.error("Lỗi submit:", error);
-      toast.error("Thao tác thất bại");
-    } finally {
-      setSubmitting(false);
+      let searchMatch = true;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        searchMatch =
+          (issue.title || "").toLowerCase().includes(term) ||
+          (issue.content || "").toLowerCase().includes(term) ||
+          (issue.targetRef || "").toLowerCase().includes(term);
+      }
+
+      return categoryMatch && searchMatch;
+    });
+  }, [feedbacks, filterCategory, searchTerm]);
+
+  const handleDelete = (feedbackId: number) => {
+    if (confirm("Bạn có chắc chắn muốn xóa báo cáo này không?")) {
+      deleteMutation.mutate(feedbackId);
     }
+  };
+
+  const handleCreateOrUpdate = (formData: any) => {
+    saveMutation.mutate(formData);
   };
 
   const openCreateModal = () => {
@@ -91,34 +104,7 @@ export default function TeacherFeedbackPage() {
     setShowModal(true);
   };
 
-  const filteredIssues = feedbacks.filter((issue) => {
-    let statusMatch = true;
-    const status = (issue.status || "").toLowerCase();
-    if (activeTab === "pending") statusMatch = status === "pending";
-    else if (activeTab === "inProgress")
-      statusMatch = ["processing", "inprogress"].includes(status);
-    else if (activeTab === "resolved")
-      statusMatch = ["resolved", "completed"].includes(status);
-
-    let categoryMatch = true;
-    if (filterCategory !== "all") {
-      categoryMatch =
-        (issue.targetType || "").toLowerCase() === filterCategory.toLowerCase();
-    }
-
-    let searchMatch = true;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      searchMatch =
-        (issue.title || "").toLowerCase().includes(term) ||
-        (issue.content || "").toLowerCase().includes(term) ||
-        (issue.targetRef || "").toLowerCase().includes(term);
-    }
-
-    return statusMatch && categoryMatch && searchMatch;
-  });
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
         <Loader2 className="animate-spin text-orange-500" size={48} />
@@ -127,16 +113,15 @@ export default function TeacherFeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-blue-50 p-6 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent mb-2">
               Báo cáo vấn đề
             </h1>
             <p className="text-gray-600">
-              Quản lý phản hồi từ giám thị (Warden){" "}
+              Quản lý phản hồi từ giám thị (Warden)
             </p>
           </div>
           <button
@@ -153,41 +138,15 @@ export default function TeacherFeedbackPage() {
           </button>
         </div>
 
-        {/* Main Content Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          {/* Tabs */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6">
-            <nav className="flex space-x-2">
-              {[
-                { key: "all", label: "Tất cả báo cáo" },
-                { key: "pending", label: "Chờ xử lý" },
-                { key: "inProgress", label: "Đang xử lý" },
-                { key: "resolved", label: "Đã giải quyết" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`relative px-6 py-4 text-sm font-medium transition-all duration-300 ${
-                    activeTab === tab.key
-                      ? "text-orange-600"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.key && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500 shadow-lg shadow-orange-500/50"></div>
-                  )}
-                </button>
-              ))}
-            </nav>
+          <div className="p-4 border-b border-gray-100">
+            <FeedbackFilterBar
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+            />
           </div>
-
-          <FeedbackFilterBar
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-          />
 
           <div className="divide-y divide-gray-100">
             {filteredIssues.length > 0 ? (
@@ -209,21 +168,14 @@ export default function TeacherFeedbackPage() {
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           onSubmit={handleCreateOrUpdate}
-          submitting={submitting}
+          submitting={saveMutation.isPending}
           initialData={
             editingItem
               ? {
                   title: editingItem.title,
                   content: editingItem.content,
                   targetRef: editingItem.targetRef,
-                  category: (() => {
-                    const t = (editingItem.targetType || "").toLowerCase();
-                    if (t.includes("kitchen") || t === "food") return "food";
-                    if (t.includes("facility")) return "facility";
-                    if (t.includes("health")) return "health";
-                    if (t.includes("activity")) return "activity";
-                    return "other";
-                  })(),
+                  category: getNormalizedCategory(editingItem.targetType),
                 }
               : undefined
           }

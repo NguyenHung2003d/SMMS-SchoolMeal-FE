@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Users,
   Activity,
@@ -11,45 +11,35 @@ import {
 import { StatsCard } from "@/components/warden/StatsCard";
 import { ClassOverview } from "@/components/warden/class/ClassOverview";
 import { QuickAccessCard } from "@/components/warden/QuickAccessCard";
-import { ClassDto, WardenStats } from "@/types/warden";
 import { wardenDashboardService } from "@/services/wardens/wardenDashborad.service";
+import { useQuery } from "@tanstack/react-query";
 
 export default function WardenDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [classes, setClasses] = useState<ClassDto[]>([]);
-  const [stats, setStats] = useState<WardenStats>({
-    totalClasses: 0,
-    totalStudents: 0,
-    totalPresent: 0,
-    issuesCount: 0,
-  });
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["wardenDashboard"],
+    queryFn: async () => {
+      const [dashboardData, classesData, notificationsData] = await Promise.all(
+        [
+          wardenDashboardService.getDashboardStats(),
+          wardenDashboardService.getClasses(),
+          wardenDashboardService.getNotifications(),
+        ]
+      );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [dashboardData, classesData, notificationsData] =
-          await Promise.all([
-            wardenDashboardService.getDashboardStats(),
-            wardenDashboardService.getClasses(),
-            wardenDashboardService.getNotifications(),
-          ]);
-        setClasses(classesData);
-        setStats({
+      return {
+        classes: classesData,
+        stats: {
           totalClasses: dashboardData.totalClasses,
           totalStudents: dashboardData.totalStudents,
           totalPresent: dashboardData.presentToday,
           issuesCount: notificationsData.length,
-        });
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData()
-  }, []);
+        },
+      };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-[50vh] justify-center items-center">
         <Loader2 className="animate-spin text-orange-500" size={48} />
@@ -57,8 +47,18 @@ export default function WardenDashboardPage() {
     );
   }
 
+  if (isError || !data) {
+    return (
+      <div className="flex h-[50vh] justify-center items-center text-red-500">
+        <p>Không thể tải dữ liệu. Vui lòng thử lại sau.</p>
+      </div>
+    );
+  }
+
+  const { stats, classes } = data;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard value={stats.totalClasses} label="Lớp học đang quản lý" />
         <StatsCard value={stats.totalStudents} label="Tổng số học sinh" />
@@ -69,6 +69,7 @@ export default function WardenDashboardPage() {
           colorClass="bg-red-500"
         />
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <QuickAccessCard
           href="/warden/classView"
@@ -99,6 +100,7 @@ export default function WardenDashboardPage() {
           desc="Gửi vấn đề phát sinh"
         />
       </div>
+
       <ClassOverview classes={classes} />
     </div>
   );

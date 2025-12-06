@@ -4,7 +4,7 @@ import { X, Send, Loader2, ChevronDown } from "lucide-react";
 interface CreateFeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any) => void;
   initialData?: any;
   submitting: boolean;
 }

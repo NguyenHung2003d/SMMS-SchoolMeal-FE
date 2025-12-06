@@ -1,10 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { HealthPoint, StudentBMIResultDto } from "@/types/parent";
 import HealthStats from "@/components/parents/health/HealthStats";
 import HealthChart from "@/components/parents/health/HealthChart";
+import { toast } from "react-hot-toast"; // Gợi ý thêm toast nếu chưa có
+import { formatMonth } from "@/helpers";
 
 export default function HealthPage() {
   const { selectedChild } = useSelectedChild();
@@ -16,41 +18,58 @@ export default function HealthPage() {
     "bmi" | "height" | "weight"
   >("bmi");
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!selectedChild?.studentId) return;
 
     const fetchHealthData = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const currentRes = await axiosInstance.get<StudentBMIResultDto>(
-          `/StudentHealth/current/${selectedChild.studentId}`
-        );
+        const [currentRes, historyRes] = await Promise.all([
+          axiosInstance.get<StudentBMIResultDto>(
+            `/StudentHealth/current/${selectedChild.studentId}`
+          ),
+          axiosInstance.get<StudentBMIResultDto[]>(
+            `/StudentHealth/history/${selectedChild.studentId}`
+          ),
+        ]);
+
         setCurrentHealth(currentRes.data);
 
-        const historyRes = await axiosInstance.get<StudentBMIResultDto[]>(
-          `/StudentHealth/history/${selectedChild.studentId}`
-        );
-
-        const formattedHistory: HealthPoint[] = historyRes.data.map((item) => {
-          const date = new Date(item.recordAt);
-          return {
-            month: `T${date.getMonth() + 1}/${date
-              .getFullYear()
-              .toString()
-              .slice(2)}`,
+        const formattedHistory: HealthPoint[] = (historyRes.data || []).map(
+          (item) => ({
+            month: formatMonth(item.recordAt),
             height: item.heightCm,
             weight: item.weightKg,
             bmi: item.bmi,
-          };
-        });
+          })
+        );
+
         setHistoryData(formattedHistory);
-      } catch (error) {
-        console.error("Lỗi tải dữ liệu sức khỏe:", error);
-        setHistoryData([]);
-        setCurrentHealth(null);
+      } catch (err) {
+        console.error("Lỗi tải dữ liệu sức khỏe:", err);
+        setError("Không thể tải dữ liệu sức khỏe. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchHealthData();
-  }, [selectedChild]);
+  }, [selectedChild?.studentId]); // Chỉ chạy lại khi ID thay đổi
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <h2 className="text-2xl font-bold text-gray-800">Theo dõi sức khỏe</h2>
+        <div className="bg-white h-40 rounded-lg shadow p-6"></div>
+        <div className="bg-white h-64 rounded-lg shadow p-6"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -62,20 +81,37 @@ export default function HealthPage() {
             Vui lòng chọn học sinh từ danh sách bên trái
           </p>
         </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+          {error}
+        </div>
       ) : (
         <div className="space-y-4">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-4">
-              Chỉ số hiện tại - {selectedChild.fullName}
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-lg">
+                Chỉ số hiện tại -{" "}
+                <span className="text-blue-600">{selectedChild.name}</span>
+              </h3>
+            </div>
 
-            <HealthStats currentHealth={currentHealth} />
+            {!currentHealth && historyData.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">
+                Chưa có dữ liệu sức khỏe cho học sinh này.
+              </div>
+            ) : (
+              <>
+                <HealthStats currentHealth={currentHealth} />
 
-            <HealthChart
-              historyData={historyData}
-              selectedChart={selectedChart}
-              setSelectedChart={setSelectedChart}
-            />
+                <div className="mt-8">
+                  <HealthChart
+                    historyData={historyData}
+                    selectedChart={selectedChart}
+                    setSelectedChart={setSelectedChart}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -113,36 +113,42 @@ export const menuItems = [
     icon: Calendar,
     label: "Đăng ký suất ăn",
     color: "text-blue-600",
+    path: "/parent/register-meal",
   },
   {
     id: "profile",
     icon: User,
     label: "Cập nhật hồ sơ",
     color: "text-green-600",
+    path: "/parent/update-profile",
   },
   {
     id: "health",
     icon: Activity,
     label: "Theo dõi sức khỏe",
     color: "text-red-600",
+    path: "/parent/health",
   },
   {
     id: "menu_and_feedback",
     icon: FileText,
     label: "Xem thực đơn và đánh giá",
     color: "text-orange-600",
+    path: "/parent/menu_and_feedback",
   },
   {
     id: "invoice",
     icon: Receipt,
     label: "Xem hóa đơn",
     color: "text-yellow-600",
+    path: "/parent/invoice",
   },
   {
     id: "gallery",
     icon: Image,
     label: "Thư viện ảnh",
     color: "text-purple-600",
+    path: "/parent/student_images",
   },
 
   {
@@ -150,5 +156,6 @@ export const menuItems = [
     icon: FileEdit,
     label: "Đơn xin nghỉ",
     color: "text-pink-600",
+    path: "/parent/leave",
   },
 ];

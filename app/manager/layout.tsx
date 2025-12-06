@@ -15,7 +15,8 @@ import {
   FileText,
   BarChart3,
   UserPlus,
-  PackageCheck, // <--- 1. Thêm import icon này
+  PackageCheck,
+  Receipt, // <--- 1. Thêm icon Receipt (Hóa đơn)
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -79,6 +80,7 @@ export default function ManagerLayout({
           </button>
         </div>
         <nav className="p-4 overflow-y-auto h-[calc(100vh-70px)] scrollbar-thin">
+          {/* --- TỔNG QUAN --- */}
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -105,6 +107,8 @@ export default function ManagerLayout({
               </li>
             </ul>
           </div>
+
+          {/* --- QUẢN LÝ TÀI KHOẢN --- */}
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -178,6 +182,7 @@ export default function ManagerLayout({
             </ul>
           </div>
 
+          {/* --- QUẢN LÝ HỌC TẬP --- */}
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -222,7 +227,7 @@ export default function ManagerLayout({
             </ul>
           </div>
 
-          {/* 2. Thêm Section mới: KHO & BẾP */}
+          {/* --- KHO & BẾP --- */}
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -252,6 +257,7 @@ export default function ManagerLayout({
             </ul>
           </div>
 
+          {/* --- TÀI CHÍNH --- */}
           <div className="mb-4">
             <p
               className={`text-xs font-medium text-gray-400 mb-2 ${
@@ -261,6 +267,25 @@ export default function ManagerLayout({
               {isSidebarOpen ? "TÀI CHÍNH" : ""}
             </p>
             <ul className="space-y-1">
+              {/* 2. Thêm mục Quản lý hóa đơn ở đây */}
+              <li>
+                <Link
+                  href="/manager/invoices"
+                  className={`flex items-center w-full ${
+                    isSidebarOpen ? "justify-start px-4" : "justify-center"
+                  } py-3 rounded-lg ${
+                    isActive("/manager/invoices")
+                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
+                      : "text-gray-600 hover:bg-orange-50"
+                  }`}
+                >
+                  <Receipt size={20} />
+                  {isSidebarOpen && (
+                    <span className="ml-3">Quản lý hóa đơn</span>
+                  )}
+                </Link>
+              </li>
+
               <li>
                 <Link
                   href="/manager/finance"
@@ -274,7 +299,7 @@ export default function ManagerLayout({
                 >
                   <FileText size={20} />
                   {isSidebarOpen && (
-                    <span className="ml-3">Quản lý tài chính</span>
+                    <span className="ml-3">Báo cáo tài chính</span>
                   )}
                 </Link>
               </li>

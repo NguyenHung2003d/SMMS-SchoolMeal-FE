@@ -16,10 +16,11 @@ export const wardenFeedbackService = {
     feedbackId: number,
     data: CreateFeedbackRequest
   ): Promise<FeedbackDto> => {
-    const response = await axiosInstance.put(
-      `/WardensFeedback/${feedbackId}`,
-      data
-    );
+    console.log("DEBUG ID:", feedbackId, typeof feedbackId);
+
+    const id = parseInt(feedbackId.toString());
+
+    const response = await axiosInstance.put(`/WardensFeedback/${id}`, data);
     return response.data;
   },
 

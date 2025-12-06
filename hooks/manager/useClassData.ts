@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { managerClassService } from "@/services/manager/managerClass.service";
 import {
-  AcademicYearDto,
   ClassDto,
   TeacherSimpleDto,
 } from "@/types/manager-class";
+import { AcademicYearDto } from "@/types/academic-year";
 
 export const useClassData = () => {
   const [classes, setClasses] = useState<ClassDto[]>([]);

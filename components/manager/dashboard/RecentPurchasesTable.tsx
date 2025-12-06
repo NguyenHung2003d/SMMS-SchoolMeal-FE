@@ -97,13 +97,6 @@ export default function RecentPurchasesTable({
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold">Báo cáo thu mua bếp</h2>
-        <Link
-          href="/manager/kitchen-purchases"
-          className="text-blue-500 hover:text-blue-600 text-sm font-medium flex items-center"
-        >
-          Xem tất cả
-          <ArrowUpRight size={14} className="ml-1" />
-        </Link>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center">

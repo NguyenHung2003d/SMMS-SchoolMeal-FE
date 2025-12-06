@@ -1,4 +1,4 @@
-import { formatDateForInput } from "@/helpers";
+import { formatDate } from "@/helpers";
 import { NotificationDto } from "@/types/admin-notification";
 import {
   Bell,
@@ -128,7 +128,7 @@ export default function NotificationList({
                   <div className="text-sm">
                     <p className="text-gray-500 text-xs">Thời gian gửi</p>
                     <p className="font-semibold text-gray-700">
-                      {formatDateForInput(notification.createdAt)}
+                      {formatDate(notification.createdAt)}
                     </p>
                   </div>
                 </div>

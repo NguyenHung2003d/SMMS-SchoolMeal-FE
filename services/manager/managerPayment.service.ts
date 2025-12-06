@@ -5,7 +5,7 @@ import {
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
 
-export const paymentService = {
+export const managerPaymentService = {
   getBySchool: async () => {
     const response = await axiosInstance.get(
       "/ManagerPaymentSetting/school/current"

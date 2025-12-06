@@ -97,6 +97,14 @@ export interface WeekOptionDto {
   Status?: string;
 }
 
+export interface StudentImageDto {
+  imageId: string;
+  imageUrl: string;
+  caption?: string;
+  takenAt?: string;
+  createdAt: string;
+}
+
 export interface MenuFoodItemDto {
   foodId: number;
   foodName: string;

@@ -1,14 +1,11 @@
 import {
-  FoodMenuItem,
-  ParentFeedback,
-} from "@/types";
-import {
   Calendar,
   User,
   Activity,
   FileText,
   Receipt,
   FileEdit,
+  Image,
 } from "lucide-react";
 
 export const images = [
@@ -17,7 +14,7 @@ export const images = [
   },
 ];
 
-export const ParentFeedbackData: ParentFeedback[] = [
+export const ParentFeedbackData = [
   {
     id: 1,
     rating: 9.9,
@@ -110,29 +107,6 @@ export const problems = [
   },
 ];
 
-export const foodData: FoodMenuItem[] = [
-  {
-    id: "pho-bo",
-    name: "Phở Bò",
-    image: "/images/pho-bo.jpg",
-    ingredients: ["Bánh phở", "Thịt bò", "Hành lá", "Nước hầm xương"],
-    allergies: [], // Bắt buộc phải có, dù là mảng rỗng
-    date: "2025-10-24",
-    prepared: 120,
-    needed: 150,
-  },
-  {
-    id: "com-ga",
-    name: "Cơm Gà Xối Mỡ",
-    image: "/images/com-ga.jpg",
-    ingredients: ["Cơm", "Thịt gà", "Dưa leo", "Nước mắm"],
-    allergies: ["Hải sản"], // Ví dụ có dị ứng
-    date: "2025-10-24",
-    prepared: 145,
-    needed: 150,
-  },
-];
-
 export const menuItems = [
   {
     id: "register",
@@ -164,6 +138,13 @@ export const menuItems = [
     label: "Xem hóa đơn",
     color: "text-yellow-600",
   },
+  {
+    id: "gallery",
+    icon: Image,
+    label: "Thư viện ảnh",
+    color: "text-purple-600",
+  },
+
   {
     id: "leave",
     icon: FileEdit,

@@ -11,6 +11,7 @@ const routes: Record<string, string> = {
   menu_and_feedback: "/parent/menu_and_feedback",
   invoice: "/parent/invoice",
   leave: "/parent/leave",
+  gallery: '/parent/student-images'
 };
 
 export function useParentNavigation() {

@@ -5,7 +5,7 @@ import {
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
 
-export const managerPaymentService = {
+export const paymentSettingsService = {
   getBySchool: async () => {
     const response = await axiosInstance.get(
       "/ManagerPaymentSetting/school/current"
@@ -57,5 +57,17 @@ export const managerPaymentService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  connectPayOs: async (data: {
+    clientId: string;
+    apiKey: string;
+    checksumKey: string;
+  }) => {
+    const response = await axiosInstance.post(
+      "/v1/schools/payment-settings/payos/connect",
+      data
+    );
+    return response.data;
   },
 };

@@ -1,15 +1,28 @@
 import { Student } from "./student";
 
-export type Invoice=  {
+export type Invoice = {
   invoiceId: number;
-  studentId?: string; // Optional because API might not return it in the list
+  studentId?: string;
+  schoolName: string
   studentName: string;
+  className: string
   monthNo: number;
   dateFrom: string;
   dateTo: string;
   absentDay: number;
   status: string;
-  amountToPay: number; // Correct field name from backend
+  amountToPay: number;
+  settlementBankCode: string;
+  settlementAccountNo: string;
+  settlementAccountName: string;
+
+};
+
+export interface PayOSLinkResponse {
+  paymentId: number;
+  checkoutUrl: string;
+  qrCode: string;
+  paymentLinkId: string;
 }
 
 export type ViewInvoiceProps = {

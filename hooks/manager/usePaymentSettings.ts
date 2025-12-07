@@ -5,7 +5,7 @@ import {
   UpdateSchoolPaymentSettingRequest,
 } from "@/types/manager-payment";
 import toast from "react-hot-toast";
-import { managerPaymentService } from "@/services/manager/managerPayment.service";
+import { paymentSettingsService } from "@/services/manager/managerPayment.service";
 
 export const usePaymentSettings = () => {
   const queryClient = useQueryClient();
@@ -13,7 +13,7 @@ export const usePaymentSettings = () => {
   const { data: settingsList = [], isLoading } = useQuery({
     queryKey: ["payment-settings"],
     queryFn: async () => {
-      const data = await managerPaymentService.getBySchool();
+      const data = await paymentSettingsService.getBySchool();
       return data.sort((a: any, b: any) => a.fromMonth - b.fromMonth);
     },
     staleTime: 1000 * 60 * 60,
@@ -21,7 +21,7 @@ export const usePaymentSettings = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateSchoolPaymentSettingRequest) =>
-      managerPaymentService.create(data),
+      paymentSettingsService.create(data),
     onSuccess: () => {
       toast.success("Tạo mới thành công!");
       queryClient.invalidateQueries({ queryKey: ["payment-settings"] });
@@ -37,7 +37,7 @@ export const usePaymentSettings = () => {
     }: {
       id: number;
       data: UpdateSchoolPaymentSettingRequest;
-    }) => managerPaymentService.update(id, data),
+    }) => paymentSettingsService.update(id, data),
     onSuccess: () => {
       toast.success("Cập nhật thành công!");
       queryClient.invalidateQueries({ queryKey: ["payment-settings"] });
@@ -47,7 +47,7 @@ export const usePaymentSettings = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: managerPaymentService.delete,
+    mutationFn: paymentSettingsService.delete,
     onSuccess: () => {
       toast.success("Xóa thành công!");
       queryClient.invalidateQueries({ queryKey: ["payment-settings"] });

@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Settings } from "lucide-react";
 import { PaymentSettingCard } from "@/components/manager/paymentSettings/PaymentSettingCard";
 import { PaymentSettingModal } from "@/components/manager/paymentSettings/PaymentSettingModal";
+import { PayOsConfigModal } from "@/components/manager/paymentSettings/PayOsConfigModal";
 import { SchoolPaymentSettingDto } from "@/types/manager-payment";
 import { usePaymentSettings } from "@/hooks/manager/usePaymentSettings";
+import { Toaster } from "react-hot-toast";
 
 export default function ManagerPaymentSettings() {
   const {
@@ -17,6 +19,7 @@ export default function ManagerPaymentSettings() {
   } = usePaymentSettings();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPayOsModalOpen, setIsPayOsModalOpen] = useState(false);
   const [editingItem, setEditingItem] =
     useState<SchoolPaymentSettingDto | null>(null);
 
@@ -57,7 +60,7 @@ export default function ManagerPaymentSettings() {
           note: formData.note,
         });
       }
-      setIsModalOpen(false); // Chỉ đóng modal khi thành công
+      setIsModalOpen(false);
     } catch (error) {
       console.error(error);
     }
@@ -65,6 +68,7 @@ export default function ManagerPaymentSettings() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen animate-in fade-in duration-500">
+      <Toaster position="top-right" />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
@@ -74,12 +78,22 @@ export default function ManagerPaymentSettings() {
             Quản lý các đợt thu phí theo tháng cho toàn trường
           </p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg flex items-center shadow-md transition-all transform active:scale-95"
-        >
-          <Plus size={18} className="mr-2" /> Thêm đợt thu
-        </button>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsPayOsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg flex items-center shadow-md transition-all transform active:scale-95"
+          >
+            <Settings size={18} className="mr-2" /> Kết nối PayOS
+          </button>
+
+          <button
+            onClick={handleOpenCreate}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg flex items-center shadow-md transition-all transform active:scale-95"
+          >
+            <Plus size={18} className="mr-2" /> Thêm đợt thu
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -122,6 +136,11 @@ export default function ManagerPaymentSettings() {
           isSaving={isSaving}
         />
       )}
+
+      <PayOsConfigModal
+        isOpen={isPayOsModalOpen}
+        onClose={() => setIsPayOsModalOpen(false)}
+      />
     </div>
   );
 }

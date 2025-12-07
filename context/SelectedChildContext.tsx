@@ -38,7 +38,6 @@ export function SelectedChildProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleSetSelectedChild = (child: Child | null) => {
-    // Đảm bảo tính nhất quán dữ liệu trước khi lưu
     if (child) {
       const sanitizedChild = { ...child, studentId: String(child.studentId) };
       setSelectedChild(sanitizedChild);

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/helpers";
 
-// Định nghĩa lại kiểu dữ liệu khớp với API chi tiết
 interface InvoiceDetailData {
   invoiceId: number;
   studentName: string;

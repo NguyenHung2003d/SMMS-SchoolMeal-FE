@@ -141,7 +141,7 @@ export const menuItems = [
     icon: Receipt,
     label: "Xem hóa đơn",
     color: "text-yellow-600",
-    path: "/parent/invoice",
+    path: "/parent/invoices",
   },
   {
     id: "gallery",

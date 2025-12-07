@@ -5,7 +5,7 @@ import { billService } from "@/services/bill.service";
 import { Invoice } from "@/types/invoices";
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { LoaderCircle } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { InvoiceDetailModal } from "@/components/parents/billing/InvoiceDetailModal";
 
 export default function RegisterMeal() {
@@ -103,9 +103,7 @@ export default function RegisterMeal() {
   };
 
   return (
-    <div className="space-y-6">
-      <Toaster position="top-right" />
-      
+    <div className="space-y-6">      
       <h2 className="text-2xl font-bold text-gray-800">
         Đăng ký suất ăn & Thanh toán
       </h2>

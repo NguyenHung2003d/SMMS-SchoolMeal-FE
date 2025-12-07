@@ -1,45 +1,47 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
 import { Invoice } from "@/types/invoices";
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { InvoiceDetailModal } from "@/components/parents/billing/InvoiceDetailModal";
 
 export default function RegisterMeal() {
+  const router = useRouter();
   const { selectedChild } = useSelectedChild();
-  const [unpaidInvoice, setUnpaidInvoice] = useState<Invoice | null>(null);
+
+  const [unpaidInvoices, setUnpaidInvoices] = useState<Invoice[]>([]);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isLoadingInvoice, setIsLoadingInvoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
-  const [detailData, setDetailData] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-
   useEffect(() => {
     if (selectedChild?.studentId) {
-      fetchInvoice(selectedChild.studentId);
+      fetchInvoices(selectedChild.studentId);
     } else {
-      setUnpaidInvoice(null);
+      setUnpaidInvoices([]);
+      setSelectedInvoice(null);
     }
   }, [selectedChild]);
 
-  const fetchInvoice = async (studentId: string) => {
+  const fetchInvoices = async (studentId: string) => {
     setIsLoadingInvoice(true);
     setError(null);
     try {
       const invoices = await billService.getUnpaidInvoices(studentId);
       if (invoices && invoices.length > 0) {
-        setUnpaidInvoice(invoices[0]);
+        setUnpaidInvoices(invoices);
+        setSelectedInvoice(invoices[0]);
       } else {
-        setUnpaidInvoice(null);
+        setUnpaidInvoices([]);
+        setSelectedInvoice(null);
       }
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
-        setUnpaidInvoice(null);
+        setUnpaidInvoices([]);
+        setSelectedInvoice(null);
       } else {
         console.error(err);
         setError("Không thể tải thông tin hóa đơn.");
@@ -50,60 +52,15 @@ export default function RegisterMeal() {
     }
   };
 
-  const handleViewDetail = async () => {
-    if (!unpaidInvoice || !selectedChild) return;
-
-    setIsDetailLoading(true);
-    try {
-      const detail = await billService.getInvoiceDetail(
-        unpaidInvoice.invoiceId,
-        selectedChild.studentId
-      );
-      setDetailData(detail);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error(error);
-      toast.error("Không thể lấy chi tiết hóa đơn");
-    } finally {
-      setIsDetailLoading(false);
-    }
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!unpaidInvoice) return;
-
-    setIsProcessingPayment(true);
-    const loadingToastId = toast.loading("Đang khởi tạo giao dịch...");
-
-    try {
-      const response = await billService.createPaymentLink(
-        unpaidInvoice.invoiceId,
-        unpaidInvoice.amountToPay,
-        `Thanh toan HD ${unpaidInvoice.invoiceId}`
-      );
-
-      if (response.checkoutUrl) {
-        toast.success("Đang chuyển hướng sang PayOS...", {
-          id: loadingToastId,
-        });
-
-        setTimeout(() => {
-          window.location.href = response.checkoutUrl;
-        }, 1000);
-      }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error || err.message || "Lỗi khi tạo giao dịch";
-
-      toast.error(msg, {
-        id: loadingToastId,
-      });
-      setIsProcessingPayment(false); 
-    }
+  const handleViewDetail = () => {
+    if (!selectedInvoice || !selectedChild) return;
+    router.push(
+      `/parent/invoices/${selectedInvoice.invoiceId}?studentId=${selectedChild.studentId}`
+    );
   };
 
   return (
-    <div className="space-y-6">      
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">
         Đăng ký suất ăn & Thanh toán
       </h2>
@@ -124,11 +81,12 @@ export default function RegisterMeal() {
 
             {isLoadingInvoice ? (
               <div className="text-center py-4 text-gray-500 flex justify-center items-center gap-2">
-                <LoaderCircle className="animate-spin" /> Đang kiểm tra hóa đơn...
+                <LoaderCircle className="animate-spin" /> Đang kiểm tra hóa
+                đơn...
               </div>
             ) : error ? (
               <div className="text-red-500 p-3 bg-red-50 rounded">{error}</div>
-            ) : !unpaidInvoice ? (
+            ) : unpaidInvoices.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-lg">
                 <p className="text-green-600 font-medium">
                   Học sinh này chưa có khoản phí nào cần đóng.
@@ -137,80 +95,84 @@ export default function RegisterMeal() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Khoản phí cần thanh toán
+                  <label className="block text-sm font-medium mb-3 text-gray-700">
+                    Danh sách khoản phí cần thanh toán:
                   </label>
 
                   <div className="space-y-3">
-                    <label className="flex items-center p-4 border-2 border-blue-500 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
-                      <input
-                        type="radio"
-                        name="package"
-                        className="mr-3 h-5 w-5 text-blue-600"
-                        checked
-                        readOnly
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center">
-                          <p className="font-bold text-gray-900">
-                            Hóa đơn #{unpaidInvoice.invoiceId} - Tháng{" "}
-                            {unpaidInvoice.monthNo}
-                          </p>
-                          <p className="font-bold text-blue-700 text-lg">
-                            {formatCurrency(unpaidInvoice.amountToPay)}
-                          </p>
+                    {unpaidInvoices.map((inv) => (
+                      <label
+                        key={inv.invoiceId}
+                        className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          selectedInvoice?.invoiceId === inv.invoiceId
+                            ? "border-blue-500 bg-blue-50 shadow-md"
+                            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                        }`}
+                        onClick={() => setSelectedInvoice(inv)}
+                      >
+                        <input
+                          type="radio"
+                          name="invoice_selection"
+                          className="mr-4 h-5 w-5 text-blue-600 focus:ring-blue-500"
+                          checked={selectedInvoice?.invoiceId === inv.invoiceId}
+                          onChange={() => setSelectedInvoice(inv)}
+                        />
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <p className="font-bold text-gray-900">
+                              Hóa đơn #{inv.invoiceId} - Tháng {inv.monthNo}
+                            </p>
+                            <p className="font-bold text-blue-700 text-lg">
+                              {formatCurrency(inv.amountToPay)}
+                            </p>
+                          </div>
+                          <div className="flex justify-between text-sm text-gray-600">
+                            <p>
+                              Từ:{" "}
+                              {new Date(inv.dateFrom).toLocaleDateString(
+                                "vi-VN"
+                              )}{" "}
+                              - Đến:{" "}
+                              {new Date(inv.dateTo).toLocaleDateString("vi-VN")}
+                            </p>
+                            {inv.absentDay > 0 && (
+                              <span className="text-orange-600 font-medium text-xs bg-orange-100 px-2 py-0.5 rounded">
+                                Trừ {inv.absentDay} ngày nghỉ
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Từ:{" "}
-                          {new Date(unpaidInvoice.dateFrom).toLocaleDateString(
-                            "vi-VN"
-                          )}{" "}
-                          - Đến:{" "}
-                          {new Date(unpaidInvoice.dateTo).toLocaleDateString(
-                            "vi-VN"
-                          )}
-                        </p>
-                      </div>
-                    </label>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                <button
-                  onClick={handleViewDetail}
-                  disabled={isDetailLoading}
-                  className={`w-full py-3 rounded-lg font-bold text-white transition-all
-                    ${
-                      isDetailLoading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
-                    }`}
-                >
-                  {isDetailLoading ? (
-                    <span className="flex items-center justify-center">
-                      <LoaderCircle className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                      Đang lấy thông tin...
-                    </span>
-                  ) : (
-                    `Xem chi tiết & Thanh toán qua PayOS`
-                  )}
-                </button>
+                <div className="pt-4 border-t mt-4">
+                  <button
+                    onClick={handleViewDetail}
+                    disabled={!selectedInvoice}
+                    className={`w-full py-3 rounded-lg font-bold text-white transition-all shadow-md
+                        ${
+                          !selectedInvoice
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-[0.99]"
+                        }`}
+                  >
+                    Xem chi tiết & Thanh toán qua PayOS
+                  </button>
 
-                <p className="text-xs text-center text-gray-500 mt-2">
-                  Bạn sẽ xem lại chi tiết hóa đơn trước khi chuyển đến cổng thanh toán.
-                </p>
+                  <p className="text-xs text-center text-gray-500 mt-3">
+                    Bạn đang chọn thanh toán cho hóa đơn:{" "}
+                    <span className="font-bold text-gray-700">
+                      #{selectedInvoice?.invoiceId}
+                    </span>
+                  </p>
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
-
-      <InvoiceDetailModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleConfirmPayment}
-        data={detailData}
-        isProcessing={isProcessingPayment}
-      />
     </div>
   );
 }

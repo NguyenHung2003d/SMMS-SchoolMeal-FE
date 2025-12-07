@@ -15,10 +15,11 @@ export interface ParentAccountDto {
   isActive: boolean;
   createdAt: string;
   schoolName: string;
-  relationName: string; 
-  children: ParentStudentDetailDto[]; 
+  relationName: string;
+  children: ParentStudentDetailDto[];
   childrenNames?: string[];
   className?: string;
+  paymentStatus: "Đã thanh toán" | "Chưa thanh toán" | "Chưa tạo hóa đơn";
 }
 export interface CreateChildDto {
   fullName: string;

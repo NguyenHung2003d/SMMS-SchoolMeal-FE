@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { managerInvoiceService } from "@/services/manager/managerInvoice.service";
 import {
   InvoiceFilter,
-  GenerateInvoiceRequest,
   UpdateInvoiceRequest,
 } from "@/types/invoices";
 import toast from "react-hot-toast";

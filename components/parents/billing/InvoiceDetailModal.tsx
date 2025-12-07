@@ -9,27 +9,13 @@ import {
   X,
 } from "lucide-react";
 import { formatCurrency } from "@/helpers";
-
-interface InvoiceDetailData {
-  invoiceId: number;
-  studentName: string;
-  className: string;
-  schoolName: string;
-  status: string;
-  monthNo: number;
-  dateFrom: string;
-  dateTo: string;
-  absentDay: number;
-  amountToPay: number;
-  settlementAccountNo: string;
-  settlementBankCode: string;
-}
+import { Invoice } from "@/types/invoices";
 
 interface InvoiceDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  data: InvoiceDetailData | null; // Cho phép null
+  data: Invoice | null;
   isProcessing: boolean;
 }
 

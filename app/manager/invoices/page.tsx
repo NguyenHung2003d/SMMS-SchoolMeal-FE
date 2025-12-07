@@ -44,7 +44,7 @@ export default function InvoiceManager() {
         </div>
         <button
           onClick={() => setShowGenModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+          className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
         >
           <span>+</span> Tạo Hóa Đơn
         </button>

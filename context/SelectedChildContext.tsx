@@ -12,6 +12,7 @@ import {
 interface SelectedChildContextType {
   selectedChild: Child | null;
   setSelectedChild: (child: Child | null) => void;
+  isInitialized: boolean;
 }
 
 const SelectedChildContext = createContext<
@@ -20,6 +21,7 @@ const SelectedChildContext = createContext<
 
 export function SelectedChildProvider({ children }: { children: ReactNode }) {
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedChild");
@@ -35,6 +37,7 @@ export function SelectedChildProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("selectedChild");
       }
     }
+    setIsInitialized(true);
   }, []);
 
   const handleSetSelectedChild = (child: Child | null) => {
@@ -50,7 +53,11 @@ export function SelectedChildProvider({ children }: { children: ReactNode }) {
 
   return (
     <SelectedChildContext.Provider
-      value={{ selectedChild, setSelectedChild: handleSetSelectedChild }}
+      value={{
+        selectedChild,
+        setSelectedChild: handleSetSelectedChild,
+        isInitialized,
+      }}
     >
       {children}
     </SelectedChildContext.Provider>

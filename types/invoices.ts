@@ -3,8 +3,8 @@ import { Student } from "./student";
 export type Invoice = {
   invoiceId: number;
   studentId?: string;
+  studentName: string,
   schoolName: string
-  studentName: string;
   className: string
   monthNo: number;
   dateFrom: string;
@@ -17,6 +17,13 @@ export type Invoice = {
   settlementAccountName: string;
 
 };
+
+export interface InvoiceSummary {
+  invoiceId: number;
+  monthNo: number;
+  dateFrom: string;
+  status: string;
+}
 
 export interface PayOSLinkResponse {
   paymentId: number;

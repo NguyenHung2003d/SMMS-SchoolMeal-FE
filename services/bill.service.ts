@@ -25,9 +25,11 @@ export const billService = {
   },
 
   getInvoiceDetail: async (invoiceId: number, studentId: string) => {
-    const res = await axiosInstance.get(
-      `/Invoice/${invoiceId}?studentId=${studentId}`
-    );
+    const res = await axiosInstance.get(`/Invoice/${invoiceId}`, {
+      params: {
+        studentId: studentId,
+      },
+    });
     return res.data;
   },
 };

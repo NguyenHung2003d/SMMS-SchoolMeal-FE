@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,7 +14,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast"; // Thêm Toaster
 
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
@@ -23,16 +23,21 @@ import { Invoice } from "@/types/invoices";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const { selectedChild } = useSelectedChild();
+  const { selectedChild, isInitialized } = useSelectedChild();
 
-  const invoiceId = Number(params.id);  
+  const invoiceId = Number(params.id);
 
   const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
   useEffect(() => {
+    if (!isInitialized) return;
+
     const fetchData = async () => {
       if (!invoiceId || isNaN(invoiceId)) {
         setError("Mã hóa đơn không hợp lệ.");
@@ -40,8 +45,11 @@ export default function InvoiceDetailPage() {
         return;
       }
 
-      if (!selectedChild?.studentId) {
-        setError("Vui lòng chọn học sinh trước khi xem chi tiết.");
+      const queryStudentId = searchParams.get("studentId");
+      const targetStudentId = queryStudentId || selectedChild?.studentId;
+
+      if (!targetStudentId) {
+        setError("Không xác định được thông tin học sinh.");
         setIsLoading(false);
         return;
       }
@@ -50,30 +58,61 @@ export default function InvoiceDetailPage() {
         setIsLoading(true);
         const data = await billService.getInvoiceDetail(
           invoiceId,
-          selectedChild.studentId
+          String(targetStudentId)
         );
+        if (!data) {
+          throw new Error("Dữ liệu trả về rỗng");
+        }
         setInvoiceData(data);
       } catch (err: any) {
-        console.error(err);
-        setError("Không tìm thấy hóa đơn hoặc bạn không có quyền truy cập.");
+        console.error("Lỗi chi tiết:", err);
+        setError(
+          err.message ||
+            "Không tìm thấy hóa đơn hoặc bạn không có quyền truy cập."
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [invoiceId, selectedChild]);
+  }, [invoiceId, isInitialized, searchParams]);
 
-  const handlePayNow = () => {
-    router.push("/parent/register-meal");
-    toast("Vui lòng thực hiện thanh toán tại đây.");
+  const handlePayNow = async () => {
+    if (!invoiceData) return;
+
+    setIsProcessingPayment(true);
+    const loadingToastId = toast.loading("Đang khởi tạo giao dịch PayOS...");
+
+    try {
+      const response = await billService.createPaymentLink(
+        invoiceData.invoiceId,
+        invoiceData.amountToPay,
+        `Thanh toan HD ${invoiceData.invoiceId}`
+      );
+
+      if (response && response.checkoutUrl) {
+        toast.success("Đang chuyển hướng...", { id: loadingToastId });
+        setTimeout(() => {
+          window.location.href = response.checkoutUrl;
+        }, 1000);
+      } else {
+        throw new Error("Không nhận được link thanh toán");
+      }
+    } catch (err: any) {
+      console.error(err);
+      const msg =
+        err.response?.data?.error || err.message || "Lỗi khi tạo giao dịch";
+      toast.error(msg, { id: loadingToastId });
+      setIsProcessingPayment(false);
+    }
   };
 
-  if (isLoading) {
+  if (!isInitialized || (isLoading && !error)) {
     return (
       <div className="flex h-[50vh] items-center justify-center bg-gray-50">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600 mr-2" />
-        <span className="text-gray-600 font-medium">Đang tải hóa đơn...</span>
+        <span className="text-gray-600 font-medium">Đang tải dữ liệu...</span>
       </div>
     );
   }
@@ -103,6 +142,7 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
+      <Toaster position="top-right" /> {/* Thêm Toaster để hiện thông báo */}
       <div className="max-w-4xl mx-auto mb-6">
         <Link
           href="/parent/register-meal"
@@ -112,10 +152,9 @@ export default function InvoiceDetailPage() {
             size={20}
             className="mr-2 group-hover:-translate-x-1 transition-transform"
           />
-          Quay lại
+          Quay lại danh sách
         </Link>
       </div>
-
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 md:p-8 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -226,13 +265,23 @@ export default function InvoiceDetailPage() {
               {!isPaid && (
                 <button
                   onClick={handlePayNow}
-                  className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold py-3 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center active:scale-95 group"
+                  disabled={isProcessingPayment}
+                  className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold py-3 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center active:scale-95 group disabled:opacity-75 disabled:cursor-not-allowed"
                 >
-                  <CreditCard
-                    size={20}
-                    className="mr-2 group-hover:scale-110 transition-transform"
-                  />
-                  Thanh toán ngay
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="mr-2 animate-spin" size={20} /> Đang
+                      xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard
+                        size={20}
+                        className="mr-2 group-hover:scale-110 transition-transform"
+                      />
+                      Thanh toán ngay
+                    </>
+                  )}
                 </button>
               )}
 

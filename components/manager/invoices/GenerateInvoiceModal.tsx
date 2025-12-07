@@ -33,7 +33,6 @@ export const GenerateInvoiceModal = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <CalendarPlus className="text-blue-600" size={24} />
@@ -48,7 +47,6 @@ export const GenerateInvoiceModal = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

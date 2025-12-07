@@ -1,6 +1,15 @@
 "use client";
 import React from "react";
-import { MoreHorizontal, Edit, Trash, Loader2, Lock } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash,
+  Loader2,
+  Lock,
+  CheckCircle2,
+  AlertCircle,
+  HelpCircle,  
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,6 +35,38 @@ export function ParentTable({
   onStatusChange,
   onEdit,
 }: ParentTableProps) {
+  
+  const renderPaymentStatus = (parent: ParentAccountDto) => {
+    const status = parent.paymentStatus;
+
+    switch (status) {
+      case "Đã thanh toán":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-teal-700 bg-teal-50 border border-teal-100">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {status}
+          </span>
+        );
+      
+      case "Chưa thanh toán":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-red-700 bg-red-50 border border-red-100">
+            <AlertCircle className="h-3.5 w-3.5" />
+            {status}
+          </span>
+        );
+      
+      case "Chưa tạo hóa đơn":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200">
+            <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+            {status || "Chưa xác định"}
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -40,8 +81,13 @@ export function ParentTable({
                 Học sinh (Con)
               </th>
               <th className="px-4 py-3 font-semibold text-gray-700">Lớp học</th>
+
               <th className="px-4 py-3 text-center font-semibold text-gray-700">
-                Trạng thái
+                Thanh toán
+              </th>
+
+              <th className="px-4 py-3 text-center font-semibold text-gray-700">
+                Trạng thái TK
               </th>
               <th className="px-4 py-3 text-right font-semibold text-gray-700">
                 Hành động
@@ -51,7 +97,7 @@ export function ParentTable({
           <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center">
+                <td colSpan={7} className="p-8 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <Loader2 className="animate-spin h-5 w-5 mb-2 text-gray-400" />
                     <span className="text-gray-500">Đang tải dữ liệu...</span>
@@ -60,7 +106,7 @@ export function ParentTable({
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-gray-500">
+                <td colSpan={7} className="p-8 text-center text-gray-500">
                   Không tìm thấy phụ huynh nào.
                 </td>
               </tr>
@@ -130,6 +176,10 @@ export function ParentTable({
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    {renderPaymentStatus(parent)}
                   </td>
 
                   <td className="px-4 py-3 text-center">

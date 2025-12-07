@@ -40,8 +40,7 @@ export const InvoiceTable = ({
             <tr>
               {[
                 "ID",
-                "Student ID",
-                "Tháng",
+                "Student Name",
                 "Thời gian",
                 "Nghỉ",
                 "Trạng thái",
@@ -63,8 +62,7 @@ export const InvoiceTable = ({
                 className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-6 py-4 font-medium">#{inv.invoiceId}</td>
-                <td className="px-6 py-4">{inv.studentId}</td>
-                <td className="px-6 py-4">Tháng {inv.monthNo}</td>
+                <td className="px-6 py-4">{inv.studentName}</td>
                 <td className="px-6 py-4 text-xs">
                   {formatDate(inv.dateFrom)} - {formatDate(inv.dateTo)}
                 </td>

@@ -6,49 +6,20 @@ import toast from "react-hot-toast";
 import { useSelectedChild } from "@/context/SelectedChildContext";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { formatCurrency, formatDate } from "@/helpers";
-
-// Định nghĩa lại Type cho danh sách (gọn nhẹ)
-interface InvoiceSummary {
-  invoiceId: number;
-  monthNo: number;
-  dateFrom: string;
-  status: string;
-}
-
-// Định nghĩa Type cho chi tiết (đầy đủ từ API GetInvoiceDetail)
-interface InvoiceDetail {
-  invoiceId: number;
-  studentName: string;
-  className: string;
-  schoolName: string;
-  status: string;
-  monthNo: number;
-  dateFrom: string;
-  dateTo: string;
-  absentDay: number;
-  amountToPay: number; // Đã được tính toán từ Backend
-  settlementAccountNo: string;
-  settlementBankCode: string;
-  settlementAccountName?: string;
-}
+import { Invoice, InvoiceSummary } from "@/types/invoices";
 
 export default function InvoicePage() {
   const { selectedChild } = useSelectedChild();
 
-  // State cho danh sách (Dropdown)
   const [invoicesList, setInvoicesList] = useState<InvoiceSummary[]>([]);
   const [isListLoading, setIsListLoading] = useState(false);
 
-  // State cho chi tiết (Hiển thị)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
     null
   );
-  const [invoiceDetail, setInvoiceDetail] = useState<InvoiceDetail | null>(
-    null
-  );
+  const [invoiceDetail, setInvoiceDetail] = useState<Invoice | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  // 1. Lấy danh sách hóa đơn khi đổi học sinh
   useEffect(() => {
     if (!selectedChild?.studentId) {
       setInvoicesList([]);
@@ -68,9 +39,7 @@ export default function InvoicePage() {
         );
         setInvoicesList(res.data);
 
-        // Tự động chọn hóa đơn mới nhất nếu có
         if (res.data && res.data.length > 0) {
-          // Sắp xếp ID giảm dần để lấy cái mới nhất
           const sorted = [...res.data].sort(
             (a, b) => b.invoiceId - a.invoiceId
           );
@@ -94,16 +63,15 @@ export default function InvoicePage() {
     fetchInvoicesList();
   }, [selectedChild?.studentId]);
 
-  // 2. Lấy CHI TIẾT hóa đơn khi chọn ID
   useEffect(() => {
     if (!selectedInvoiceId || !selectedChild?.studentId) return;
 
     const fetchDetail = async () => {
       try {
         setIsDetailLoading(true);
-        setInvoiceDetail(null); // Reset cũ để hiện loading
+        setInvoiceDetail(null);
 
-        const res = await axiosInstance.get<InvoiceDetail>(
+        const res = await axiosInstance.get<Invoice>(
           `/Invoice/${selectedInvoiceId}`,
           {
             params: { studentId: selectedChild.studentId },

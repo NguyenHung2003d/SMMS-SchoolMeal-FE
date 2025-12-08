@@ -1,20 +1,14 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { PurchasePlan, PurchasePlanItem } from "@/types/kitchen-purchasePlan";
 
+export interface UpdatePurchasePlanRequest {
+  planId: number;
+  planStatus: string; // "Draft" hoặc "Confirmed"
+  lines: PurchasePlanItem[];
+}
+
 export const kitchenPurchasePlanService = {
-  updatePlan: async (
-    planId: number,
-    data: {
-      planId: number;
-      planStatus: string;
-      lines: PurchasePlanItem[];
-      supplierName?: string;
-    }
-  ) => {
-    const response = await axiosInstance.put(`/purchase-plans/${planId}`, data);
-    return response.data;
-  },
-  getCurrentPlan: async (date?: string) => {
+  getPlanByDate: async (date?: string) => {
     const params = date ? { date } : {};
     const response = await axiosInstance.get<PurchasePlan>(
       "/purchase-plans/by-date",
@@ -23,29 +17,40 @@ export const kitchenPurchasePlanService = {
     return response.data;
   },
 
-  searchIngredients: async (keyword: string) => {
-    const response = await axiosInstance.get(
-      `/nutrition/fooditems?keyword=${keyword}`
+  getPlanById: async (planId: number) => {
+    const response = await axiosInstance.get<PurchasePlan>(
+      `/purchase-plans/${planId}`
     );
     return response.data;
   },
 
-  createPurchaseOrder: async (payload: {
-    planId: number;
-    supplierName: string;
-    note: string;
-    lines: {
-      ingredientId: number;
-      quantityOverrideGram?: number;
-      unitPrice?: number;
-      batchNo?: string;
-      origin?: string;
-      expiryDate?: string;
-    }[];
-  }) => {
-    const response = await axiosInstance.post(
-      "/kitchen/purchase-orders/from-plan",
-      payload
+  updatePlan: async (planId: number, data: UpdatePurchasePlanRequest) => {
+    const response = await axiosInstance.put<PurchasePlan>(
+      `/purchase-plans/${planId}`,
+      data
+    );
+    return response.data;
+  },
+
+  createFromSchedule: async (scheduleMealId: number) => {
+    const response = await axiosInstance.post<PurchasePlan>(
+      `/purchase-plans/from-schedule`,
+      null,
+      {
+        params: { scheduleMealId },
+      }
+    );
+    return response.data;
+  },
+
+  deletePlan: async (planId: number) => {
+    const response = await axiosInstance.delete(`/purchase-plans/${planId}`);
+    return response.data;
+  },
+
+  searchIngredients: async (keyword: string) => {
+    const response = await axiosInstance.get(
+      `/nutrition/fooditems?keyword=${keyword}`
     );
     return response.data;
   },

@@ -1,23 +1,23 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  ShoppingCart,
   Search,
-  Filter,
   Plus,
   Check,
-  Download,
-  Printer,
-  AlertCircle,
-  DollarSign,
   Truck,
   Loader2,
   Calendar,
   Save,
+  AlertCircle,
+  Trash2,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 import { PurchasePlan } from "@/types/kitchen-purchasePlan";
 import { kitchenPurchasePlanService } from "@/services/kitchenStaff/kitchenPurchasePlan.service";
-import toast from "react-hot-toast"; // 1. Import toast
+import { kitchenPurchaseOrderService } from "@/services/kitchenStaff/kitchenPurchaseOrder.service"; // Import service Order
+import toast from "react-hot-toast";
+import { renderStatusBadge } from "@/helpers"; // Giả sử bạn có helper này
 
 export default function KitchenStaffPurchasePlanPage() {
   const [loading, setLoading] = useState(false);
@@ -29,47 +29,50 @@ export default function KitchenStaffPurchasePlanPage() {
   );
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const [supplierName, setSupplierName] = useState("");
   const [note, setNote] = useState("");
+
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [newItem, setNewItem] = useState({
+    name: "",
+    quantity: 0,
+    unit: "g",
+  });
+
   useEffect(() => {
-    fetchCurrentPlan(selectedDate);
+    fetchPlanByDate(selectedDate);
   }, [selectedDate]);
 
-  const fetchCurrentPlan = async (dateStr: string) => {
+  const fetchPlanByDate = async (dateStr: string) => {
     setLoading(true);
     setError(false);
     try {
-      const data = await kitchenPurchasePlanService.getCurrentPlan(dateStr);
+      const data = await kitchenPurchasePlanService.getPlanByDate(dateStr);
       setPlan(data);
-    } catch (error) {
+      // Reset form fields
+      setSupplierName("");
+      setNote("");
+    } catch (error: any) {
       console.error("Lỗi tải plan:", error);
       setPlan(null);
-      setError(true);
+      if (error?.response?.status !== 404) {
+        setError(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEstimatedPriceChange = (index: number, value: string) => {
-    if (!plan) return;
-    const newLines = [...plan.lines];
-    newLines[index].estimatedPrice = parseFloat(value) || 0;
-    setPlan({ ...plan, lines: newLines });
-  };
-
+  // --- Handlers chỉnh sửa Lines ---
   const handleActualPriceChange = (index: number, value: string) => {
     if (!plan) return;
     const newLines = [...plan.lines];
     const val = parseFloat(value) || 0;
     newLines[index].actualPrice = val;
-
-    if (val > 0) {
-      newLines[index].status = "Purchased";
-    }
+    newLines[index].status = val > 0 ? "Purchased" : "Pending";
     setPlan({ ...plan, lines: newLines });
   };
 
@@ -87,37 +90,59 @@ export default function KitchenStaffPurchasePlanPage() {
     setPlan({ ...plan, lines: newLines });
   };
 
+  const handleDeleteLine = (index: number) => {
+    if (!plan) return;
+    if (plan.planStatus === "Confirmed") return;
+    const newLines = plan.lines.filter((_, i) => i !== index);
+    setPlan({ ...plan, lines: newLines });
+    toast.success("Đã xóa dòng (Vui lòng Lưu nháp để cập nhật)");
+  };
+
+  const handleAddNewItem = () => {
+    if (!plan) return;
+    if (!newItem.name || newItem.quantity <= 0) {
+      toast.error("Vui lòng nhập tên và số lượng hợp lệ");
+      return;
+    }
+    const newLine: any = {
+      ingredientId: -1, // ID tạm, BE sẽ bỏ qua nếu không map được hoặc cần xử lý thêm
+      ingredientName: newItem.name,
+      rqQuanityGram: newItem.quantity,
+      actualPrice: 0,
+      status: "Pending",
+      batchNo: "",
+      origin: "",
+      category: "Thêm thủ công",
+    };
+    setPlan({ ...plan, lines: [...plan.lines, newLine] });
+    setIsAddItemModalOpen(false);
+    setNewItem({ name: "", quantity: 0, unit: "g" });
+    toast.success("Đã thêm mặt hàng mới");
+  };
+
   const calculateTotals = () => {
-    if (!plan) return { estimated: 0, actual: 0 };
-    const estimated = plan.lines.reduce(
-      (sum, item) => sum + item.estimatedPrice * item.rqQuanityGram,
-      0
-    );
-    const actual = plan.lines.reduce(
+    if (!plan) return 0;
+    return plan.lines.reduce(
       (sum, item) => sum + (item.actualPrice || 0) * item.rqQuanityGram,
       0
     );
-    return { estimated, actual };
   };
 
   const handleSaveDraft = async () => {
     if (!plan) return;
-
-    toast.promise(
-      kitchenPurchasePlanService.updatePlan(plan.planId, {
-        planId: plan.planId,
-        planStatus: "Draft",
-        lines: plan.lines,
-      }),
-      {
-        loading: "Đang lưu nháp...",
-        success: "Đã lưu nháp thành công!",
-        error: "Lỗi khi lưu dữ liệu. Vui lòng thử lại.",
-      }
-    );
+    const payload = {
+      planId: plan.planId,
+      planStatus: "Draft",
+      lines: plan.lines,
+    };
+    toast.promise(kitchenPurchasePlanService.updatePlan(plan.planId, payload), {
+      loading: "Đang lưu nháp...",
+      success: "Đã lưu nháp thành công!",
+      error: "Lỗi khi lưu dữ liệu.",
+    });
   };
 
-  const handleOpenCompleteModal = () => {
+  const handleOpenConfirmModal = () => {
     if (!plan) return;
     const zeroPriceItems = plan.lines.filter(
       (i) => !i.actualPrice || i.actualPrice === 0
@@ -131,9 +156,6 @@ export default function KitchenStaffPurchasePlanPage() {
               ⚠️ Cảnh báo: Có {zeroPriceItems.length} mặt hàng chưa nhập giá
               thực tế.
             </span>
-            <span className="text-sm text-gray-500">
-              Bạn có chắc chắn muốn tiếp tục không?
-            </span>
             <div className="flex gap-2 mt-2 justify-end">
               <button
                 className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
@@ -145,7 +167,7 @@ export default function KitchenStaffPurchasePlanPage() {
                 className="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
                 onClick={() => {
                   toast.dismiss(t.id);
-                  setIsCompleteModalOpen(true);
+                  setIsConfirmModalOpen(true);
                 }}
               >
                 Tiếp tục
@@ -157,11 +179,10 @@ export default function KitchenStaffPurchasePlanPage() {
       );
       return;
     }
-
-    setIsCompleteModalOpen(true);
+    setIsConfirmModalOpen(true);
   };
 
-  const handleSubmitOrder = async () => {
+  const handleConfirmOrder = async () => {
     if (!plan) return;
 
     if (!supplierName.trim()) {
@@ -179,29 +200,39 @@ export default function KitchenStaffPurchasePlanPage() {
         unitPrice: l.actualPrice || 0,
         batchNo: l.batchNo,
         origin: l.origin,
+        // expiryDate: ... nếu có input date thì map vào đây
       })),
     };
 
-    await toast.promise(
-      kitchenPurchasePlanService.createPurchaseOrder(payload),
-      {
-        loading: "Đang tạo đơn hàng & cập nhật kho...",
-        success: (data) => {
-          setIsCompleteModalOpen(false);
-          setTimeout(() => fetchCurrentPlan(selectedDate), 1000);
-          return "Đã hoàn tất! Đơn hàng đã được tạo.";
-        },
-        error: (err) => {
-          console.error(err);
-          return (
-            err?.response?.data?.message || "Có lỗi xảy ra khi tạo đơn hàng."
-          );
-        },
-      }
-    );
+    await toast.promise(kitchenPurchaseOrderService.createFromPlan(payload), {
+      loading: "Đang tạo đơn hàng...",
+      success: () => {
+        setIsConfirmModalOpen(false);
+        setTimeout(() => fetchPlanByDate(selectedDate), 1000);
+        return "Đã tạo đơn hàng (Purchase Order) thành công!";
+      },
+      error: (err) => {
+        console.error(err);
+        return err?.response?.data?.error || "Có lỗi xảy ra khi tạo đơn.";
+      },
+    });
   };
 
-  const totals = calculateTotals();
+  const handleDeletePlan = async () => {
+    if (!plan || !confirm("Bạn có chắc chắn muốn xóa kế hoạch này không?"))
+      return;
+    await toast.promise(kitchenPurchasePlanService.deletePlan(plan.planId), {
+      loading: "Đang xóa...",
+      success: () => {
+        setPlan(null);
+        return "Đã xóa kế hoạch";
+      },
+      error: "Lỗi khi xóa",
+    });
+  };
+
+  const totalActual = calculateTotals();
+  const isPlanDraft = plan?.planStatus === "Draft";
 
   if (loading)
     return (
@@ -211,10 +242,10 @@ export default function KitchenStaffPurchasePlanPage() {
       </div>
     );
 
-  if (error || !plan) {
+  if (!plan) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-        <div className="bg-white p-8 rounded-xl shadow-sm text-center max-w-md border border-gray-100 animate-in fade-in zoom-in duration-300">
+        <div className="bg-white p-8 rounded-xl shadow-sm text-center max-w-md border border-gray-100">
           <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="text-orange-600" size={32} />
           </div>
@@ -222,21 +253,20 @@ export default function KitchenStaffPurchasePlanPage() {
             Không tìm thấy kế hoạch
           </h3>
           <p className="text-gray-500 mb-6 text-sm">
-            Không có kế hoạch nào cho ngày{" "}
+            Chưa có kế hoạch mua sắm nào cho ngày{" "}
             <strong>
               {new Date(selectedDate).toLocaleDateString("vi-VN")}
             </strong>
             .
+            <br />
+            Vui lòng tạo kế hoạch từ Lịch Ăn (Schedule) trước.
           </p>
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-medium text-gray-700">
-              Chọn ngày khác:
-            </label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none w-full"
+              className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
         </div>
@@ -248,56 +278,50 @@ export default function KitchenStaffPurchasePlanPage() {
     <div className="p-6 bg-gray-50 min-h-screen relative pb-32">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            Kế hoạch mua sắm
-            <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-              {plan.planStatus === "Confirmed"
-                ? "✅ Đã hoàn thành"
-                : "⏳ Đang thực hiện"}
-            </span>
-          </h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-gray-800">
+              Kế hoạch mua sắm
+            </h1>
+            {renderStatusBadge(plan.planStatus)}
+          </div>
           <div className="flex items-center gap-2 mt-2">
             <Calendar size={16} className="text-gray-500" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-orange-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-orange-500 bg-white"
             />
           </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
-            onClick={() => setIsAddItemModalOpen(true)}
-          >
-            <Plus size={18} /> Thêm mặt hàng
-          </button>
-        </div>
+
+        {isPlanDraft && (
+          <div className="flex gap-2">
+            <button
+              onClick={handleDeletePlan}
+              className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg transition-colors border border-red-200"
+              title="Xóa toàn bộ kế hoạch"
+            >
+              <Trash2 size={18} />
+            </button>
+            <button
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+              onClick={() => setIsAddItemModalOpen(true)}
+            >
+              <Plus size={18} /> Thêm mặt hàng
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
+      {/* COST CARD */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-between">
           <div className="text-sm font-medium text-gray-500 mb-1">
-            Chi phí dự kiến
+            Tổng chi phí thực tế (Dự tính nhập)
           </div>
-          <div className="text-3xl font-bold text-gray-800">
-            {new Intl.NumberFormat("vi-VN").format(totals.estimated)}{" "}
-            <span className="text-sm font-normal text-gray-500">vnđ</span>
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500">
-          <div className="text-sm font-medium text-gray-500 mb-1">
-            Chi phí thực tế
-          </div>
-          <div
-            className={`text-3xl font-bold ${
-              totals.actual > totals.estimated
-                ? "text-red-600"
-                : "text-green-600"
-            }`}
-          >
-            {new Intl.NumberFormat("vi-VN").format(totals.actual)}{" "}
+          <div className="text-3xl font-bold text-green-700">
+            {new Intl.NumberFormat("vi-VN").format(totalActual)}{" "}
             <span className="text-sm font-normal text-gray-500">vnđ</span>
           </div>
         </div>
@@ -323,18 +347,15 @@ export default function KitchenStaffPurchasePlanPage() {
               <tr>
                 <th className="px-4 py-3 text-left w-1/4">Tên mặt hàng</th>
                 <th className="px-4 py-3 text-center">SL (g)</th>
-
-                <th className="px-4 py-3 text-right bg-blue-50/50">
-                  Giá dự kiến
-                </th>
-
-                <th className="px-4 py-3 text-right bg-green-50/50 text-green-700">
+                <th className="px-4 py-3 text-right bg-green-50/50 text-green-700 w-40">
                   Giá nhập (VNĐ)
                 </th>
-
                 <th className="px-4 py-3 text-left">Số lô (Batch)</th>
                 <th className="px-4 py-3 text-left">Xuất xứ</th>
                 <th className="px-4 py-3 text-center">Trạng thái</th>
+                {isPlanDraft && (
+                  <th className="px-4 py-3 text-center w-16"></th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 text-sm">
@@ -361,26 +382,14 @@ export default function KitchenStaffPurchasePlanPage() {
                       {item.rqQuanityGram}
                     </td>
 
-                    <td className="px-4 py-3 text-right bg-blue-50/20">
-                      <input
-                        type="number"
-                        disabled={plan.planStatus === "Confirmed"}
-                        className="w-28 text-right bg-transparent border border-transparent hover:border-blue-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-all focus:bg-white"
-                        value={item.estimatedPrice || ""}
-                        placeholder="0"
-                        onChange={(e) =>
-                          handleEstimatedPriceChange(index, e.target.value)
-                        }
-                      />
-                    </td>
-
+                    {/* INPUT: Giá thực tế */}
                     <td className="px-4 py-3 text-right bg-green-50/20">
                       <input
                         type="number"
-                        disabled={plan.planStatus === "Confirmed"}
-                        className="w-28 text-right font-bold text-green-700 bg-transparent border border-transparent hover:border-green-300 focus:border-green-500 rounded px-2 py-1 outline-none transition-all focus:bg-white placeholder-green-200"
+                        disabled={!isPlanDraft}
+                        className="w-full text-right font-bold text-green-700 bg-transparent border border-transparent hover:border-green-300 focus:border-green-500 rounded px-2 py-1 outline-none transition-all focus:bg-white placeholder-green-200"
                         value={item.actualPrice || ""}
-                        placeholder="Nhập giá..."
+                        placeholder="0"
                         onChange={(e) =>
                           handleActualPriceChange(index, e.target.value)
                         }
@@ -390,7 +399,7 @@ export default function KitchenStaffPurchasePlanPage() {
                     <td className="px-4 py-3">
                       <input
                         type="text"
-                        disabled={plan.planStatus === "Confirmed"}
+                        disabled={!isPlanDraft}
                         className="w-full text-left bg-transparent border border-gray-200 rounded px-2 py-1 text-xs focus:border-orange-500 outline-none focus:bg-white"
                         placeholder="---"
                         value={item.batchNo || ""}
@@ -403,7 +412,7 @@ export default function KitchenStaffPurchasePlanPage() {
                     <td className="px-4 py-3">
                       <input
                         type="text"
-                        disabled={plan.planStatus === "Confirmed"}
+                        disabled={!isPlanDraft}
                         className="w-full text-left bg-transparent border border-gray-200 rounded px-2 py-1 text-xs focus:border-orange-500 outline-none focus:bg-white"
                         placeholder="VN..."
                         value={item.origin || ""}
@@ -424,6 +433,17 @@ export default function KitchenStaffPurchasePlanPage() {
                         {item.status === "Purchased" ? "Đã nhập" : "Chờ"}
                       </span>
                     </td>
+
+                    {isPlanDraft && (
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleDeleteLine(index)}
+                          className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-50"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
             </tbody>
@@ -437,11 +457,11 @@ export default function KitchenStaffPurchasePlanPage() {
         )}
       </div>
 
-      {plan.planStatus !== "Confirmed" && (
+      {isPlanDraft && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 flex justify-end gap-3 md:pr-10 animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center mr-auto text-sm text-gray-500 ml-4">
             <Save size={16} className="mr-1.5 text-orange-500" />
-            <span>Thay đổi chưa được lưu vào lịch sử</span>
+            <span>Vui lòng lưu nháp trước khi xác nhận</span>
           </div>
           <button
             onClick={handleSaveDraft}
@@ -450,15 +470,15 @@ export default function KitchenStaffPurchasePlanPage() {
             Lưu nháp
           </button>
           <button
-            onClick={handleOpenCompleteModal}
+            onClick={handleOpenConfirmModal}
             className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center gap-2"
           >
-            <Check size={20} /> Hoàn tất & Nhập kho
+            <Check size={20} /> Hoàn tất & Tạo Đơn
           </button>
         </div>
       )}
 
-      {isCompleteModalOpen && (
+      {isConfirmModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-gray-100">
             <div className="flex items-center gap-3 text-green-600 mb-2">
@@ -466,17 +486,19 @@ export default function KitchenStaffPurchasePlanPage() {
                 <Truck size={28} />
               </div>
               <h2 className="text-xl font-bold text-gray-800">
-                Xác nhận nhập kho
+                Tạo Đơn Hàng (Purchase Order)
               </h2>
             </div>
 
-            <p className="text-gray-500 text-sm mb-6 ml-1">
-              Hệ thống sẽ tạo <strong>Purchase Order</strong> và cập nhật số
-              lượng vào kho. <br />
-              Hành động này không thể hoàn tác.
-            </p>
+            <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-lg mb-4 text-sm text-yellow-800 flex gap-2">
+              <AlertTriangle className="shrink-0" size={18} />
+              <p>
+                Hành động này sẽ tạo một đơn hàng mới trong hệ thống dựa trên kế
+                hoạch hiện tại.
+              </p>
+            </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Nhà cung cấp <span className="text-red-500">*</span>
@@ -487,7 +509,6 @@ export default function KitchenStaffPurchasePlanPage() {
                     placeholder="VD: Siêu thị BigC, Chợ đầu mối..."
                     value={supplierName}
                     onChange={(e) => setSupplierName(e.target.value)}
-                    autoFocus
                   />
                   <Truck className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                 </div>
@@ -497,7 +518,7 @@ export default function KitchenStaffPurchasePlanPage() {
                   Ghi chú
                 </label>
                 <textarea
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none h-24 resize-none transition-all"
+                  className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none h-20 resize-none transition-all"
                   placeholder="Ghi chú thêm về đơn hàng..."
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -505,18 +526,96 @@ export default function KitchenStaffPurchasePlanPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-8">
+            <div className="flex justify-end gap-3 mt-4">
               <button
-                onClick={() => setIsCompleteModalOpen(false)}
-                className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium"
               >
                 Hủy bỏ
               </button>
               <button
-                onClick={handleSubmitOrder}
+                onClick={handleConfirmOrder}
                 className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 transition-all"
               >
-                Xác nhận nhập kho
+                Xác nhận tạo đơn
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD NEW ITEM */}
+      {isAddItemModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200 relative">
+            <button
+              onClick={() => setIsAddItemModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              Thêm mặt hàng mới
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tên nguyên liệu
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none"
+                  placeholder="Ví dụ: Thịt bò, Hành tây..."
+                  value={newItem.name}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, name: e.target.value })
+                  }
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số lượng
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none"
+                    placeholder="0"
+                    value={newItem.quantity}
+                    onChange={(e) =>
+                      setNewItem({
+                        ...newItem,
+                        quantity: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+                <div className="w-24">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Đơn vị
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    className="w-full border border-gray-200 bg-gray-50 rounded-lg p-2.5 text-center text-gray-500"
+                    value="gam (g)"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setIsAddItemModalOpen(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAddNewItem}
+                className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
+              >
+                Thêm vào list
               </button>
             </div>
           </div>

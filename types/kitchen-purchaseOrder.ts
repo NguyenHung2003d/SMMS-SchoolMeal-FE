@@ -17,10 +17,10 @@ export interface PurchaseOrderDetailDto {
   note: string;
   planId: number;
   staffInCharged: string; 
-  lines: KsPurchaseOrderLineDto[];
+  lines: any[];
 }
 
-export interface KsPurchaseOrderLineDto {
+export interface KsPurchaseOrderDetailDto {
   linesId: number;
   ingredientId: number;
   ingredientName: string;
@@ -29,4 +29,18 @@ export interface KsPurchaseOrderLineDto {
   batchNo?: string;
   origin?: string;
   expiryDate?: string;
+}
+
+export interface CreatePurchaseOrderFromPlanRequest {
+  planId: number;
+  supplierName: string;
+  note?: string;
+  lines: {
+    ingredientId: number;
+    quantityOverrideGram?: number;
+    unitPrice: number;
+    batchNo?: string;
+    origin?: string;
+    expiryDate?: string;
+  }[];
 }

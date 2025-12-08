@@ -24,7 +24,6 @@ import {
 import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
 import { useRouter } from "next/navigation";
 
-// --- CẤU HÌNH NGÀY & BỮA ---
 const DAYS_OF_WEEK = [
   { value: 2, label: "Thứ 2" },
   { value: 3, label: "Thứ 3" },
@@ -39,7 +38,6 @@ const MEAL_TYPES = [
 ];
 
 export default function KitchenStaffMenuCreationPage() {
-  const [activeTab, setActiveTab] = useState<"manual" | "library">("manual");
   const router = useRouter();
 
   const [weekStart, setWeekStart] = useState(
@@ -64,13 +62,11 @@ export default function KitchenStaffMenuCreationPage() {
   const [aiResult, setAiResult] = useState<AiMenuResponse | null>(null);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-  // Chỉ cần lưu DAY, không cần mealType nữa vì AI tự quyết định
   const [selectingContext, setSelectingContext] = useState<{
     day: number;
     mealType: string; // Vẫn giữ để dùng cho Manual Modal
   }>({ day: 2, mealType: "Lunch" });
 
-  // State riêng cho AI Modal chỉ cần chọn Ngày
   const [aiSelectedDay, setAiSelectedDay] = useState<number>(2);
 
   const [submitting, setSubmitting] = useState(false);
@@ -127,7 +123,6 @@ export default function KitchenStaffMenuCreationPage() {
       return { ...prev, [key]: [...existing, dish] };
     });
 
-    // Toast thông báo rõ ràng hơn
     const mealLabel = mealType === "Lunch" ? "Bữa Trưa" : "Bữa Phụ";
     toast.success(`Đã thêm "${dish.foodName}" vào Thứ ${day} (${mealLabel})`);
   };
@@ -162,7 +157,6 @@ export default function KitchenStaffMenuCreationPage() {
     }
   };
 
-  // --- LOGIC TỰ ĐỘNG CHỌN BỮA ---
   const handleSelectAiDish = (dish: AiDishDto) => {
     const foodItem: FoodItemDto = {
       foodId: dish.food_id,
@@ -171,14 +165,8 @@ export default function KitchenStaffMenuCreationPage() {
       imageUrl: "",
     };
 
-    // Logic quan trọng:
-    // - Nếu là Món chính (is_main_dish = true) -> Chắc chắn vào Lunch
-    // - Nếu là Món phụ (is_main_dish = false) -> Vào SideDish (Bữa Phụ)
-    // (Bạn có thể tùy chỉnh logic này nếu muốn món phụ cũng vào Lunch)
-
     const targetMealType = dish.is_main_dish ? "Lunch" : "SideDish";
 
-    // Sử dụng ngày đang chọn trong AI Modal
     addToGrid(foodItem, aiSelectedDay, targetMealType);
   };
 

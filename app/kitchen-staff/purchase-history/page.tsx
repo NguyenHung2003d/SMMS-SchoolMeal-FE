@@ -20,39 +20,33 @@ import {
   PurchaseOrderDetailDto,
   PurchaseOrderSummaryDto,
 } from "@/types/kitchen-purchaseOrder";
+import { formatCurrency, formatDate, getStatusBadge } from "@/helpers";
 
 export default function KitchenStaffPurchaseHistoryPage() {
-  // --- STATE ---
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<PurchaseOrderSummaryDto[]>([]);
 
-  // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // Detail Modal state
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] =
     useState<PurchaseOrderDetailDto | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // --- EFFECT ---
   useEffect(() => {
     fetchOrders();
   }, [fromDate, toDate]);
 
-  // --- API CALLS ---
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      // Backend cho phép lọc theo ngày, nếu rỗng thì lấy hết hoặc mặc định
       const data = await kitchenPurchaseOrderService.getList(
         fromDate || undefined,
         toDate || undefined
       );
-      // Sắp xếp đơn mới nhất lên đầu
       const sortedData = data.sort(
         (a, b) =>
           new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
@@ -78,9 +72,6 @@ export default function KitchenStaffPurchaseHistoryPage() {
     }
   };
 
-  // --- HELPER FUNCTIONS ---
-
-  // Filter logic frontend
   const filteredOrders = orders.filter((order) => {
     const searchLower = searchQuery.toLowerCase();
     const matchSearch =
@@ -94,51 +85,10 @@ export default function KitchenStaffPurchaseHistoryPage() {
     return matchSearch && matchStatus;
   });
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
-  // Tính tổng tiền cho Modal Chi Tiết (Vì API Summary không trả về tiền)
   const calculateOrderTotal = (lines: any[]) => {
     return lines.reduce(
       (sum, line) => sum + (line.unitPrice || 0) * line.quantityGram,
       0
-    );
-  };
-
-  // Mapping trạng thái sang màu sắc
-  const getStatusBadge = (status: string) => {
-    const s = status?.toLowerCase() || "";
-    if (s === "draft")
-      return (
-        <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
-          Nháp (Draft)
-        </span>
-      );
-    if (s === "confirmed" || s === "completed")
-      return (
-        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-          Đã hoàn thành
-        </span>
-      );
-    return (
-      <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
-        {status}
-      </span>
     );
   };
 

@@ -26,3 +26,18 @@ export interface WeeklyScheduleDto {
   notes?: string;
   dailyMeals: DailyMealDto[];
 }
+
+export interface DisplayFoodItem {
+  foodName: string;
+  imageUrl?: string;
+  ingredientNames: string[];
+}
+
+export interface DayMenuRow {
+  dailyMealId: number;
+  dateStr: string;
+  dayName: string;
+  mainDishes: DisplayFoodItem[];
+  sideDishes: DisplayFoodItem[];
+  // dateObj?: Date; // Có thể giữ hoặc bỏ tùy nhu cầu
+}

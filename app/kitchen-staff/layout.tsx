@@ -47,14 +47,14 @@ const MENU_ITEMS = [
         icon: Package,
       },
       {
-        name: "Kế hoạch mua sắm",
-        href: "/kitchen-staff/purchase-plan",
-        icon: ShoppingCart,
-      },
-      {
         name: "Thư viện món ăn",
         href: "/kitchen-staff/food-library",
         icon: Library,
+      },
+      {
+        name: "Kế hoạch mua sắm",
+        href: "/kitchen-staff/purchase-plan",
+        icon: ShoppingCart,
       },
       {
         name: "Lịch sử mua hàng",

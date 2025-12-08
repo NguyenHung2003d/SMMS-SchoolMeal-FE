@@ -23,3 +23,26 @@ export interface UpdateInventoryItemRequest {
   batchNo?: string;
   origin?: string;
 }
+
+export interface IngredientDto {
+  ingredientId: number;
+  ingredientName: string;
+  unit: string;        // Đơn vị tính (kg, g, lít...)
+  kcal100g?: number;   // Calo trên 100g
+  isActive: boolean;
+}
+
+export interface CreateIngredientRequest {
+  ingredientName: string;
+  unit: string;
+  kcal100g?: number;
+  // ...
+}
+
+export interface UpdateIngredientRequest {
+  ingredientId: number;
+  ingredientName: string;
+  unit: string;
+  kcal100g?: number;
+  isActive: boolean;
+}

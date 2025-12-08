@@ -1,17 +1,59 @@
 import React from "react";
-import { Utensils, Coffee, AlertCircle } from "lucide-react";
-export interface DayMenuRow {
-  dailyMealId: number;
-  dateStr: string;
-  dayName: string;
-  mainDishes: string[];
-  sideDishes: string[];
-}
+import { Utensils, Coffee, AlertCircle, ImageOff } from "lucide-react";
+import { DayMenuRow, DisplayFoodItem } from "@/types/kitchen-menu";
 
 interface Props {
   data: DayMenuRow[];
 }
-
+const DishItem = ({
+  dish,
+  dotColorClass,
+}: {
+  dish: DisplayFoodItem;
+  dotColorClass: string;
+}) => {
+  return (
+    <div className="flex items-start gap-3 mb-3 last:mb-0 group/item">
+      <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 mt-0.5 shadow-sm relative">
+        {dish.imageUrl ? (
+          <img
+            src={dish.imageUrl}
+            alt={dish.foodName}
+            className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (
+                (e.target as HTMLImageElement).nextSibling as HTMLElement
+              ).style.display = "flex";
+            }}
+          />
+        ) : null}
+        <div
+          className="absolute inset-0 flex items-center justify-center text-gray-300 bg-gray-50"
+          style={{ display: dish.imageUrl ? "none" : "flex" }}
+        >
+          <ImageOff size={16} />
+        </div>
+      </div>
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-center">
+          <span
+            className={`w-2 h-2 rounded-full ${dotColorClass} mr-2 shrink-0`}
+          ></span>
+          <span className="font-medium text-gray-800 text-sm leading-tight truncate">
+            {dish.foodName}
+          </span>
+        </div>
+        {dish.ingredientNames && dish.ingredientNames.length > 0 && (
+          <span className="text-xs text-gray-400 mt-1 pl-4 leading-snug truncate">
+            {dish.ingredientNames.slice(0, 3).join(", ")}
+            {dish.ingredientNames.length > 3 ? ", ..." : ""}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
 export const WeeklyMenuTable: React.FC<Props> = ({ data }) => {
   return (
     <div className="overflow-hidden border border-gray-200 rounded-lg shadow-sm">
@@ -65,37 +107,32 @@ export const WeeklyMenuTable: React.FC<Props> = ({ data }) => {
 
                 <td className="py-5 px-6 align-top">
                   {row.mainDishes.length > 0 ? (
-                    <ul className="space-y-2">
-                      {row.mainDishes.map((dish, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start text-gray-700 font-medium"
-                        >
-                          <span className="w-2 h-2 rounded-full bg-orange-500 mt-2 mr-3 flex-shrink-0"></span>
-                          {dish}
-                        </li>
+                    <div className="flex flex-col">
+                      {row.mainDishes.map((dish, index) => (
+                        <DishItem
+                          key={index}
+                          dish={dish}
+                          dotColorClass="bg-orange-500"
+                        />
                       ))}
-                    </ul>
+                    </div>
                   ) : (
                     <span className="text-gray-400 text-sm italic flex items-center bg-gray-50 px-3 py-1 rounded-full w-fit">
                       <AlertCircle size={14} className="mr-1" /> Chưa cập nhật
                     </span>
                   )}
                 </td>
-
                 <td className="py-5 px-6 align-top border-l border-dashed border-gray-100">
                   {row.sideDishes.length > 0 ? (
-                    <ul className="space-y-2">
+                    <div className="flex flex-col">
                       {row.sideDishes.map((dish, idx) => (
-                        <li
+                        <DishItem
                           key={idx}
-                          className="flex items-start text-gray-600"
-                        >
-                          <span className="w-2 h-2 rounded-full bg-blue-400 mt-2 mr-3 flex-shrink-0"></span>
-                          {dish}
-                        </li>
+                          dish={dish}
+                          dotColorClass="bg-blue-400"
+                        />
                       ))}
-                    </ul>
+                    </div>
                   ) : (
                     <span className="text-gray-400 text-sm italic">--</span>
                   )}

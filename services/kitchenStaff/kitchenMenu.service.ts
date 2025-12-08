@@ -7,7 +7,31 @@ import {
   MenuTemplateDto,
 } from "@/types/kitchen-menu-create";
 
+interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageIndex: number;
+  pageSize: number;
+}
+
 export const kitchenMenuService = {
+  getAllSchedules: async (): Promise<WeeklyScheduleDto[]> => {
+    try {
+      const res = await axiosInstance.get<PagedResult<WeeklyScheduleDto>>(
+        "/meal/ScheduleMeals",
+        {
+          params: {
+            GetAll: true,
+          },
+        }
+      );
+      return res.data.items || [];
+    } catch (error) {
+      console.error("Error getting all schedules:", error);
+      return [];
+    }
+  },
+  
   getWeekMenuByDate: async (date: Date): Promise<WeeklyScheduleDto | null> => {
     try {
       const dateStr = date.toISOString().split("T")[0];
@@ -67,6 +91,20 @@ export const kitchenMenuService = {
   createPurchasePlanFromSchedule: async (scheduleMealId: number) => {
     const response = await axiosInstance.post(
       `/purchase-plans/from-schedule?scheduleMealId=${scheduleMealId}`
+    );
+    return response.data;
+  },
+
+  getFoodItemsByMainDish: async (isMainDish: boolean, keyword: string = "") => {
+    const response = await axiosInstance.get<FoodItemDto[]>(
+      "/nutrition/FoodItems/by-main-dish",
+      {
+        params: {
+          isMainDish,
+          keyword,
+          includeInactive: false,
+        },
+      }
     );
     return response.data;
   },

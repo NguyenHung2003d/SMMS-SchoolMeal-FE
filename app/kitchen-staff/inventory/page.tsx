@@ -13,9 +13,10 @@ import {
   Save,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import { format, differenceInDays, parseISO } from "date-fns";
-import { formatQuantity, getExpiryStatus } from "@/helpers";
+import { differenceInDays, parseISO } from "date-fns";
+import { formatQuantity, getExpiryStatus } from "@/helpers"; // Giả sử bạn có helper này
 import { InventoryItemDto } from "@/types/kitchen-inventory";
+import Link from "next/link"; // Dùng Link của Next.js cho chuyển trang
 import { kitchenInventoryService } from "@/services/kitchenStaff/kitchenInventory.service";
 
 export default function KitchenStaffInventoryPage() {
@@ -47,7 +48,11 @@ export default function KitchenStaffInventoryPage() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const data = await kitchenInventoryService.getAll(pageIndex, pageSize);
+      // FIX: Gọi đúng hàm getInventoryItems từ service
+      const data = await kitchenInventoryService.getInventoryItems(
+        pageIndex,
+        pageSize
+      );
       setItems(data.items);
       setTotalCount(data.totalCount);
     } catch (error) {
@@ -60,9 +65,14 @@ export default function KitchenStaffInventoryPage() {
 
   const handleEditClick = (item: InventoryItemDto) => {
     setEditingItem(item);
+    // Format date string for input type="date" (YYYY-MM-DD)
+    const dateStr = item.expirationDate
+      ? new Date(item.expirationDate).toISOString().split("T")[0]
+      : "";
+
     setEditForm({
       quantityGram: item.quantityGram,
-      expirationDate: item.expirationDate || "",
+      expirationDate: dateStr,
       batchNo: item.batchNo || "",
       origin: item.origin || "",
     });
@@ -73,7 +83,7 @@ export default function KitchenStaffInventoryPage() {
     if (!editingItem) return;
 
     try {
-      await kitchenInventoryService.update(editingItem.itemId, {
+      await kitchenInventoryService.updateInventoryItem(editingItem.itemId, {
         quantityGram: editForm.quantityGram,
         expirationDate: editForm.expirationDate || undefined,
         batchNo: editForm.batchNo,
@@ -82,7 +92,7 @@ export default function KitchenStaffInventoryPage() {
 
       toast.success("Cập nhật kho thành công!");
       setIsEditModalOpen(false);
-      fetchInventory();
+      fetchInventory(); // Reload lại dữ liệu
     } catch (error) {
       console.error(error);
       toast.error("Cập nhật thất bại.");
@@ -99,6 +109,7 @@ export default function KitchenStaffInventoryPage() {
         </h1>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
@@ -118,7 +129,7 @@ export default function KitchenStaffInventoryPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">
-                Cảnh báo hết hạn
+                Cảnh báo hết hạn (3 ngày)
               </p>
               <h3 className="text-3xl font-bold text-gray-800">
                 {
@@ -141,6 +152,7 @@ export default function KitchenStaffInventoryPage() {
         </div>
       </div>
 
+      {/* Tabs & Filter */}
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="border-b border-gray-200">
           <nav className="flex">
@@ -162,7 +174,7 @@ export default function KitchenStaffInventoryPage() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Đơn đặt hàng (Link tới trang History)
+              Đơn đặt hàng
             </button>
           </nav>
         </div>
@@ -192,6 +204,7 @@ export default function KitchenStaffInventoryPage() {
         </div>
       </div>
 
+      {/* Content: Inventory Table */}
       {activeTab === "inventory" && (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           {loading ? (
@@ -251,10 +264,11 @@ export default function KitchenStaffInventoryPage() {
                               className={`flex items-center gap-1 ${expiry.color}`}
                             >
                               {expiry.label}
-                              {differenceInDays(
-                                parseISO(item.expirationDate || ""),
-                                new Date()
-                              ) <= 3 && <AlertTriangle size={14} />}
+                              {item.expirationDate &&
+                                differenceInDays(
+                                  parseISO(item.expirationDate),
+                                  new Date()
+                                ) <= 3 && <AlertTriangle size={14} />}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-gray-500 text-xs">
@@ -288,6 +302,7 @@ export default function KitchenStaffInventoryPage() {
             </div>
           )}
 
+          {/* Pagination */}
           <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
             <button
               disabled={pageIndex === 1}
@@ -300,7 +315,7 @@ export default function KitchenStaffInventoryPage() {
               Trang {pageIndex}
             </span>
             <button
-              disabled={items.length < pageSize} // Logic đơn giản, nên dùng totalPages từ BE
+              disabled={items.length < pageSize} // Hoặc logic totalPages chính xác hơn nếu BE trả về
               onClick={() => setPageIndex((p) => p + 1)}
               className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
             >
@@ -310,6 +325,7 @@ export default function KitchenStaffInventoryPage() {
         </div>
       )}
 
+      {/* Content: Orders Link */}
       {activeTab === "orders" && (
         <div className="bg-white p-8 rounded-lg shadow-sm text-center">
           <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
@@ -319,15 +335,16 @@ export default function KitchenStaffInventoryPage() {
           <p className="text-gray-500 mb-4">
             Vui lòng truy cập trang Lịch sử mua hàng để quản lý chi tiết.
           </p>
-          <a
+          <Link
             href="/kitchen-staff/purchase-history"
             className="text-orange-600 font-medium hover:underline"
           >
             Đi tới Lịch sử mua hàng &rarr;
-          </a>
+          </Link>
         </div>
       )}
 
+      {/* Edit Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">

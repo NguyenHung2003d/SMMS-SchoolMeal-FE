@@ -18,7 +18,6 @@ import {
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { number } from "zod";
 
 export default function NotificationManagement() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
@@ -32,22 +31,22 @@ export default function NotificationManagement() {
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   const [connection, setConnection] = useState<HubConnection | null>(null);
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
     const HUB_URL =
       process.env.NEXT_PUBLIC_HUB_URL ||
       "http://localhost:5000/hubs/notifications";
     const newConnection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        accessTokenFactory: () => token,
+        withCredentials: true,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
     setConnection(newConnection);
-  }, [token]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (connection) {

@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation"; // 1. Import useRouter
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
 import { Invoice } from "@/types/invoices";
-import { useSelectedChild } from "@/context/SelectedChildContext";
 import { LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 export default function RegisterMeal() {
   const router = useRouter();
-  const { selectedChild } = useSelectedChild();
+  const { selectedStudent } = useSelectedStudent();
 
   const [unpaidInvoices, setUnpaidInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -18,13 +18,13 @@ export default function RegisterMeal() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedChild?.studentId) {
-      fetchInvoices(selectedChild.studentId);
+    if (selectedStudent?.studentId) {
+      fetchInvoices(selectedStudent.studentId);
     } else {
       setUnpaidInvoices([]);
       setSelectedInvoice(null);
     }
-  }, [selectedChild]);
+  }, [selectedStudent]);
 
   const fetchInvoices = async (studentId: string) => {
     setIsLoadingInvoice(true);
@@ -53,9 +53,9 @@ export default function RegisterMeal() {
   };
 
   const handleViewDetail = () => {
-    if (!selectedInvoice || !selectedChild) return;
+    if (!selectedInvoice || !selectedStudent) return;
     router.push(
-      `/parent/invoices/${selectedInvoice.invoiceId}?studentId=${selectedChild.studentId}`
+      `/parent/invoices/${selectedInvoice.invoiceId}?studentId=${selectedStudent.studentId}`
     );
   };
 
@@ -65,7 +65,7 @@ export default function RegisterMeal() {
         Đăng ký suất ăn & Thanh toán
       </h2>
 
-      {!selectedChild ? (
+      {!selectedStudent ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800">
             Vui lòng chọn học sinh từ danh sách bên trái
@@ -76,7 +76,7 @@ export default function RegisterMeal() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold mb-4 text-lg">
               Học sinh:{" "}
-              <span className="text-blue-600">{selectedChild.name}</span>
+              <span className="text-blue-600">{selectedStudent.fullName}</span>
             </h3>
 
             {isLoadingInvoice ? (

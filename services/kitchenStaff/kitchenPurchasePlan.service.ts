@@ -1,10 +1,10 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { PurchasePlan, PurchasePlanItem } from "@/types/kitchen-purchasePlan";
+import { PurchasePlan, PurchasePlanLine } from "@/types/kitchen-purchasePlan";
 
 export interface UpdatePurchasePlanRequest {
   planId: number;
-  planStatus: string; // "Draft" hoặc "Confirmed"
-  lines: PurchasePlanItem[];
+  planStatus: string;
+  lines: PurchasePlanLine[];
 }
 
 export const kitchenPurchasePlanService = {

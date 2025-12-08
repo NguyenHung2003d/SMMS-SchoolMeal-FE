@@ -2,8 +2,8 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import {
   CreateNotificationDto,
   NotificationDetailDto,
-  NotificationDto,
 } from "@/types/admin-notification";
+import { NotificationDto } from "@/types/notification";
 
 export const adminNotificationService = {
   getHistory: async (): Promise<NotificationDto[]> => {

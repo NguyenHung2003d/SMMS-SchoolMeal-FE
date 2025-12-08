@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Menu, X, LogOut, Loader2 } from "lucide-react";
-import { SelectedChildProvider } from "@/context/SelectedChildContext";
 import { useAuth } from "@/hooks/auth/useAuth"; // Import hook
 import { menuItems } from "@/data";
 import { SidebarContent } from "@/components/layouts/parent/SidebarContent";
@@ -15,6 +14,7 @@ import {
 import { ParentNotificationBell } from "@/components/layouts/parent/ParentNotificationBell";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { SelectedStudentProvider } from "@/context/SelectedChildContext";
 
 export default function ParentLayoutWrapper({
   children,
@@ -40,7 +40,7 @@ export default function ParentLayoutWrapper({
   if (!mounted) return null;
 
   return (
-    <SelectedChildProvider>
+    <SelectedStudentProvider>
       <div className="h-screen w-full bg-gray-100 flex overflow-hidden relative">
         {isLogoutLoading && (
           <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm transition-all animate-in fade-in duration-200">
@@ -162,6 +162,6 @@ export default function ParentLayoutWrapper({
           </main>
         </div>
       </div>
-    </SelectedChildProvider>
+    </SelectedStudentProvider>
   );
 }

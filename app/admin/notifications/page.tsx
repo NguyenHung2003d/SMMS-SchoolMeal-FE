@@ -8,8 +8,8 @@ import { adminNotificationService } from "@/services/admin/adminNotification.ser
 import {
   CreateNotificationDto,
   NotificationDetailDto,
-  NotificationDto,
 } from "@/types/admin-notification";
+import { NotificationDto } from "@/types/notification";
 import {
   HubConnection,
   HubConnectionBuilder,

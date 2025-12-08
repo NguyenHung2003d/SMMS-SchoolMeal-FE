@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useSelectedChild } from "@/context/SelectedChildContext";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { DayMenuDto, WeekMenuDto, WeekOptionDto } from "@/types/parent";
 import WeekSelector from "@/components/parents/menu/WeekSelector";
 import DailyMenuCard from "@/components/parents/menu/DailyMenuCard";
 import MealDetailModal from "@/components/parents/menu/MealDetailModal";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 export default function MenuAndFeedbackPage() {
-  const { selectedChild } = useSelectedChild();
+  const { selectedStudent } = useSelectedStudent();
 
   const [availableWeeks, setAvailableWeeks] = useState<WeekOptionDto[]>([]);
   const [selectedDateInWeek, setSelectedDateInWeek] = useState<string>("");
@@ -19,12 +19,12 @@ export default function MenuAndFeedbackPage() {
   const [selectedMeal, setSelectedMeal] = useState<DayMenuDto | null>(null);
 
   useEffect(() => {
-    if (!selectedChild?.studentId) return;
+    if (!selectedStudent?.studentId) return;
     const fetchWeeks = async () => {
       try {
         const res = await axiosInstance.get<WeekOptionDto[]>(
           `/weekly-menu/available-weeks`,
-          { params: { studentId: selectedChild.studentId } }
+          { params: { studentId: selectedStudent.studentId } }
         );
         setAvailableWeeks(res.data);
         if (res.data.length > 0) {
@@ -38,10 +38,10 @@ export default function MenuAndFeedbackPage() {
       }
     };
     fetchWeeks();
-  }, [selectedChild?.studentId]);
+  }, [selectedStudent?.studentId]);
 
   useEffect(() => {
-    if (!selectedChild?.studentId || !selectedDateInWeek) return;
+    if (!selectedStudent?.studentId || !selectedDateInWeek) return;
     const fetchMenu = async () => {
       setLoadingMenu(true);
       setSelectedMeal(null);
@@ -50,14 +50,14 @@ export default function MenuAndFeedbackPage() {
           ? selectedDateInWeek.split("T")[0]
           : selectedDateInWeek;
         console.log(">>> [FE Request] Gửi lên:", {
-          studentId: selectedChild.studentId,
+          studentId: selectedStudent.studentId,
           date: dateParam,
         });
         const res = await axiosInstance.get<WeekMenuDto>(
           "/weekly-menu/week-menu",
           {
             params: {
-              studentId: selectedChild.studentId,
+              studentId: selectedStudent.studentId,
               date: dateParam,
             },
           }
@@ -78,7 +78,7 @@ export default function MenuAndFeedbackPage() {
       }
     };
     fetchMenu();
-  }, [selectedChild?.studentId, selectedDateInWeek]);
+  }, [selectedStudent?.studentId, selectedDateInWeek]);
 
   const weekDays = useMemo(() => {
     if (!selectedDateInWeek) return [];
@@ -114,7 +114,7 @@ export default function MenuAndFeedbackPage() {
     setSelectedMeal({ ...meal, foods: foodsList });
   };
 
-  if (!selectedChild)
+  if (!selectedStudent)
     return (
       <div className="p-4 text-yellow-600 bg-yellow-50 rounded">
         Vui lòng chọn học sinh.

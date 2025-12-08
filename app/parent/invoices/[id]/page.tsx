@@ -18,14 +18,14 @@ import toast, { Toaster } from "react-hot-toast"; // Thêm Toaster
 
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
-import { useSelectedChild } from "@/context/SelectedChildContext";
 import { Invoice } from "@/types/invoices";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { selectedChild, isInitialized } = useSelectedChild();
+  const { selectedStudent, isInitialized } = useSelectedStudent();
 
   const invoiceId = Number(params.id);
 
@@ -46,7 +46,7 @@ export default function InvoiceDetailPage() {
       }
 
       const queryStudentId = searchParams.get("studentId");
-      const targetStudentId = queryStudentId || selectedChild?.studentId;
+      const targetStudentId = queryStudentId || selectedStudent?.studentId;
 
       if (!targetStudentId) {
         setError("Không xác định được thông tin học sinh.");

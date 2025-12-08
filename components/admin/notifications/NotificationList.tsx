@@ -1,5 +1,5 @@
 import { formatDate } from "@/helpers";
-import { NotificationDto } from "@/types/admin-notification";
+import { NotificationDto } from "@/types/notification";
 import {
   Bell,
   CheckCircle2,

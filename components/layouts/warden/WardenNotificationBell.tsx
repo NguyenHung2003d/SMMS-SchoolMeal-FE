@@ -20,22 +20,14 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import toast from "react-hot-toast";
-
-interface NotificationDto {
-  notificationId: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  isRead: boolean;
-  sendType?: string;
-}
+import { NotificationDto } from "@/types/notification";
 
 export function WardenNotificationBell() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const connectionRef = useRef<HubConnection | null>(null);
 
   const formatNotificationTime = (dateString: string) => {
@@ -73,11 +65,11 @@ export function WardenNotificationBell() {
       }
     };
 
-    if (token) fetchNotifications();
-  }, [token]);
+    if (isAuthenticated) fetchNotifications();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
     if (connectionRef.current) return;
 
     const HUB_URL =
@@ -86,7 +78,7 @@ export function WardenNotificationBell() {
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        accessTokenFactory: () => token,
+        withCredentials: true,
         skipNegotiation: true,
         transport: HttpTransportType.WebSockets,
       })
@@ -124,7 +116,7 @@ export function WardenNotificationBell() {
         connectionRef.current = null;
       }
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   const handleMarkAllAsRead = async () => {
     if (unreadCount === 0) return;
@@ -134,7 +126,7 @@ export function WardenNotificationBell() {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setUnreadCount(0);
     try {
-      await axiosInstance.put('/WardensHome/read-all');
+      await axiosInstance.put("/WardensHome/read-all");
     } catch (error) {
       console.error("Lỗi cập nhật trạng thái đã đọc:", error);
       setNotifications(previousNotifications);

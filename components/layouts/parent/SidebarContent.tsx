@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { User, Loader2, AlertCircle } from "lucide-react";
-import { useSelectedChild } from "@/context/SelectedChildContext";
 import { Student } from "@/types/student";
 import { axiosInstance } from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 function useStudentData() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -28,24 +28,27 @@ function useStudentData() {
           const children = res.data.children || [];
 
           const mappedStudents: Student[] = children.map((child: any) => ({
-            id: child.studentId,
-            studentId: child.studentId,
-            name: child.fullName,
-            fullName: child.fullName,
-            class: child.className,
-            className: child.className,
-            avatarUrl: child.avatarUrl,
-            allergies: child.allergyFoods ?? [],
+            studentId: String(child.studentId),
+            fullName: child.fullName, // Interface dùng fullName
+            className: child.className, // Interface dùng className
+            avatarUrl: child.avatarUrl || "",
             avatar: User,
-            birthdate: child.birthdate
+            gender: child.gender ?? "Nam",
+
+            dateOfBirth: child.birthdate
               ? new Date(child.birthdate).toISOString().split("T")[0]
               : "",
-            gender: child.gender ?? "Nam",
-            bloodType: child.bloodType ?? "Không biết",
-            healthNotes: child.healthNotes ?? "",
-            emergencyContact: child.emergencyContact ?? "",
+
+            allergies: child.allergyFoods ?? [],
             status: "active",
-            parent: { name: "", phone: "", email: "", hasAccount: false },
+
+            parent: {
+              name: "",
+              phone: "",
+              email: "",
+              hasAccount: false,
+            },
+            relation: child.relation ?? "Con",
           }));
 
           setStudents(mappedStudents);
@@ -69,7 +72,13 @@ function useStudentData() {
 
 export function SidebarContent() {
   const { students, isLoadingStudents, studentError } = useStudentData();
-  const { selectedChild, setSelectedChild } = useSelectedChild();
+  const { selectedStudent, setSelectedStudent } = useSelectedStudent();
+
+  useEffect(() => {
+    if (!isLoadingStudents && students.length > 0 && !selectedStudent) {
+      setSelectedStudent(students[0]);
+    }
+  }, [students, isLoadingStudents, selectedStudent, setSelectedStudent]);
 
   if (isLoadingStudents) {
     return (
@@ -107,14 +116,14 @@ export function SidebarContent() {
     <div className="space-y-3" suppressHydrationWarning>
       {students.map((child) => {
         const avatarSrc = child.avatarUrl || null;
-        const isSelected = selectedChild?.studentId === child.studentId;
+        const isSelected =
+          selectedStudent &&
+          String(selectedStudent.studentId) === String(child.studentId);
+
         const handleClick = () => {
-          if (isSelected) {
-            setSelectedChild(null);
-          } else {
-            setSelectedChild(child);
-          }
+          setSelectedStudent(child);
         };
+
         return (
           <div
             key={child.studentId}

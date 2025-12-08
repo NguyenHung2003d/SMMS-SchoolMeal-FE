@@ -20,7 +20,7 @@ export default function ManagerNotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -37,7 +37,9 @@ export default function ManagerNotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axiosInstance.get("/ManagerNotifications/notifications");
+      const res = await axiosInstance.get(
+        "/ManagerNotifications/notifications"
+      );
       const data = res.data;
       setNotifications(data);
       setUnreadCount(data.filter((n: any) => !n.isRead).length);
@@ -47,7 +49,7 @@ export default function ManagerNotificationBell() {
   };
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
 
     fetchNotifications();
 
@@ -55,13 +57,13 @@ export default function ManagerNotificationBell() {
       process.env.NEXT_PUBLIC_HUB_URL ||
       "http://localhost:5000/hubs/notifications";
     const newConnection = new HubConnectionBuilder()
-      .withUrl(HUB_URL, { accessTokenFactory: () => token })
+      .withUrl(HUB_URL, { withCredentials: true })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
 
     setConnection(newConnection);
-  }, [token]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (connection) {

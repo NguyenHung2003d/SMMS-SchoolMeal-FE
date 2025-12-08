@@ -8,7 +8,7 @@ export interface ManagerNotification {
   scheduleCron?: string;
   createdAt: string;
   totalRecipients: number;
-  isSent: boolean
+  isSent: boolean;
 }
 
 export interface CreateNotificationRequest {
@@ -27,4 +27,16 @@ export interface PaginatedNotificationResponse {
   pageSize: number;
   count: number;
   data: ManagerNotification[];
+}
+
+export interface NotificationDto {
+  notificationId: number;
+  title: string;
+  content: string;
+  sendType: string;
+  isRead: boolean;
+  createdAt: string;
+  totalRecipients: number;
+  totalRead: number;
+  senderName?: string;
 }

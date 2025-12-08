@@ -1,5 +1,5 @@
 "use client";
-import { useSelectedChild } from "@/context/SelectedChildContext";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 import { formatDate } from "@/helpers";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { AttendanceRequestDto, AttendanceResponseDto } from "@/types/parent";
@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function LeaveApplication() {
-  const { selectedChild } = useSelectedChild();
+  const { selectedStudent } = useSelectedStudent();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
@@ -26,13 +26,13 @@ export default function LeaveApplication() {
   const [history, setHistory] = useState<AttendanceResponseDto[]>([]);
 
   useEffect(() => {
-    if (selectedChild?.studentId) {
-      fetchHistory(selectedChild?.studentId);
+    if (selectedStudent?.studentId) {
+      fetchHistory(selectedStudent?.studentId);
       setStartDate("");
       setEndDate("");
       setReason("");
     }
-  }, [selectedChild]);
+  }, [selectedStudent]);
 
   const fetchHistory = async (studentId: string) => {
     setIsLoadingHistory(true);
@@ -62,7 +62,7 @@ export default function LeaveApplication() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedChild) return;
+    if (!selectedStudent) return;
     if (!startDate || !endDate) {
       toast.error("Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc");
       return;
@@ -75,7 +75,7 @@ export default function LeaveApplication() {
     setIsSubmitting(true);
 
     const payload: AttendanceRequestDto = {
-      studentId: selectedChild.studentId,
+      studentId: selectedStudent.studentId,
       startDate: startDate,
       endDate: endDate,
       reason: reason,
@@ -86,7 +86,7 @@ export default function LeaveApplication() {
       setStartDate("");
       setEndDate("");
       setReason("");
-      await fetchHistory(selectedChild.studentId);
+      await fetchHistory(selectedStudent.studentId);
     } catch (error: any) {
       console.error(error);
       const msg =
@@ -111,14 +111,14 @@ export default function LeaveApplication() {
           </div>
         </div>
 
-        {!selectedChild ? (
+        {!selectedStudent ? (
           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl p-8 flex items-center gap-4 shadow-md animate-pulse">
             <div className="p-3 bg-yellow-200 rounded-lg">
               <AlertCircle className="text-yellow-700" size={32} />
             </div>
             <div>
               <p className="text-yellow-800 font-bold text-lg">
-                Vui lòng  ọc sinh
+                Vui lòng ọc sinh
               </p>
               <p className="text-yellow-700 text-sm mt-1">
                 Chọn học sinh từ danh sách bên trái để tạo đơn xin nghỉ
@@ -134,7 +134,10 @@ export default function LeaveApplication() {
                     Tạo đơn mới
                   </h2>
                   <p className="text-pink-100 mt-2 text-base md:text-lg">
-                    cho <span className="font-bold">{selectedChild.name}</span>
+                    cho{" "}
+                    <span className="font-bold">
+                      {selectedStudent.fullName}
+                    </span>
                   </p>
                 </div>
 

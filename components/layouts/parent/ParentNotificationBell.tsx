@@ -36,7 +36,7 @@ export function ParentNotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const connectionRef = useRef<HubConnection | null>(null);
 
   useEffect(() => {
@@ -61,11 +61,11 @@ export function ParentNotificationBell() {
       }
     };
 
-    if (token) fetchNotifications();
-  }, [token]);
+    if (isAuthenticated) fetchNotifications();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
 
     const HUB_URL =
       process.env.NEXT_PUBLIC_HUB_URL ||
@@ -73,9 +73,9 @@ export function ParentNotificationBell() {
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        accessTokenFactory: () => token,
         skipNegotiation: true,
         transport: HttpTransportType.WebSockets,
+        withCredentials: true,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
@@ -105,7 +105,7 @@ export function ParentNotificationBell() {
         connectionRef.current.stop();
       }
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   return (
     <DropdownMenu>

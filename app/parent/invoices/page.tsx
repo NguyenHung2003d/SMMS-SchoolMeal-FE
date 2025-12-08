@@ -3,13 +3,13 @@ import React, { useEffect, useState } from "react";
 import { Loader2, Building2, Calendar, Receipt, User } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useSelectedChild } from "@/context/SelectedChildContext";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { formatCurrency, formatDate } from "@/helpers";
 import { Invoice, InvoiceSummary } from "@/types/invoices";
+import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 export default function InvoicePage() {
-  const { selectedChild } = useSelectedChild();
+  const { selectedStudent } = useSelectedStudent();
 
   const [invoicesList, setInvoicesList] = useState<InvoiceSummary[]>([]);
   const [isListLoading, setIsListLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function InvoicePage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   useEffect(() => {
-    if (!selectedChild?.studentId) {
+    if (!selectedStudent?.studentId) {
       setInvoicesList([]);
       setSelectedInvoiceId(null);
       setInvoiceDetail(null);
@@ -34,7 +34,7 @@ export default function InvoicePage() {
         const res = await axiosInstance.get<InvoiceSummary[]>(
           "/Invoice/my-invoices",
           {
-            params: { studentId: selectedChild.studentId },
+            params: { studentId: selectedStudent.studentId },
           }
         );
         setInvoicesList(res.data);
@@ -61,10 +61,10 @@ export default function InvoicePage() {
     };
 
     fetchInvoicesList();
-  }, [selectedChild?.studentId]);
+  }, [selectedStudent?.studentId]);
 
   useEffect(() => {
-    if (!selectedInvoiceId || !selectedChild?.studentId) return;
+    if (!selectedInvoiceId || !selectedStudent?.studentId) return;
 
     const fetchDetail = async () => {
       try {
@@ -74,7 +74,7 @@ export default function InvoicePage() {
         const res = await axiosInstance.get<Invoice>(
           `/Invoice/${selectedInvoiceId}`,
           {
-            params: { studentId: selectedChild.studentId },
+            params: { studentId: selectedStudent.studentId },
           }
         );
         setInvoiceDetail(res.data);
@@ -87,9 +87,9 @@ export default function InvoicePage() {
     };
 
     fetchDetail();
-  }, [selectedInvoiceId, selectedChild?.studentId]);
+  }, [selectedInvoiceId, selectedStudent?.studentId]);
 
-  if (!selectedChild) {
+  if (!selectedStudent) {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-800">Tra cứu hóa đơn</h2>
@@ -114,7 +114,8 @@ export default function InvoicePage() {
         </div>
       ) : invoicesList.length === 0 ? (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center text-gray-500">
-          Chưa có hóa đơn nào cho bé <strong>{selectedChild.name}</strong>.
+          Chưa có hóa đơn nào cho bé <strong>{selectedStudent.fullName}</strong>
+          .
         </div>
       ) : (
         <div className="space-y-6">
@@ -137,7 +138,6 @@ export default function InvoicePage() {
             </select>
           </div>
 
-          {/* Khu vực hiển thị chi tiết */}
           {isDetailLoading ? (
             <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg border border-dashed">
               <Loader2 className="animate-spin text-blue-500 mb-2" size={24} />
@@ -147,7 +147,6 @@ export default function InvoicePage() {
             </div>
           ) : invoiceDetail ? (
             <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300 border border-gray-100">
-              {/* Header Card */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>

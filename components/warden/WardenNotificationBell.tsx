@@ -36,7 +36,7 @@ export function WardenNotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const connectionRef = useRef<HubConnection | null>(null);
 
   useEffect(() => {
@@ -61,11 +61,11 @@ export function WardenNotificationBell() {
       }
     };
 
-    if (token) fetchNotifications();
-  }, [token]);
+    if (isAuthenticated) fetchNotifications();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
 
     const HUB_URL =
       process.env.NEXT_PUBLIC_HUB_URL ||
@@ -73,7 +73,7 @@ export function WardenNotificationBell() {
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        accessTokenFactory: () => token,
+        withCredentials: true,
         skipNegotiation: true,
         transport: HttpTransportType.WebSockets,
       })
@@ -105,7 +105,7 @@ export function WardenNotificationBell() {
         connectionRef.current.stop();
       }
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   const handleNotificationClick = async (notif: NotificationDto) => {
     if (!notif.isRead) {

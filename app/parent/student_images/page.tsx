@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSelectedChild } from "@/context/SelectedChildContext"; // Context lấy con đang chọn
+import { useSelectedStudent } from "@/context/SelectedChildContext"; // Context lấy con đang chọn
 import { parentStudentImageService } from "@/services/parent/parentStudentImage.service";
 import { StudentImageDto } from "@/types/parent";
 import { Loader2, Image as ImageIcon, Calendar, X, ZoomIn } from "lucide-react";
 import { formatDate } from "@/helpers";
 
 export default function StudentGalleryPage() {
-  const { selectedChild } = useSelectedChild();
+  const { selectedStudent } = useSelectedStudent();
+
   const [images, setImages] = useState<StudentImageDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<StudentImageDto | null>(
@@ -16,13 +17,13 @@ export default function StudentGalleryPage() {
   );
 
   useEffect(() => {
-    if (!selectedChild?.studentId) return;
+    if (!selectedStudent?.studentId) return;
 
     const fetchImages = async () => {
       setLoading(true);
       try {
         const data = await parentStudentImageService.getImagesByStudent(
-          selectedChild.studentId
+          selectedStudent.studentId
         );
         const sortedData = data.sort((a, b) => {
           const dateA = new Date(a.takenAt || a.createdAt).getTime();
@@ -39,9 +40,9 @@ export default function StudentGalleryPage() {
     };
 
     fetchImages();
-  }, [selectedChild?.studentId]);
+  }, [selectedStudent?.studentId]);
 
-  if (!selectedChild) {
+  if (!selectedStudent) {
     return (
       <div className="p-8 text-center text-gray-500">
         Vui lòng chọn học sinh để xem thư viện ảnh.
@@ -57,7 +58,7 @@ export default function StudentGalleryPage() {
           Thư viện ảnh của bé
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          Những khoảnh khắc đáng nhớ của {selectedChild.name} tại trường.
+          Những khoảnh khắc đáng nhớ của {selectedStudent.fullName} tại trường.
         </p>
       </div>
 

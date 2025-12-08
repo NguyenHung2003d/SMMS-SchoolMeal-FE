@@ -5,17 +5,6 @@ export interface CreateNotificationDto {
   sendType?: string;
 }
 
-export interface NotificationDto {
-  notificationId: number;
-  title: string;
-  content: string;
-  sendType: string;
-  createdAt: string;
-  totalRecipients: number;
-  totalRead: number;
-  senderName?: string;
-}
-
 export interface RecipientDto {
   userId: string;
   userEmail?: string;

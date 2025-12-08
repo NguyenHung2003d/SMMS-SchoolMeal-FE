@@ -1,6 +1,5 @@
 "use client";
 
-import { Child } from "@/types/parent";
 import {
   createContext,
   useState,
@@ -8,67 +7,71 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { Student } from "@/types/student";
 
-interface SelectedChildContextType {
-  selectedChild: Child | null;
-  setSelectedChild: (child: Child | null) => void;
+interface SelectedStudentContextType {
+  selectedStudent: Student | null;
+  setSelectedStudent: (student: Student | null) => void;
   isInitialized: boolean;
 }
 
-const SelectedChildContext = createContext<
-  SelectedChildContextType | undefined
+const SelectedStudentContext = createContext<
+  SelectedStudentContextType | undefined
 >(undefined);
 
-export function SelectedChildProvider({ children }: { children: ReactNode }) {
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+export function SelectedStudentProvider({ children }: { children: ReactNode }) {
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("selectedChild");
+    const saved = localStorage.getItem("selectedStudent");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.studentId) {
           parsed.studentId = String(parsed.studentId);
         }
-        setSelectedChild(parsed);
+        setSelectedStudent(parsed);
       } catch (e) {
         console.error("Lỗi parse student từ storage", e);
-        localStorage.removeItem("selectedChild");
+        localStorage.removeItem("selectedStudent");
       }
     }
     setIsInitialized(true);
   }, []);
 
-  const handleSetSelectedChild = (child: Child | null) => {
-    if (child) {
-      const sanitizedChild = { ...child, studentId: String(child.studentId) };
-      setSelectedChild(sanitizedChild);
-      localStorage.setItem("selectedChild", JSON.stringify(sanitizedChild));
+  const handleSetSelectedStudent = (student: Student | null) => {
+    if (student) {
+      const sanitizedStudent = {
+        ...student,
+        studentId: String(student.studentId),
+      };
+      setSelectedStudent(sanitizedStudent);
+      localStorage.setItem("selectedStudent", JSON.stringify(sanitizedStudent));
     } else {
-      setSelectedChild(null);
-      localStorage.removeItem("selectedChild");
+      setSelectedStudent(null);
+      localStorage.removeItem("selectedStudent");
     }
   };
 
   return (
-    <SelectedChildContext.Provider
+    <SelectedStudentContext.Provider
       value={{
-        selectedChild,
-        setSelectedChild: handleSetSelectedChild,
+        selectedStudent,
+        setSelectedStudent: handleSetSelectedStudent,
         isInitialized,
       }}
     >
       {children}
-    </SelectedChildContext.Provider>
+    </SelectedStudentContext.Provider>
   );
 }
 
-export function useSelectedChild() {
-  const context = useContext(SelectedChildContext);
+export function useSelectedStudent() {
+  const context = useContext(SelectedStudentContext);
   if (context === undefined) {
     throw new Error(
-      "useSelectedChild must be used within a SelectedChildProvider"
+      "useSelectedStudent must be used within a SelectedStudentProvider"
     );
   }
   return context;

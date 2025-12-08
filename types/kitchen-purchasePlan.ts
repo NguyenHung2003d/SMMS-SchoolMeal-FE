@@ -1,14 +1,14 @@
-export interface PurchasePlanItem {
+export interface PurchasePlanLine {
   ingredientId: number;
   ingredientName: string;
   category: string;
   rqQuanityGram: number;
   estimatedPrice: number; // Đơn giá dự kiến
-  actualPrice?: number;   // Đơn giá thực tế (User nhập)
-  supplierName?: string;  // Tạm thời để ở item hoặc gom chung
-  batchNo?: string; 
+  actualPrice?: number; // Đơn giá thực tế (User nhập)
+  supplierName?: string; // Tạm thời để ở item hoặc gom chung
+  batchNo?: string;
   origin?: string;
-  status: 'Pending' | 'Purchased' | 'OutOfStock';
+  status: "Pending" | "Purchased" | "OutOfStock";
 }
 
 export interface PurchasePlan {
@@ -16,7 +16,7 @@ export interface PurchasePlan {
   planStatus: string;
   startDate: string;
   endDate: string;
-  lines: PurchasePlanItem[];
+  lines: PurchasePlanLine[];
   totalEstimatedCost: number;
   note?: string;
   supplierName?: string; // Field mới để lưu Supplier khi complete

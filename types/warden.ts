@@ -10,16 +10,6 @@ export interface ClassDto {
   attendanceRate: number;
   shift?: string;
 }
-
-export interface NotificationDto {
-  notificationId: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  isRead: boolean;
-  sendType: string;
-}
-
 export interface WardenStats {
   totalClasses: number;
   totalStudents: number;

@@ -1,15 +1,22 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: "/api/proxy",
+  baseURL:
+    process.env.NEXT_PUBLIC_URL_API ||
+    "http://localhost:5000/api" ||
+    "https://localhost:5000/api",
+
   withCredentials: true,
+
   headers: {
     "Content-Type": "application/json",
+
     "ngrok-skip-browser-warning": "true",
   },
 });
 
 let isRefreshing = false;
+
 let failedQueue: any[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
@@ -20,16 +27,19 @@ const processQueue = (error: any, token: string | null = null) => {
       prom.resolve(token);
     }
   });
+
   failedQueue = [];
 };
 
 axiosInstance.interceptors.request.use(
   (config) => config,
+
   (error) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
   (response) => response,
+
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
@@ -43,33 +53,44 @@ axiosInstance.interceptors.response.use(
       return new Promise(function (resolve, reject) {
         failedQueue.push({ resolve, reject });
       })
+
         .then(() => {
           return axiosInstance(originalRequest);
         })
+
         .catch((err) => {
           return Promise.reject(err);
         });
     }
 
     originalRequest._retry = true;
+
     isRefreshing = true;
 
     try {
       await axios.post(
-        "/api/proxy/Auth/refresh-token",
+        `${
+          process.env.NEXT_PUBLIC_URL_API ||
+          "http://localhost:5000/api" ||
+          "https://localhost:5000/api"
+        }/Auth/refresh-token`,
+
         {},
+
         { withCredentials: true }
       );
 
       processQueue(null);
+
       return axiosInstance(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem("selectedStudent");
+        localStorage.removeItem("currentUser");
 
         const path = window.location.pathname;
+
         if (
           !path.startsWith("/login") &&
           !path.startsWith("/register") &&
@@ -78,6 +99,7 @@ axiosInstance.interceptors.response.use(
           window.location.href = "/login";
         }
       }
+
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

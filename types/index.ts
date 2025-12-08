@@ -36,3 +36,24 @@ export interface SidebarItemProps {
   label: string;
   isActive: boolean;
 }
+
+export type IconKey = "utensils" | "activity" | "shield" | "gamepad";
+
+export interface FeatureDetails {
+  title: string;
+  description: string;
+  benefits: string[];
+  mockupFeatures: string[];
+}
+
+export interface Feature {
+  id: number;
+  icon: string;
+  title: string;
+  subtitle: string;
+  image: string,
+  color: string;
+  bgClass: string;
+  accentColor: string;
+  details: FeatureDetails;
+}

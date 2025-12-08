@@ -14,7 +14,7 @@ import { StudentsInfoProps } from "@/types/student";
 import { AllergyPill } from "@/helpers";
 import toast from "react-hot-toast";
 import { getImageUrl } from "@/lib/utils";
-import { ALLERGY_LIST } from "@/data/nutrition/allergies";
+import { ALLERGY_LIST } from "@/data";
 
 export function StudentsInfo({
   students,

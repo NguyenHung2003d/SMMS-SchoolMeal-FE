@@ -1,189 +1,271 @@
 "use client";
-import { ParentFeedbackData } from "@/data";
-import { Star } from "lucide-react";
+import { Star, Quote, Users, Heart, Trophy } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
 import { TextPlugin } from "gsap/TextPlugin";
+import { ParentFeedbackData } from "@/data/dashboard/feedback";
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 const ParentFeedbackSection = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const headerRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<(HTMLDivElement | null)[]>([]);
+
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(headerRef.current, {
-        scrollTrigger: {
-          trigger: headerRef.current,
-          start: "top 80%",
-        },
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power2.out",
-      });
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current,
+          { y: 50, opacity: 0 }, // Trạng thái bắt đầu
+          {
+            y: 0,
+            opacity: 1, // Trạng thái kết thúc
+            duration: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 85%", // Kích hoạt sớm hơn một chút
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
 
-      gsap.from(cardsRef.current, {
-        scrollTrigger: {
-          trigger: cardsRef.current,
-          start: "top 80%",
-        },
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power2.out",
-      });
+      const validCards = cardsRef.current.filter((card) => card !== null);
+      if (validCards.length > 0) {
+        gsap.fromTo(
+          validCards,
+          { y: 100, opacity: 0 }, // Start
+          {
+            y: 0,
+            opacity: 1, // End
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "back.out(1.2)",
+            scrollTrigger: {
+              trigger: validCards[0], // Trigger dựa trên card đầu tiên
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
 
-      statsRef.current.forEach((start) => {
-        if (!start) return;
-        const value = start.querySelector(".start-value");
-        if (!value) return;
+      statsRef.current.forEach((stat) => {
+        if (!stat) return;
+        const valueDisplay = stat.querySelector(".stat-value");
+        if (!valueDisplay) return;
 
-        const target = value.getAttribute("data-value") || "0";
-        const pureNumber = parseInt(target.replace(/\D/g, ""), 10);
+        const targetValue = valueDisplay.getAttribute("data-value") || "0";
+        const numericValue = parseFloat(targetValue.replace(/[^0-9.]/g, ""));
+        const suffix = targetValue.replace(/[0-9.]/g, "");
 
         gsap.fromTo(
-          value,
+          valueDisplay,
+          { textContent: 0, opacity: 0 }, // Thêm opacity 0 lúc đầu
           {
-            textContent: 0,
-          },
-          {
-            textContent: pureNumber,
-            duration: 2,
-            ease: "power1.out",
+            textContent: numericValue,
+            opacity: 1,
+            duration: 2.5,
+            ease: "power2.out",
             snap: { textContent: 1 },
             scrollTrigger: {
-              trigger: start,
-              start: "top 85%",
+              trigger: stat,
+              start: "top 90%",
+              toggleActions: "play none none none",
             },
             onUpdate: function () {
-              const current = Math.ceil(Number((value as any).textContent));
-              if (target.includes("%")) {
-                value.textContent = current + "%";
-              } else if (target.includes("+")) {
-                value.textContent = current + "+";
-              } else if (target.includes("★")) {
-                value.textContent = current + "★";
-              } else {
-                value.textContent = String(current);
-              }
+              const currentVal = Math.ceil(
+                Number(this.targets()[0].textContent)
+              );
+              valueDisplay.textContent = `${currentVal}${suffix}`;
             },
           }
         );
       });
-    });
+    }, containerRef); // Scope context vào containerRef
+
     return () => ctx.revert();
   }, []);
 
   const StarRating = ({ stars }: { stars: number }) => (
-    <div className="flex gap-1 mb-5">
-      {[
-        ...Array(5).map((_, index) => (
-          <span
-            key={index}
-            className={`text-lg ${
-              index < stars ? "text-yellow-400" : "text-gray-300"
-            }`}
-          >
-            <Star fill={index < stars ? "currentColor" : "none"} />
-          </span>
-        )),
-      ]}
+    <div className="flex gap-1">
+      {[...Array(5)].map((_, index) => (
+        <Star
+          key={index}
+          size={16}
+          className={`${
+            index < stars
+              ? "fill-yellow-400 text-yellow-400"
+              : "fill-gray-200 text-gray-200"
+          }`}
+        />
+      ))}
     </div>
   );
+
+  if (!ParentFeedbackData || ParentFeedbackData.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen py-16 px-4">
-      <div className="max-w-7xl mx-auto text-center">
-        <div ref={headerRef}>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
-            Phụ huynh nói gì về EduMeal
+    <section
+      ref={containerRef}
+      className="relative min-h-screen py-24 px-4 overflow-hidden bg-orange-50" // Bỏ /30 để check màu nền rõ hơn, hoặc giữ nguyên nếu muốn mờ
+    >
+      <div className="max-w-7xl mx-auto">
+        <div ref={headerRef} className="text-center mb-20 opacity-0">
+          {" "}
+          {/* Thêm class opacity-0 để tránh flash lúc load */}
+          <span className="inline-block py-1 px-3 rounded-full bg-orange-100 text-orange-600 text-sm font-semibold mb-4 tracking-wide uppercase">
+            Phản hồi thực tế
+          </span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            Phụ huynh nói gì về <span className="text-orange-600">EduMeal</span>
           </h2>
+          <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            Hơn 1,000 phụ huynh đã tin tưởng sử dụng để đồng hành cùng dinh
+            dưỡng và sự phát triển của con trẻ.
+          </p>
         </div>
 
-        <p className="text-lg text-gray-600 mb-16 max-w-2xl mx-auto leading-relaxed">
-          Chia sẻ từ phụ huynh về trải nghiệm sử dụng EduMeal để theo dõi bữa ăn
-          và hoạt động của con
-        </p>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-24">
           {ParentFeedbackData.map((testimonial, index) => (
             <div
               key={testimonial.id}
               ref={(el) => {
                 cardsRef.current[index] = el;
               }}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 relative group"
+              className="opacity-0 group relative bg-white/60 backdrop-blur-md border border-white/50 rounded-3xl p-8 shadow-xl shadow-orange-900/5 hover:shadow-orange-900/10 hover:-translate-y-2 transition-all duration-500"
             >
-              <div className="absolute -top-4 right-6 bg-orange-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform duration-300">
-                {testimonial.rating}
+              <div className="absolute top-6 right-6 text-orange-100 group-hover:text-orange-200 transition-colors duration-300">
+                <Quote size={80} fill="currentColor" className="opacity-50" />
               </div>
 
-              <StarRating stars={testimonial.stars} />
-
-              <div className="text-left mb-6 relative">
-                <span className="text-3xl text-orange-500 font-bold absolute -top-2 -left-2">
-                  "
+              <div className="relative inline-flex items-center gap-2 bg-white rounded-full px-3 py-1 shadow-sm border border-gray-100 mb-6">
+                <span className="font-bold text-gray-900">
+                  {testimonial.rating}
                 </span>
-                <p className="text-gray-700 italic leading-relaxed pl-6">
-                  {testimonial.text}
+                <span className="text-xs text-gray-400">/ 10</span>
+                <div className="w-1 h-1 bg-gray-300 rounded-full mx-1" />
+                <StarRating stars={testimonial.stars} />
+              </div>
+
+              <div className="relative z-10 mb-8">
+                <p className="text-gray-700 text-lg leading-relaxed italic font-medium">
+                  "{testimonial.text}"
                 </p>
-                <h4 className="font-semibold">{testimonial.author.name}</h4>
-                <p className="text-sm text-gray-500">
-                  {testimonial.author.role}
-                </p>
+                {testimonial.feedback && (
+                  <div className="mt-4 p-3 bg-orange-50 rounded-xl border border-orange-100">
+                    <p className="text-sm text-orange-700">
+                      <span className="font-semibold">❤️ Bé thích:</span>{" "}
+                      {testimonial.feedback}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 border-t border-gray-100 pt-6">
+                <div className="w-12 h-12 relative rounded-full overflow-hidden border-2 border-white shadow-md">
+                  <img
+                    src={testimonial.author.avatar}
+                    alt={testimonial.author.name}
+                    className="object-cover w-full h-full bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-base">
+                    {testimonial.author.name}
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    {testimonial.author.role}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
         </div>
+        <div className="bg-gray-900 rounded-[2.5rem] p-12 relative overflow-hidden text-white shadow-2xl">
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+              backgroundSize: "40px 40px",
+            }}
+          ></div>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div
-            className="text-center"
-            ref={(el) => {
-              statsRef.current[0] = el;
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
             <div
-              className="text-3xl font-bold text-orange-500 mb-2 start-value"
-              data-value="1000+"
+              ref={(el) => {
+                statsRef.current[0] = el;
+              }}
+              className="flex flex-col items-center justify-center text-center space-y-4"
             >
-              0
+              <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-400 mb-2">
+                <Users size={32} />
+              </div>
+              <div
+                className="stat-value text-5xl font-extrabold tracking-tight"
+                data-value="1000+"
+              >
+                1000+{" "}
+                {/* Đặt giá trị mặc định luôn để nếu JS lỗi vẫn hiện số */}
+              </div>
+              <p className="text-gray-400 font-medium text-lg">
+                Phụ huynh tin dùng
+              </p>
             </div>
-            <div className="text-gray-600">Phụ huynh tin tưởng</div>
-          </div>
-          <div
-            className="text-center"
-            ref={(el) => {
-              statsRef.current[1] = el;
-            }}
-          >
+
             <div
-              className="text-3xl font-bold text-orange-500 mb-2 start-value"
-              data-value="99"
+              ref={(el) => {
+                statsRef.current[1] = el;
+              }}
+              className="flex flex-col items-center justify-center text-center space-y-4 md:border-x border-gray-800"
             >
-              0
+              <div className="w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 mb-2">
+                <Heart size={32} />
+              </div>
+              <div
+                className="stat-value text-5xl font-extrabold tracking-tight"
+                data-value="99%"
+              >
+                99%
+              </div>
+              <p className="text-gray-400 font-medium text-lg">
+                Mức độ hài lòng
+              </p>
             </div>
-            <div className="text-gray-600">Mức độ hài lòng</div>
-          </div>
-          <div
-            className="text-center"
-            ref={(el) => {
-              statsRef.current[2] = el;
-            }}
-          >
+
+            {/* Stat 3 */}
             <div
-              className="text-3xl font-bold text-orange-500 mb-2 start-value"
-              data-value="5"
+              ref={(el) => {
+                statsRef.current[2] = el;
+              }}
+              className="flex flex-col items-center justify-center text-center space-y-4"
             >
-              0
+              <div className="w-16 h-16 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400 mb-2">
+                <Trophy size={32} />
+              </div>
+              <div
+                className="stat-value text-5xl font-extrabold tracking-tight"
+                data-value="4.9★"
+              >
+                4.9★
+              </div>
+              <p className="text-gray-400 font-medium text-lg">
+                Đánh giá trung bình
+              </p>
             </div>
-            <div className="text-gray-600">Đánh giá trung bình</div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

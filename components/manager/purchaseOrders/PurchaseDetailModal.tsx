@@ -34,11 +34,11 @@ export const PurchaseDetailModal = ({
 }: Props) => {
   if (!isOpen) return null;
 
-  const totalAmount =
-    order?.lines?.reduce(
-      (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
-      0
-    ) || 0;
+  // const totalAmount =
+  //   order?.lines?.reduce(
+  //     (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
+  //     0
+  //   ) || 0;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -136,7 +136,7 @@ export const PurchaseDetailModal = ({
                         <th className="px-6 py-4 text-center">Hạn Dùng</th>
                         <th className="px-6 py-4 text-right">Số Lượng (g)</th>
                         <th className="px-6 py-4 text-right">Đơn Giá</th>
-                        <th className="px-6 py-4 text-right">Thành Tiền</th>
+                        {/* <th className="px-6 py-4 text-right">Thành Tiền</th> */}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -176,20 +176,19 @@ export const PurchaseDetailModal = ({
                           <td className="px-6 py-4 text-right text-gray-600">
                             {line.unitPrice.toLocaleString()} ₫
                           </td>
-                          <td className="px-6 py-4 text-right font-bold text-gray-900">
-                            {/* Logic tính thành tiền: Cần điều chỉnh theo Business Logic của bạn */}
+                          {/* <td className="px-6 py-4 text-right font-bold text-gray-900">
                             {(
                               line.quantityGram * line.unitPrice
                             ).toLocaleString()}{" "}
                             ₫
-                          </td>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-gray-50 border-t border-gray-200">
+                    {/* <tfoot className="bg-gray-50 border-t border-gray-200">
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={5}
                           className="px-6 py-4 text-right font-bold text-gray-600 uppercase text-xs tracking-wider"
                         >
                           Tổng Tiền Dự Kiến
@@ -200,7 +199,7 @@ export const PurchaseDetailModal = ({
                           </span>
                         </td>
                       </tr>
-                    </tfoot>
+                    </tfoot> */}
                   </table>
                 </div>
               </div>

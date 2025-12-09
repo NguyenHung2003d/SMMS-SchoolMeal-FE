@@ -1,13 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import { managerAcceptPurchaseService } from "@/services/kitchenStaff/managerAcceptPurchase.service";
 import {
-  PurchaseOrderSummary,
   PurchaseOrderDetail,
 } from "@/types/manager-purchaseOrder";
 import toast from "react-hot-toast";
+import { PurchaseOrderSummaryDto } from "@/types/kitchen-purchaseOrder";
 
 export const usePurchaseOrders = () => {
-  const [orders, setOrders] = useState<PurchaseOrderSummary[]>([]);
+  const [orders, setOrders] = useState<PurchaseOrderSummaryDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ fromDate: "", toDate: "" });
 

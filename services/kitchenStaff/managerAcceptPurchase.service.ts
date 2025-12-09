@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/lib/axiosInstance";
+import { PurchaseOrderSummaryDto } from "@/types/kitchen-purchaseOrder";
 import {
   PurchaseOrderDetail,
-  PurchaseOrderSummary,
 } from "@/types/manager-purchaseOrder";
 
 export const managerAcceptPurchaseService = {
@@ -10,7 +10,7 @@ export const managerAcceptPurchaseService = {
     if (fromDate) params.append("fromDate", fromDate);
     if (toDate) params.append("toDate", toDate);
 
-    const res = await axiosInstance.get<PurchaseOrderSummary[]>(
+    const res = await axiosInstance.get<PurchaseOrderSummaryDto[]>(
       "/manager/AcceptPurchase"
     );
     return res.data;

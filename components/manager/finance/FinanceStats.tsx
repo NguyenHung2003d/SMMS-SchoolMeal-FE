@@ -27,7 +27,7 @@ export const FinanceStats = React.memo(
       {
         label: "Tổng Phí Thu Được",
         value: stats.totalIncome,
-        subText: `Tháng ${selectedMonth}`,
+        subText: 'Phí cả năm',
         colorClass: "text-green-600",
         icon: TrendingUp,
         iconColor: "text-green-200",

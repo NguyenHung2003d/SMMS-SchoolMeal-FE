@@ -1,7 +1,17 @@
 "use client";
 
 import React, { ChangeEvent, useRef, useState } from "react";
-import { Camera, User, Mail, Phone, Save, Calendar, X } from "lucide-react";
+import {
+  Camera,
+  User,
+  Mail,
+  Phone,
+  Save,
+  Calendar,
+  X,
+  UploadCloud,
+  Loader2,
+} from "lucide-react";
 import { UpdatedParentInfoFormProps } from "@/types/parent";
 import { toast } from "react-hot-toast";
 
@@ -29,158 +39,142 @@ export function ParentInfoForm({
     }
   };
 
-  const handleCameraClick = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl shadow-lg p-8">
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/png, image/jpeg, image/gif"
-        onChange={handleFileChange}
-      />
+    <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6 md:p-10 border border-gray-100">
+      <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          Chỉnh sửa thông tin
+        </h2>
+        <button
+          onClick={onCancel}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={24} />
+        </button>
+      </div>
 
-      <form onSubmit={onSubmit} className="space-y-8">
-        <div className="flex flex-col items-center pb-8 border-b border-slate-200">
-          <h2 className="text-3xl font-bold text-slate-800 mb-6">
-            Thông tin cá nhân
-          </h2>
-          <div className="relative group">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 overflow-hidden shadow-xl transition-transform group-hover:scale-105">
-              <img
-                src={
-                  previewUrl ||
-                  parentInfo.avatarUrl ||
-                  "https://i.imgur.com/3bLRsZQ.jpg"
-                }
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleCameraClick}
-              className="absolute bottom-2 right-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110"
+      <form onSubmit={onSubmit}>
+        <div className="flex flex-col md:flex-row gap-10">
+          <div className="flex flex-col items-center space-y-4 md:w-1/3">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
             >
-              <Camera size={20} />
-            </button>
-          </div>
-          <p className="text-sm text-slate-500 mt-4 font-medium">
-            Nhấn để thay đổi ảnh đại diện
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">
-              Họ và tên
-            </label>
-            <div className="relative">
-              <User
-                className="absolute left-4 top-3.5 text-slate-400"
-                size={20}
-              />
-              <input
-                name="fullName"
-                value={parentInfo.fullName || ""}
-                onChange={onInfoChange}
-                className="pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
-                placeholder="Nhập họ và tên"
-              />
+              <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-gray-100 relative">
+                <img
+                  src={
+                    previewUrl ||
+                    parentInfo.avatarUrl ||
+                    "https://ui-avatars.com/api/?name=" + parentInfo.fullName
+                  }
+                  alt="avatar"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Camera className="text-white w-8 h-8" />
+                </div>
+              </div>
+              <div className="absolute bottom-2 right-2 bg-blue-600 text-white p-2.5 rounded-full shadow-lg border-2 border-white hover:bg-blue-700 transition-colors">
+                <UploadCloud size={18} />
+              </div>
             </div>
+            <p className="text-sm text-gray-500 text-center">
+              Nhấn vào ảnh để thay đổi
+              <br />
+              (Tối đa 5MB)
+            </p>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/png, image/jpeg, image/gif"
+              onChange={handleFileChange}
+            />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">
-              Email
-            </label>
-            <div className="relative">
-              <Mail
-                className="absolute left-4 top-3.5 text-slate-400"
-                size={20}
-              />
-              <input
-                type="email"
-                name="email"
-                onChange={onInfoChange}
-                value={parentInfo.email || ""}
-                className="pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
-                placeholder="Nhập email"
-              />
-            </div>
-          </div>
+          <div className="flex-1 space-y-5">
+            <InputField
+              icon={<User size={18} />}
+              label="Họ và tên"
+              name="fullName"
+              value={parentInfo.fullName || ""}
+              onChange={onInfoChange}
+              placeholder="Nhập họ và tên đầy đủ"
+            />
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">
-              Số điện thoại
-            </label>
-            <div className="relative">
-              <Phone
-                className="absolute left-4 top-3.5 text-slate-400"
-                size={20}
-              />
-              <input
+            <InputField
+              icon={<Mail size={18} />}
+              label="Email"
+              type="email"
+              name="email"
+              value={parentInfo.email || ""}
+              onChange={onInfoChange}
+              placeholder="example@email.com"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <InputField
+                icon={<Phone size={18} />}
+                label="Số điện thoại"
                 name="phone"
                 value={parentInfo.phone || ""}
                 onChange={onInfoChange}
-                className="pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
-                placeholder="Nhập số điện thoại"
+                placeholder="0912..."
               />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">
-              Ngày sinh
-            </label>
-            <div className="relative">
-              <Calendar
-                className="absolute left-4 top-3.5 text-slate-400"
-                size={20}
-              />
-              <input
+              <InputField
+                icon={<Calendar size={18} />}
+                label="Ngày sinh"
                 type="date"
                 name="dateOfBirth"
-                value={parentInfo.dateOfBirth || ""}
+                value={
+                  parentInfo.dateOfBirth
+                    ? parentInfo.dateOfBirth.split("T")[0]
+                    : ""
+                }
                 onChange={onInfoChange}
-                className="pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
               />
             </div>
-          </div>
-        </div>
 
-        <div className="flex justify-end pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSaving}
-            className="flex items-center gap-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-          >
-            <X size={20} />
-            Hủy
-          </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-          >
-            {isSaving ? (
-              <>
-                <Save size={20} className="animate-spin" />
-                Đang lưu...
-              </>
-            ) : (
-              <>
-                <Save size={20} />
-                Lưu thông tin
-              </>
-            )}
-          </button>
+            <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSaving}
+                className="px-6 py-2.5 rounded-xl font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0"
+              >
+                {isSaving ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Save size={18} />
+                )}
+                {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>
   );
 }
+
+const InputField = ({ label, icon, className, ...props }: any) => (
+  <div className={`space-y-1.5 ${className}`}>
+    <label className="text-sm font-semibold text-gray-700 ml-1">{label}</label>
+    <div className="relative group">
+      <div className="absolute left-3.5 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+        {icon}
+      </div>
+      <input
+        {...props}
+        className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-gray-800 placeholder:text-gray-400"
+      />
+    </div>
+  </div>
+);

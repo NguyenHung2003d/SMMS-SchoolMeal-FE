@@ -110,10 +110,6 @@ export const CreateFeedbackModal = ({
                   onChange={(e) => setCategory(e.target.value)}
                 >
                   <option value="food">🍽️ Thức ăn (Food)</option>
-                  <option value="facility">🏫 Cơ sở vật chất (Facility)</option>
-                  <option value="health">❤️ Sức khỏe (Health)</option>
-                  <option value="activity">🎨 Hoạt động (Activity)</option>
-                  <option value="other">📋 Khác (Other)</option>
                 </select>
                 <ChevronDown
                   className="absolute right-4 top-[3.2rem] text-gray-400 pointer-events-none"

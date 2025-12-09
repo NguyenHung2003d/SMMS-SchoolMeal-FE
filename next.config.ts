@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   //   return [
   //     {
   //       source: "/api/proxy/:path*",
-  //       destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*",
+  //       destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*", cái ni là url của ngrok, sau này thay bằng link deploy của be
   //     },
   //   ];
   // },

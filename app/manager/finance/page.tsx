@@ -64,8 +64,6 @@ export default function ManagerFinance() {
     }
   };
 
-  //
-
   return (
     <div className="p-6 bg-gray-50 min-h-screen animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -81,18 +79,6 @@ export default function ManagerFinance() {
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
             <Calendar size={16} className="text-gray-500" />
-            <select
-              className="bg-transparent text-sm outline-none cursor-pointer"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-            >
-              {[...Array(12)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  Tháng {i + 1}
-                </option>
-              ))}
-            </select>
-            <span className="text-gray-400">/</span>
             <select
               className="bg-transparent text-sm outline-none cursor-pointer"
               value={selectedYear}

@@ -1,4 +1,4 @@
-export interface PurchaseOrderLine {
+export interface PurchaseOrderLineDto {
   linesId: number;
   ingredientId: number;
   ingredientName: string;
@@ -6,32 +6,16 @@ export interface PurchaseOrderLine {
   unitPrice: number;
   batchNo: string | null;
   origin: string | null;
-  expiryDate: string | null;
+  expiryDate: string | null; // ISO date string
 }
 
 export interface PurchaseOrderDetail {
-  orderId: number;
-  schoolId: string;
-  orderDate: string;
-  purchaseOrderStatus: string;
+  orderId: number; // Có thể cần lấy từ context hoặc props khác nếu API không trả về
   supplierName: string;
   note: string | null;
   planId: number | null;
-  staffInCharged: string;
-  lines: PurchaseOrderLine[];
-}
-
-export interface PurchaseOrderSummary {
-  orderId: number;
-  orderDate: string;
-  purchaseOrderStatus: string;
-  supplierName: string;
-  planId: number | null;
-  linesCount: number;
-  totalQuantityGram: number;
-}
-
-export interface PurchaseOrderFilter {
-  fromDate?: string;
-  toDate?: string;
+  staffInCharged: string | null;
+  purchaseOrderStatus: string; // Cần đảm bảo có trường này để hiện trạng thái
+  orderDate: string; // Cần đảm bảo có trường này
+  lines: PurchaseOrderLineDto[]; // Map dữ liệu API vào mảng này
 }

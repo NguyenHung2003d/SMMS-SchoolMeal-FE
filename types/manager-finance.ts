@@ -1,3 +1,9 @@
+export interface MonthlyFinanceDto {
+  month: number;
+  income: number;
+  expense: number;
+}
+
 export interface SupplierExpenseDto {
   supplier: string;
   total: number;
@@ -11,7 +17,10 @@ export interface FinanceSummaryDto {
   paidInvoices: number;
   unpaidInvoices: number;
   totalPurchaseCost: number;
+
   supplierBreakdown: SupplierExpenseDto[];
+  monthlyBreakdown: MonthlyFinanceDto[];
+
   incomeByDate?: { date: string; amount: number }[];
   expenseByCategory?: any[];
   totalIncome?: number;
@@ -31,11 +40,11 @@ export interface InvoiceDto {
 
 export interface PaymentDto {
   paymentId: number;
-  expectedAmount: number; // Số tiền cần đóng
-  paidAmount: number; // Số tiền thực đóng
+  expectedAmount: number;
+  paidAmount: number;
   paymentStatus: string;
   method?: string;
-  paidAt?: string; // DateTime nullable
+  paidAt?: string;
 }
 
 export interface InvoiceDetailDto {

@@ -10,6 +10,7 @@ import { FeedbackFilterBar } from "@/components/warden/feedback/FeedbackFilterBa
 import { FeedbackItem } from "@/components/warden/feedback/FeedbackItem";
 import { EmptyFeedbackState } from "@/components/warden/feedback/EmptyFeedbackState";
 import { CreateFeedbackModal } from "@/components/warden/feedback/CreateFeedbackModal";
+import { DeleteConfirmModal } from "@/components/warden/feedback/DeleteConfirmModal"; // Import modal mới
 import { getNormalizedCategory } from "@/helpers";
 
 export default function TeacherFeedbackPage() {
@@ -17,8 +18,12 @@ export default function TeacherFeedbackPage() {
 
   const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<FeedbackDto | null>(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: feedbacks = [], isLoading } = useQuery({
     queryKey: ["wardenFeedbacks"],
@@ -30,13 +35,15 @@ export default function TeacherFeedbackPage() {
         targetType: item.targetType || "other",
       }));
     },
-    staleTime: 1000 * 60 * 5, 
+    staleTime: 1000 * 60 * 5,
   });
 
   const deleteMutation = useMutation({
     mutationFn: wardenFeedbackService.deleteFeedback,
     onSuccess: () => {
       toast.success("Đã xóa thành công");
+      setShowDeleteModal(false); // Đóng modal sau khi xóa xong
+      setDeleteId(null);
       queryClient.invalidateQueries({ queryKey: ["wardenFeedbacks"] });
     },
     onError: () => toast.error("Xóa thất bại"),
@@ -84,9 +91,14 @@ export default function TeacherFeedbackPage() {
     });
   }, [feedbacks, filterCategory, searchTerm]);
 
-  const handleDelete = (feedbackId: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa báo cáo này không?")) {
-      deleteMutation.mutate(feedbackId);
+  const handleDeleteClick = (feedbackId: number) => {
+    setDeleteId(feedbackId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
     }
   };
 
@@ -143,8 +155,6 @@ export default function TeacherFeedbackPage() {
             <FeedbackFilterBar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              filterCategory={filterCategory}
-              setFilterCategory={setFilterCategory}
             />
           </div>
 
@@ -155,7 +165,7 @@ export default function TeacherFeedbackPage() {
                   key={issue.feedbackId}
                   issue={issue}
                   onEdit={openEditModal}
-                  onDelete={handleDelete}
+                  onDelete={handleDeleteClick} // Truyền hàm mở modal xóa
                 />
               ))
             ) : (
@@ -179,6 +189,15 @@ export default function TeacherFeedbackPage() {
                 }
               : undefined
           }
+        />
+
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={confirmDelete}
+          isDeleting={deleteMutation.isPending}
+          title="Xóa báo cáo"
+          message="Bạn có chắc chắn muốn xóa báo cáo này không? Hành động này sẽ không thể khôi phục."
         />
       </div>
     </div>

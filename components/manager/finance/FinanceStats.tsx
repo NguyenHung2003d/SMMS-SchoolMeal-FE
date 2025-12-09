@@ -1,10 +1,5 @@
 import React, { useMemo } from "react";
-import {
-  ShoppingCart,
-  TrendingUp,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { ShoppingCart, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/helpers";
 import { FinanceSummaryDto } from "@/types/manager-finance";
 
@@ -18,47 +13,24 @@ export const FinanceStats = React.memo(
   ({ summary, onOpenShopping, selectedMonth }: FinanceStatsProps) => {
     const stats = useMemo(() => {
       const totalIncome = summary?.totalInvoices ?? 0;
-      const paidInvoices = summary?.paidInvoices ?? 0;
-      const unpaidInvoices = summary?.unpaidInvoices ?? 0;
       const totalExpense = summary?.totalPurchaseCost ?? 0;
       const netIncome = totalIncome - totalExpense;
 
       return {
         totalIncome,
-        paidInvoices,
-        unpaidInvoices,
         totalExpense,
         netIncome,
-        percentPaid:
-          totalIncome > 0 ? ((paidInvoices / totalIncome) * 100).toFixed(1) : 0,
       };
     }, [summary]);
 
     const cards = [
       {
-        label: "Tổng Thu Nhập",
+        label: "Tổng Phí Thu Được",
         value: stats.totalIncome,
         subText: `Tháng ${selectedMonth}`,
         colorClass: "text-green-600",
         icon: TrendingUp,
         iconColor: "text-green-200",
-      },
-      {
-        label: "Đã Thanh Toán",
-        value: stats.paidInvoices,
-        subText: `${stats.percentPaid}% hoàn thành`,
-        colorClass: "text-blue-600",
-        icon: CheckCircle,
-        iconColor: "text-blue-200",
-      },
-      {
-        label: "Chưa Thanh Toán",
-        value: stats.unpaidInvoices,
-        subText:
-          stats.unpaidInvoices > 0 ? "Cần xử lý: Có" : "Cần xử lý: Không",
-        colorClass: "text-orange-600",
-        icon: AlertCircle,
-        iconColor: "text-orange-200",
       },
       {
         label: "Chi Phí Đi Chợ",
@@ -73,7 +45,7 @@ export const FinanceStats = React.memo(
     ];
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {cards.map((card, index) => (
           <div
             key={index}
@@ -98,7 +70,7 @@ export const FinanceStats = React.memo(
           </div>
         ))}
 
-        <div className="md:col-span-2 lg:col-span-4 bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200 shadow-sm">
+        <div className="md:col-span-2 bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200 shadow-sm">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-600 mb-1">
@@ -131,3 +103,5 @@ export const FinanceStats = React.memo(
     );
   }
 );
+
+FinanceStats.displayName = "FinanceStats";

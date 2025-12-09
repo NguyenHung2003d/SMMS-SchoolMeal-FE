@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, Edit, Mail, Phone, User } from "lucide-react";
+import { Edit, Mail, Phone, Calendar, User, ShieldCheck } from "lucide-react";
 import { ParentInfoDisplayProps } from "@/types/parent";
 import { getImageUrl } from "@/lib/utils";
 
@@ -9,84 +9,100 @@ export function ParentInfoDisplay({
   parentInfo,
   onEditClick,
 }: ParentInfoDisplayProps) {
-
   const [imageError, setImageError] = useState(false);
-  
+
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-slate-50 rounded-2xl shadow-md p-8 border border-blue-100">
-      <div className="flex justify-between items-center pb-8 border-b border-slate-200">
-        <h2 className="text-2xl font-bold text-slate-800">Thông tin cá nhân</h2>
-        <button
-          onClick={onEditClick}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium shadow-md hover:shadow-lg hover:bg-blue-700 transition-all"
-        >
-          <Edit size={18} />
-          Chỉnh sửa
-        </button>
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
+      <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+        <div className="absolute inset-0 bg-white/10 pattern-dots"></div>
       </div>
 
-      <div className="flex flex-col items-center py-8">
-        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden shadow-lg border-4 border-white">
-          {parentInfo.avatarUrl ? (
-            <img
-              src={getImageUrl(parentInfo.avatarUrl)}
-              alt="Parent Avatar"
-              className="w-full h-full rounded-full object-cover border-2 border-gray-200"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
-              <User className="w-10 h-10 text-gray-400" />
+      <div className="px-8 pb-8">
+        <div className="relative flex justify-between items-end -mt-12 mb-6">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full border-[6px] border-white bg-white shadow-lg overflow-hidden">
+              {parentInfo.avatarUrl && !imageError ? (
+                <img
+                  src={getImageUrl(parentInfo.avatarUrl)}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                  <User className="w-12 h-12 text-slate-300" />
+                </div>
+              )}
             </div>
-          )}
+            <div
+              className="absolute bottom-1 right-1 bg-green-500 p-1.5 rounded-full border-4 border-white"
+              title="Verified Parent"
+            >
+              <ShieldCheck size={14} className="text-white" />
+            </div>
+          </div>
+
+          <button
+            onClick={onEditClick}
+            className="mb-2 flex items-center gap-2 bg-white text-gray-700 border border-gray-200 px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+          >
+            <Edit size={16} />
+            <span>Chỉnh sửa hồ sơ</span>
+          </button>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {parentInfo.fullName}
+          </h2>
+          <p className="text-gray-500 font-medium">Phụ huynh</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <InfoCard
+            icon={<Mail className="text-blue-600" size={20} />}
+            label="Email"
+            value={parentInfo.email}
+          />
+          <InfoCard
+            icon={<Phone className="text-green-600" size={20} />}
+            label="Số điện thoại"
+            value={parentInfo.phone || "Chưa cập nhật"}
+          />
+          <InfoCard
+            icon={<Calendar className="text-purple-600" size={20} />}
+            label="Ngày sinh"
+            value={
+              parentInfo.dateOfBirth
+                ? new Date(parentInfo.dateOfBirth).toLocaleDateString("vi-VN")
+                : "Chưa cập nhật"
+            }
+          />
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            Họ và tên
-          </label>
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
-            <User className="text-blue-500 flex-shrink-0" size={20} />
-            <span className="font-medium text-slate-800">
-              {parentInfo.fullName}
-            </span>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            Email
-          </label>
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
-            <Mail className="text-blue-500 flex-shrink-0" size={20} />
-            <span className="font-medium text-slate-800">
-              {parentInfo.email}
-            </span>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            Số điện thoại
-          </label>
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
-            <Phone className="text-blue-500 flex-shrink-0" size={20} />
-            <span className="font-medium text-slate-800">
-              {parentInfo.phone || "Chưa cập nhật"}
-            </span>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            Ngày sinh
-          </label>
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
-            <Calendar className="text-blue-500 flex-shrink-0" size={20} />
-            <span className="font-medium text-slate-800">
-              {parentInfo.dateOfBirth || "Chưa cập nhật"}
-            </span>
-          </div>
-        </div>
+function InfoCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-100 transition-colors">
+      <div className="mt-1 bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+          {label}
+        </p>
+        <p className="font-medium text-gray-800 break-all">{value}</p>
       </div>
     </div>
   );

@@ -1,10 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
 import { Invoice } from "@/types/invoices";
-import { LoaderCircle } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  CreditCard,
+  CheckCircle2,
+  Wallet,
+  UserCircle,
+  Receipt,
+  AlertCircle,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
 
@@ -44,8 +53,8 @@ export default function RegisterMeal() {
         setSelectedInvoice(null);
       } else {
         console.error(err);
-        setError("Không thể tải thông tin hóa đơn.");
-        toast.error("Không thể tải thông tin hóa đơn.");
+        setError("Không thể tải thông tin hóa đơn. Vui lòng thử lại sau.");
+        toast.error("Lỗi kết nối server.");
       }
     } finally {
       setIsLoadingInvoice(false);
@@ -60,117 +69,256 @@ export default function RegisterMeal() {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">
-        Đăng ký suất ăn & Thanh toán
-      </h2>
+    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+      <div className="flex items-center gap-3 border-b pb-4">
+        <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+          <Wallet size={24} />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Thanh toán học phí
+          </h2>
+          <p className="text-sm text-gray-500">
+            Xem và thanh toán các khoản phí chưa đóng
+          </p>
+        </div>
+      </div>
 
       {!selectedStudent ? (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-800">
-            Vui lòng chọn học sinh từ danh sách bên trái
+        <div className="flex flex-col items-center justify-center bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center shadow-sm min-h-[300px]">
+          <div className="bg-gray-50 p-4 rounded-full mb-4">
+            <UserCircle size={48} className="text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Chưa chọn học sinh
+          </h3>
+          <p className="text-gray-500 max-w-md mt-2">
+            Vui lòng chọn một học sinh từ danh sách bên trái để xem các khoản
+            phí cần thanh toán.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-4 text-lg">
-              Học sinh:{" "}
-              <span className="text-blue-600">{selectedStudent.fullName}</span>
-            </h3>
+        <div className="space-y-6">
+          {/* --- PHẦN ĐÃ SỬA IMG --- */}
+          <div className="bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3">
+              {/* Container cho Avatar */}
+              <div className="relative w-14 h-14 rounded-full shadow-sm border-2 border-white ring-1 ring-blue-100 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                {/* 1. Icon mặc định nằm dưới cùng */}
+                <UserCircle size={32} className="text-blue-200" />
 
-            {isLoadingInvoice ? (
-              <div className="text-center py-4 text-gray-500 flex justify-center items-center gap-2">
-                <LoaderCircle className="animate-spin" /> Đang kiểm tra hóa
-                đơn...
+                {/* 2. Nếu có avatarUrl thì hiển thị ảnh đè lên trên */}
+                {selectedStudent.avatarUrl && (
+                  <img
+                    src={selectedStudent.avatarUrl}
+                    alt={selectedStudent.fullName}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    // Nếu ảnh bị lỗi (404), ẩn ảnh đi để lộ icon bên dưới
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                )}
               </div>
-            ) : error ? (
-              <div className="text-red-500 p-3 bg-red-50 rounded">{error}</div>
-            ) : unpaidInvoices.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-green-600 font-medium">
-                  Học sinh này chưa có khoản phí nào cần đóng.
+
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                  Học sinh
+                </p>
+                <p className="text-lg font-bold text-gray-800">
+                  {selectedStudent.fullName}
                 </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-3 text-gray-700">
-                    Danh sách khoản phí cần thanh toán:
-                  </label>
+            </div>
+            {unpaidInvoices.length > 0 && (
+              <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-200">
+                {unpaidInvoices.length} khoản nợ
+              </span>
+            )}
+          </div>
+          {/* --- HẾT PHẦN SỬA --- */}
 
-                  <div className="space-y-3">
-                    {unpaidInvoices.map((inv) => (
-                      <label
+          {isLoadingInvoice ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+              <Loader2 className="animate-spin text-blue-600 mb-3" size={32} />
+              <p className="text-gray-500 font-medium">Đang tìm hóa đơn...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center text-center">
+              <AlertCircle className="text-red-500 mb-2" size={32} />
+              <p className="text-red-700 font-medium">{error}</p>
+              <button
+                onClick={() => fetchInvoices(selectedStudent.studentId)}
+                className="mt-3 text-sm text-red-600 underline hover:text-red-800"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : unpaidInvoices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-100 text-center">
+              <div className="bg-green-100 p-4 rounded-full mb-4">
+                <CheckCircle2 size={48} className="text-green-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800">
+                Không có khoản phí nào!
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Tuyệt vời, phụ huynh đã hoàn thành tất cả nghĩa vụ thanh toán.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                  <Receipt size={18} /> Danh sách hóa đơn
+                </h3>
+
+                <div className="space-y-3">
+                  {unpaidInvoices.map((inv) => {
+                    const isSelected =
+                      selectedInvoice?.invoiceId === inv.invoiceId;
+                    return (
+                      <div
                         key={inv.invoiceId}
-                        className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                          selectedInvoice?.invoiceId === inv.invoiceId
-                            ? "border-blue-500 bg-blue-50 shadow-md"
-                            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                        }`}
                         onClick={() => setSelectedInvoice(inv)}
+                        className={`
+                          relative group flex flex-col sm:flex-row sm:items-center justify-between 
+                          p-5 rounded-xl border-2 cursor-pointer transition-all duration-200
+                          ${
+                            isSelected
+                              ? "border-blue-500 bg-blue-50/50 shadow-md scale-[1.01]"
+                              : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-md"
+                          }
+                        `}
                       >
-                        <input
-                          type="radio"
-                          name="invoice_selection"
-                          className="mr-4 h-5 w-5 text-blue-600 focus:ring-blue-500"
-                          checked={selectedInvoice?.invoiceId === inv.invoiceId}
-                          onChange={() => setSelectedInvoice(inv)}
-                        />
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <p className="font-bold text-gray-900">
-                              Hóa đơn #{inv.invoiceId} - Tháng {inv.monthNo}
-                            </p>
-                            <p className="font-bold text-blue-700 text-lg">
-                              {formatCurrency(inv.amountToPay)}
-                            </p>
+                        <div
+                          className={`absolute top-4 right-4 sm:static sm:mr-4 transition-colors ${
+                            isSelected
+                              ? "text-blue-600"
+                              : "text-gray-300 group-hover:text-blue-300"
+                          }`}
+                        >
+                          {isSelected ? (
+                            <CheckCircle2
+                              size={24}
+                              fill="currentColor"
+                              className="text-white"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full border-2 border-current"></div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded">
+                              Tháng {inv.monthNo}
+                            </span>
+                            <span className="text-gray-400 text-xs">
+                              #{inv.invoiceId}
+                            </span>
                           </div>
-                          <div className="flex justify-between text-sm text-gray-600">
-                            <p>
-                              Từ:{" "}
-                              {new Date(inv.dateFrom).toLocaleDateString(
-                                "vi-VN"
-                              )}{" "}
-                              - Đến:{" "}
-                              {new Date(inv.dateTo).toLocaleDateString("vi-VN")}
-                            </p>
+
+                          <p className="font-bold text-gray-800 text-lg">
+                            Học phí & Bán trú
+                          </p>
+
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Calendar size={14} />
+                              <span>
+                                {new Date(inv.dateFrom).toLocaleDateString(
+                                  "vi-VN",
+                                  { day: "2-digit", month: "2-digit" }
+                                )}{" "}
+                                -{" "}
+                                {new Date(inv.dateTo).toLocaleDateString(
+                                  "vi-VN",
+                                  { day: "2-digit", month: "2-digit" }
+                                )}
+                              </span>
+                            </div>
                             {inv.absentDay > 0 && (
-                              <span className="text-orange-600 font-medium text-xs bg-orange-100 px-2 py-0.5 rounded">
-                                Trừ {inv.absentDay} ngày nghỉ
+                              <span className="text-orange-600 text-xs bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
+                                - {inv.absentDay} ngày nghỉ
                               </span>
                             )}
                           </div>
                         </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="pt-4 border-t mt-4">
-                  <button
-                    onClick={handleViewDetail}
-                    disabled={!selectedInvoice}
-                    className={`w-full py-3 rounded-lg font-bold text-white transition-all shadow-md
-                        ${
-                          !selectedInvoice
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-[0.99]"
-                        }`}
-                  >
-                    Xem chi tiết & Thanh toán qua PayOS
-                  </button>
-
-                  <p className="text-xs text-center text-gray-500 mt-3">
-                    Bạn đang chọn thanh toán cho hóa đơn:{" "}
-                    <span className="font-bold text-gray-700">
-                      #{selectedInvoice?.invoiceId}
-                    </span>
-                  </p>
+                        <div className="mt-4 sm:mt-0 text-right">
+                          <p className="text-xs text-gray-500 mb-1">
+                            Tổng thanh toán
+                          </p>
+                          <p className="text-xl font-bold text-blue-600">
+                            {formatCurrency(inv.amountToPay)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-          </div>
+
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
+                  <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">
+                    Thông tin thanh toán
+                  </h3>
+
+                  {selectedInvoice ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Mã hóa đơn:</span>
+                        <span className="font-medium text-gray-900">
+                          #{selectedInvoice.invoiceId}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Tháng:</span>
+                        <span className="font-medium text-gray-900">
+                          {selectedInvoice.monthNo}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Số ngày nghỉ:</span>
+                        <span className="font-medium text-gray-900">
+                          {selectedInvoice.absentDay}
+                        </span>
+                      </div>
+
+                      <div className="border-t border-dashed my-2 pt-2">
+                        <div className="flex justify-between items-end">
+                          <span className="text-gray-800 font-semibold">
+                            Tổng cộng:
+                          </span>
+                          <span className="text-2xl font-bold text-blue-600">
+                            {formatCurrency(selectedInvoice.amountToPay)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleViewDetail}
+                        className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 group"
+                      >
+                        <CreditCard
+                          size={20}
+                          className="group-hover:scale-110 transition-transform"
+                        />
+                        Thanh toán ngay
+                      </button>
+                      <p className="text-xs text-center text-gray-400 mt-2">
+                        Thanh toán an toàn qua cổng PayOS
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-400 py-8">
+                      <p>Vui lòng chọn một hóa đơn để tiếp tục</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

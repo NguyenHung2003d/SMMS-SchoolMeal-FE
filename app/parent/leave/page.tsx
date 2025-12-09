@@ -1,296 +1,335 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
-import { formatDate } from "@/helpers";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { AttendanceRequestDto, AttendanceResponseDto } from "@/types/parent";
-
+import { formatDate } from "@/helpers";
+import toast from "react-hot-toast";
 import {
-  AlertCircle,
   Calendar,
-  Loader2,
-  CheckCircle2,
   Clock,
   User,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  FileText,
+  Send,
+  History,
+  XCircle,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 
 export default function LeaveApplication() {
   const { selectedStudent } = useSelectedStudent();
+
+  // State quản lý form
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
 
+  // State trạng thái
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [history, setHistory] = useState<AttendanceResponseDto[]>([]);
 
+  // Effect load lịch sử khi chọn học sinh
   useEffect(() => {
     if (selectedStudent?.studentId) {
-      fetchHistory(selectedStudent?.studentId);
+      fetchHistory(selectedStudent.studentId);
+      // Reset form
       setStartDate("");
       setEndDate("");
       setReason("");
     }
   }, [selectedStudent]);
 
+  // Hàm gọi API lấy lịch sử nghỉ
   const fetchHistory = async (studentId: string) => {
     setIsLoadingHistory(true);
     try {
-      const response = await axiosInstance.get<any>(
-        `/Attendance/student/${studentId}`,
-        { params: { _t: new Date().getTime() } }
-      );
+      // Gọi API: GET /api/Attendance/student/{studentId}
+      const response = await axiosInstance.get<{
+        records: AttendanceResponseDto[];
+      }>(`/Attendance/student/${studentId}`);
 
-      const rawData = response && response.data ? response.data : response;
-
-      let finalHistory: AttendanceResponseDto[] = [];
-
-      if (rawData?.records && Array.isArray(rawData.records)) {
-        finalHistory = rawData.records;
-      } else if (Array.isArray(rawData)) {
-        finalHistory = rawData;
-      }
-      setHistory(finalHistory);
+      // Xử lý dữ liệu trả về từ BE (theo cấu trúc AttendanceHistoryDto)
+      const records = response.data?.records || [];
+      setHistory(records);
     } catch (error) {
-      console.error("❌ Fetch Error:", error);
+      console.error("Lỗi tải lịch sử:", error);
+      toast.error("Không thể tải lịch sử nghỉ học.");
       setHistory([]);
     } finally {
       setIsLoadingHistory(false);
     }
   };
 
+  // Hàm xử lý gửi form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudent) return;
-    if (!startDate || !endDate) {
-      toast.error("Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc");
+    if (!selectedStudent) {
+      toast.error("Vui lòng chọn học sinh trước.");
       return;
     }
+
+    // Validate cơ bản
+    if (!startDate || !endDate) {
+      toast.error("Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc.");
+      return;
+    }
+
     if (new Date(startDate) > new Date(endDate)) {
-      toast.error("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu");
+      toast.error("Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
+      return;
+    }
+
+    if (!reason.trim()) {
+      toast.error("Vui lòng nhập lý do nghỉ học.");
       return;
     }
 
     setIsSubmitting(true);
 
+    // Payload chuẩn theo BE DTO: AttendanceRequestDto
     const payload: AttendanceRequestDto = {
       studentId: selectedStudent.studentId,
       startDate: startDate,
       endDate: endDate,
       reason: reason,
     };
+
     try {
+      // Gọi API: POST /api/Attendance
       await axiosInstance.post("/Attendance", payload);
+
       toast.success("Gửi đơn xin nghỉ thành công!");
+
+      // Reset form và load lại lịch sử
       setStartDate("");
       setEndDate("");
       setReason("");
-      await fetchHistory(selectedStudent.studentId);
+      fetchHistory(selectedStudent.studentId);
     } catch (error: any) {
       console.error(error);
-      const msg =
-        error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.";
+      const msg = error.response?.data?.message || "Có lỗi xảy ra khi gửi đơn.";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Nếu chưa chọn học sinh
+  if (!selectedStudent) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gray-50 rounded-xl m-6 border-2 border-dashed border-gray-300">
+        <div className="bg-yellow-100 p-4 rounded-full mb-4">
+          <User size={48} className="text-yellow-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-700">Chưa chọn học sinh</h3>
+        <p className="text-gray-500 mt-2">
+          Vui lòng chọn con em của bạn từ danh sách bên trái để tiếp tục.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-              <Calendar className="text-white" size={32} />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Đơn xin nghỉ
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-8 animate-in fade-in duration-500">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header Trang */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                <FileText size={32} />
+              </div>
+              Đơn Xin Nghỉ Học
             </h1>
+            <p className="text-gray-500 mt-2 ml-1">
+              Quản lý và gửi đơn nghỉ phép cho học sinh{" "}
+              <strong>{selectedStudent.fullName}</strong>
+            </p>
           </div>
         </div>
 
-        {!selectedStudent ? (
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl p-8 flex items-center gap-4 shadow-md animate-pulse">
-            <div className="p-3 bg-yellow-200 rounded-lg">
-              <AlertCircle className="text-yellow-700" size={32} />
-            </div>
-            <div>
-              <p className="text-yellow-800 font-bold text-lg">
-                Vui lòng ọc sinh
-              </p>
-              <p className="text-yellow-700 text-sm mt-1">
-                Chọn học sinh từ danh sách bên trái để tạo đơn xin nghỉ
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 sticky top-6">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 md:p-8">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    Tạo đơn mới
-                  </h2>
-                  <p className="text-pink-100 mt-2 text-base md:text-lg">
-                    cho{" "}
-                    <span className="font-bold">
-                      {selectedStudent.fullName}
-                    </span>
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Cột Trái: Form Gửi Đơn (Chiếm 4 phần) */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Send size={20} /> Tạo đơn mới
+                </h2>
+                <p className="text-blue-100 text-sm mt-1">
+                  Điền thông tin để gửi đơn xin nghỉ
+                </p>
+              </div>
 
-                <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
-                      Ngày bắt đầu <span className="text-red-500">*</span>
-                    </label>
+              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                {/* Ngày Bắt Đầu */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Từ ngày
+                  </label>
+                  <div className="relative">
+                    <Calendar
+                      className="absolute left-3 top-3 text-gray-400"
+                      size={18}
+                    />
                     <input
                       type="date"
-                      required
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 md:py-4 text-base md:text-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition-all hover:border-orange-300"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
-                      Ngày kết thúc <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
                       required
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 md:py-4 text-base md:text-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition-all hover:border-orange-300"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
-                      Lý do nghỉ (tùy chọn)
-                    </label>
-                    <textarea
-                      className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 md:py-4 text-base md:text-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition-all resize-none hover:border-orange-300"
-                      rows={5}
-                      placeholder="Ví dụ: Bé bị sốt, gia đình có việc bận..."
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 md:p-5">
-                    <p className="flex gap-3 text-blue-800 text-sm md:text-base">
-                      <AlertCircle
-                        size={24}
-                        className="shrink-0 text-blue-600 mt-0.5"
-                      />
-                      <span>
-                        <strong className="text-blue-900">Lưu ý:</strong> Số
-                        tiền hoàn trả (nếu có) sẽ được tính toán dựa trên quy
-                        định của nhà trường.
-                      </span>
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 md:py-5 rounded-xl font-bold text-base md:text-lg hover:from-orange-700 hover:to-amber-700 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-2xl"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={24} />
-                        <span>Đang gửi...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={24} />
-                        <span>Gửi đơn xin nghỉ</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 md:p-8 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Clock className="text-white" size={32} />
-                    <h3 className="text-2xl md:text-3xl font-bold text-white">
-                      Lịch sử đơn nghỉ
-                    </h3>
-                  </div>
-                  <span className="text-2xl md:text-3xl font-bold text-white bg-white/20 px-4 md:px-5 py-2 md:py-3 rounded-xl backdrop-blur-sm">
-                    {history?.length || 0}
-                  </span>
                 </div>
 
-                <div className="p-6 md:p-8 min-h-[400px]">
-                  {isLoadingHistory ? (
-                    <div className="flex flex-col items-center justify-center h-80 text-gray-400">
-                      <Loader2
-                        size={48}
-                        className="animate-spin mb-4 text-pink-500"
-                      />
-                      <p className="text-lg md:text-xl">Đang tải dữ liệu...</p>
-                    </div>
-                  ) : !Array.isArray(history) || history.length === 0 ? (
-                    <div className="text-center py-16 text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-                      <Calendar size={48} className="mx-auto mb-3 opacity-40" />
-                      <p className="text-lg md:text-xl font-medium">
-                        Chưa có lịch sử nghỉ học nào.
-                      </p>
-                    </div>
+                {/* Ngày Kết Thúc */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Đến ngày
+                  </label>
+                  <div className="relative">
+                    <Calendar
+                      className="absolute left-3 top-3 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      type="date"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      required
+                      min={startDate} // Chặn ngày kết thúc nhỏ hơn ngày bắt đầu
+                    />
+                  </div>
+                </div>
+
+                {/* Lý Do */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Lý do nghỉ
+                  </label>
+                  <textarea
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none min-h-[120px]"
+                    placeholder="Ví dụ: Cháu bị ốm sốt, gia đình có việc bận..."
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Nút Gửi */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:-translate-y-0.5"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={20} /> Đang gửi...
+                    </>
                   ) : (
-                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                      {history.map((item) => (
-                        <div
-                          key={item.attendanceId}
-                          className="border-2 border-gray-100 rounded-xl p-5 md:p-6 hover:border-pink-300 hover:shadow-lg transition-all bg-gradient-to-br from-gray-50 to-white group"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="text-blue-500" size={20} />
-                              <p className="font-bold text-gray-800 text-lg">
-                                {formatDate(item.absentDate)}
+                    <>
+                      <Send size={20} /> Gửi đơn ngay
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Cột Phải: Lịch Sử (Chiếm 8 phần) */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px] flex flex-col">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <History className="text-blue-600" size={24} /> Lịch sử nghỉ
+                  học
+                </h2>
+                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
+                  {history.length} bản ghi
+                </span>
+              </div>
+
+              <div className="flex-1 p-6">
+                {isLoadingHistory ? (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-3">
+                    <Loader2 size={40} className="animate-spin text-blue-500" />
+                    <p>Đang tải dữ liệu...</p>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 py-10">
+                    <div className="bg-gray-50 p-6 rounded-full">
+                      <Clock size={48} className="opacity-20" />
+                    </div>
+                    <p className="font-medium">Chưa có lịch sử nghỉ học nào.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {history.map((record) => (
+                      <div
+                        key={record.attendanceId}
+                        className="group relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          {/* Icon & Ngày tháng */}
+                          <div className="flex items-start gap-4">
+                            <div className="bg-red-50 p-3 rounded-xl border border-red-100 group-hover:bg-red-100 transition-colors">
+                              <Calendar className="text-red-500" size={24} />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-gray-800 text-lg">
+                                {formatDate(record.absentDate)}
+                              </h3>
+                              <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                                <Clock size={14} />
+                                Ngày tạo: {formatDate(record.createdAt)}
                               </p>
                             </div>
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                          </div>
+
+                          {/* Trạng thái (Giả định là đã duyệt vì BE đã lưu) */}
+                          <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-100 self-start">
+                            <CheckCircle2 size={16} />
+                            <span className="text-xs font-bold">
                               Đã ghi nhận
                             </span>
                           </div>
+                        </div>
 
-                          <div className="text-sm text-gray-500 mb-3">
-                            Ngày tạo:{" "}
-                            {new Date(item.createdAt).toLocaleString("vi-VN")}
-                          </div>
-
-                          <div className="pt-3 border-t border-gray-100">
-                            <p className="text-gray-700 flex gap-2">
-                              <span className="font-bold">Lý do:</span>
-                              <span>{item.reason || "Không có lý do"}</span>
-                            </p>
-
-                            {item.notifiedBy && (
-                              <p className="text-gray-500 text-sm mt-2 flex items-center gap-1">
-                                <User size={14} /> Người báo: {item.notifiedBy}
-                              </p>
-                            )}
+                        {/* Lý do */}
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+                          <AlertCircle
+                            size={18}
+                            className="text-orange-500 shrink-0 mt-0.5"
+                          />
+                          <div>
+                            <span className="text-sm font-semibold text-gray-700 mr-2">
+                              Lý do:
+                            </span>
+                            <span className="text-sm text-gray-600 italic">
+                              "{record.reason}"
+                            </span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+
+                        {/* Người gửi */}
+                        {record.notifiedBy && (
+                          <div className="mt-2 pl-[30px] text-xs text-gray-400 flex items-center gap-1">
+                            <User size={12} /> Người gửi: {record.notifiedBy}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

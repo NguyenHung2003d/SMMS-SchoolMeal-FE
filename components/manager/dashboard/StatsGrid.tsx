@@ -10,7 +10,6 @@ interface StatsGridProps {
 export default function StatsGrid({ overview }: StatsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-      {/* Card 1: Giáo viên */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start">
           <div>
@@ -27,7 +26,6 @@ export default function StatsGrid({ overview }: StatsGridProps) {
         </div>
       </div>
 
-      {/* Card 2: Học sinh */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start">
           <div>
@@ -56,12 +54,11 @@ export default function StatsGrid({ overview }: StatsGridProps) {
         </div>
       </div>
 
-      {/* Card 4: Tài chính */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start">
           <div>
             <p className="text-sm font-medium text-gray-500 mb-1">
-              Doanh thu tháng
+              Doanh thu năm
             </p>
             <h3
               className="text-3xl font-bold text-gray-800"

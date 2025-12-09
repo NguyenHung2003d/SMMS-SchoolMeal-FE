@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserCircle, Users } from "lucide-react";
 import { useParentProfile } from "@/hooks/useParentProfile";
 import { ParentInfoForm } from "@/components/parents/updateInfo/ParentInfoForm";
 import { ParentInfoDisplay } from "@/components/parents/updateInfo/ParentInfoDisplay";
@@ -40,45 +40,63 @@ export default function ParentProfileUpdate() {
 
   if (isLoading)
     return (
-      <div className="flex justify-center py-16">
-        <Loader2 className="animate-spin text-blue-500" />
-        <span className="text-blue-400 ml-2">Đang tải dữ liệu ...</span>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-blue-600 w-10 h-10 mb-4" />
+        <span className="text-gray-500 font-medium">
+          Đang tải dữ liệu hồ sơ...
+        </span>
       </div>
     );
 
   if (loadError || !parentInfo)
-    return <div className="text-center py-16 text-red-500">{loadError}</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[300px]">
+        <div className="bg-red-50 text-red-600 px-6 py-4 rounded-xl border border-red-200 shadow-sm">
+          {loadError || "Không tìm thấy thông tin."}
+        </div>
+      </div>
+    );
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Quản lý hồ sơ</h1>
+    <div className="max-w-5xl mx-auto pb-20">
+      <div className="mb-8 text-center sm:text-left">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Quản lý hồ sơ
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Cập nhật thông tin phụ huynh và hồ sơ sức khỏe của con.
+        </p>
       </div>
 
-      <div className="border-b border-gray-200 mb-8 flex space-x-1">
-        <button
-          onClick={() => setActiveTab("parent-info")}
-          className={`py-4 px-6 font-semibold border-b-2 transition-colors ${
-            activeTab === "parent-info"
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-600 border-transparent hover:text-blue-500"
-          }`}
-        >
-          Thông tin phụ huynh
-        </button>
-        <button
-          onClick={() => setActiveTab("students-info")}
-          className={`py-4 px-6 font-semibold border-b-2 transition-colors ${
-            activeTab === "students-info"
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-600 border-transparent hover:text-blue-500"
-          }`}
-        >
-          Thông tin học sinh
-        </button>
+      {/* Modern Tabs */}
+      <div className="flex justify-center sm:justify-start mb-8">
+        <div className="bg-gray-100/80 p-1.5 rounded-2xl inline-flex shadow-inner">
+          <button
+            onClick={() => setActiveTab("parent-info")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              activeTab === "parent-info"
+                ? "bg-white text-blue-600 shadow-md ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+            }`}
+          >
+            <UserCircle size={18} />
+            Thông tin Phụ huynh
+          </button>
+          <button
+            onClick={() => setActiveTab("students-info")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              activeTab === "students-info"
+                ? "bg-white text-blue-600 shadow-md ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+            }`}
+          >
+            <Users size={18} />
+            Thông tin Học sinh
+          </button>
+        </div>
       </div>
 
-      <div className="animate-fadeIn">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         {activeTab === "parent-info" &&
           (isEditingParent ? (
             <ParentInfoForm

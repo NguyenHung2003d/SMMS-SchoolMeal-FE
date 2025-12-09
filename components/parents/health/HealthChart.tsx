@@ -9,8 +9,15 @@ import {
   Tooltip,
   Legend,
   LineController,
+  Filler,
+  ChartConfiguration,
+  ChartData,
 } from "chart.js";
 import { HealthPoint } from "@/types/parent";
+import { Activity, Ruler, Weight } from "lucide-react";
+
+// Register the Filler plugin
+Chart.register(Filler);
 
 interface HealthChartProps {
   historyData: HealthPoint[];
@@ -26,7 +33,6 @@ export default function HealthChart({
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
-  // Hàm nội suy đường cong cho mượt
   function interpolateMonthly(data: HealthPoint[], segmentsPerMonth = 3) {
     const labels: string[] = [];
     const heightSeries: number[] = [];
@@ -73,50 +79,6 @@ export default function HealthChart({
     return { labels, heightSeries, weightSeries, bmiSeries };
   }
 
-  // Cấu hình hiển thị Chart
-  const getDataset = (interp: ReturnType<typeof interpolateMonthly>) => {
-    const commonOptions = {
-      tension: 0.35,
-      pointRadius: (ctx: any) =>
-        interp.labels.length === 1 || (ctx.raw && ctx.dataIndex % 3 === 0)
-          ? 4
-          : 0,
-    };
-
-    switch (selectedChart) {
-      case "bmi":
-        return [
-          {
-            label: "BMI",
-            data: interp.bmiSeries,
-            borderColor: "rgb(147, 51, 234)",
-            backgroundColor: "rgba(147, 51, 234, 0.1)",
-            ...commonOptions,
-          },
-        ];
-      case "height":
-        return [
-          {
-            label: "Chiều cao (cm)",
-            data: interp.heightSeries,
-            borderColor: "rgb(59, 130, 246)",
-            backgroundColor: "rgba(59, 130, 246, 0.1)",
-            ...commonOptions,
-          },
-        ];
-      case "weight":
-        return [
-          {
-            label: "Cân nặng (kg)",
-            data: interp.weightSeries,
-            borderColor: "rgb(34, 197, 94)",
-            backgroundColor: "rgba(34, 197, 94, 0.1)",
-            ...commonOptions,
-          },
-        ];
-    }
-  };
-
   useEffect(() => {
     if (!chartRef.current) return;
 
@@ -139,59 +101,179 @@ export default function HealthChart({
       Legend
     );
 
+    const createGradient = (colorStart: string, colorEnd: string) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, colorStart);
+      gradient.addColorStop(1, colorEnd);
+      return gradient;
+    };
+
     const interp = interpolateMonthly(historyData, 3);
 
-    chartInstance.current = new Chart(ctx, {
+    // Explicitly define commonOptions with 'any' to avoid strict type conflict with 'fill'
+    const commonOptions: any = {
+      tension: 0.4,
+      pointRadius: (ctx: any) =>
+        interp.labels.length === 1 || (ctx.raw && ctx.dataIndex % 3 === 0)
+          ? 5
+          : 0,
+      pointHoverRadius: 7,
+      pointBackgroundColor: "#fff",
+      pointBorderWidth: 2,
+      fill: true, // This property causes the issue without 'any' or correct type
+    };
+
+    let dataset: any = {};
+
+    if (selectedChart === "bmi") {
+      dataset = {
+        label: "Chỉ số BMI",
+        data: interp.bmiSeries,
+        borderColor: "rgb(168, 85, 247)",
+        backgroundColor: createGradient(
+          "rgba(168, 85, 247, 0.4)",
+          "rgba(168, 85, 247, 0.0)"
+        ),
+        pointBorderColor: "rgb(168, 85, 247)",
+      };
+    } else if (selectedChart === "height") {
+      dataset = {
+        label: "Chiều cao (cm)",
+        data: interp.heightSeries,
+        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: createGradient(
+          "rgba(59, 130, 246, 0.4)",
+          "rgba(59, 130, 246, 0.0)"
+        ),
+        pointBorderColor: "rgb(59, 130, 246)",
+      };
+    } else {
+      dataset = {
+        label: "Cân nặng (kg)",
+        data: interp.weightSeries,
+        borderColor: "rgb(34, 197, 94)",
+        backgroundColor: createGradient(
+          "rgba(34, 197, 94, 0.4)",
+          "rgba(34, 197, 94, 0.0)"
+        ),
+        pointBorderColor: "rgb(34, 197, 94)",
+      };
+    }
+
+    const config: ChartConfiguration = {
       type: "line",
       data: {
         labels: interp.labels,
-        datasets: getDataset(interp),
+        datasets: [{ ...dataset, ...commonOptions }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
-        scales: { y: { beginAtZero: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            titleColor: "#1f2937",
+            bodyColor: "#4b5563",
+            borderColor: "#e5e7eb",
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              title: (items) => `Tháng: ${items[0].label}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+          },
+          y: {
+            beginAtZero: false,
+            border: { dash: [4, 4] },
+            grid: { color: "#f3f4f6" },
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+          },
+        },
       },
-    });
+    };
+
+    chartInstance.current = new Chart(ctx, config);
 
     return () => {
       chartInstance.current?.destroy();
     };
   }, [selectedChart, historyData]);
 
+  const tabs = [
+    {
+      key: "bmi",
+      label: "BMI",
+      icon: Activity,
+      activeColor: "text-purple-600 bg-white shadow-sm ring-1 ring-black/5",
+    },
+    {
+      key: "height",
+      label: "Chiều cao",
+      icon: Ruler,
+      activeColor: "text-blue-600 bg-white shadow-sm ring-1 ring-black/5",
+    },
+    {
+      key: "weight",
+      label: "Cân nặng",
+      icon: Weight,
+      activeColor: "text-green-600 bg-white shadow-sm ring-1 ring-black/5",
+    },
+  ];
+
   return (
-    <div>
-      <div className="flex gap-2 mb-4">
-        {[
-          { key: "bmi", label: "BMI", color: "bg-purple-600" },
-          { key: "height", label: "Chiều cao", color: "bg-blue-600" },
-          { key: "weight", label: "Cân nặng", color: "bg-green-600" },
-        ].map((btn) => (
-          <button
-            key={btn.key}
-            onClick={() => setSelectedChart(btn.key as any)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              selectedChart === btn.key
-                ? `${btn.color} text-white shadow-md`
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {btn.label}
-          </button>
-        ))}
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+          <h3 className="text-lg font-bold text-gray-800">
+            Biểu đồ phát triển
+          </h3>
+          <p className="text-sm text-gray-500">
+            Theo dõi xu hướng theo thời gian
+          </p>
+        </div>
+
+        <div className="flex p-1 bg-gray-100 rounded-xl">
+          {tabs.map((tab) => {
+            const isActive = selectedChart === tab.key;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedChart(tab.key as any)}
+                className={`
+                            flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+                            ${
+                              isActive
+                                ? tab.activeColor
+                                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                            }
+                        `}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg border p-4">
-        <div className="h-80">
-          {historyData.length > 0 ? (
-            <canvas ref={chartRef} />
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-400">
-              Chưa có dữ liệu lịch sử để vẽ biểu đồ
-            </div>
-          )}
-        </div>
+      <div className="h-80 w-full relative">
+        {historyData.length > 0 ? (
+          <canvas ref={chartRef} />
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <Activity size={32} className="mb-2 opacity-50" />
+            Chưa có dữ liệu lịch sử để vẽ biểu đồ
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Building,
   Home,
   Users,
   BookOpen,
@@ -9,14 +8,16 @@ import {
   Settings,
   LogOut,
   Search,
-  Menu,
+  Menu, // Icon Menu
   ChevronDown,
   User,
   FileText,
   BarChart3,
-  UserPlus,
   PackageCheck,
-  Receipt, // <--- 1. Thêm icon Receipt (Hóa đơn)
+  Receipt,
+  GraduationCap,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -50,344 +51,298 @@ export default function ManagerLayout({
 
   const isActive = (href: string) => pathname.startsWith(href);
 
+  const SidebarItem = ({ href, icon: Icon, label, isOpen, active }: any) => (
+    <Link
+      href={href}
+      className={`flex items-center w-full ${
+        isOpen ? "justify-start px-4" : "justify-center"
+      } py-3 my-1 rounded-xl transition-all duration-200 group relative ${
+        active
+          ? "bg-white text-orange-600 shadow-md font-bold"
+          : "text-orange-50 hover:bg-white/10 hover:text-white"
+      }`}
+    >
+      <Icon
+        size={20}
+        className={`${
+          active ? "text-orange-600" : "text-orange-100 group-hover:text-white"
+        } transition-colors`}
+      />
+      {isOpen && <span className="ml-3">{label}</span>}
+
+      {!isOpen && (
+        <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
+          {label}
+        </div>
+      )}
+    </Link>
+  );
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+    <div className="flex min-h-screen bg-[#fff7ed]">
       <div
         className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } bg-white shadow-lg fixed h-full transition-all duration-300 z-30`}
+          isSidebarOpen ? "w-72" : "w-20"
+        } bg-gradient-to-b from-orange-600 to-orange-500 shadow-2xl fixed h-full transition-all duration-300 z-30 flex flex-col`}
       >
-        <div className="p-4 flex items-center justify-between border-b border-orange-100 bg-gradient-to-r from-orange-500 to-amber-500">
-          <div
-            className={`flex items-center ${
-              !isSidebarOpen && "justify-center w-full"
-            }`}
-          >
-            <div className="h-8 w-8 rounded-md bg-white flex items-center justify-center shadow-md">
-              <Building size={18} className="text-orange-500" />
-            </div>
-            {isSidebarOpen && (
-              <span className="font-bold text-xl ml-3 text-white">
-                Manager Portal
-              </span>
-            )}
-          </div>
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-white hover:text-orange-100 transition-colors"
-          >
-            <Menu size={20} />
-          </button>
+        <div
+          className={`p-5 flex items-center border-b border-orange-400/30 h-[73px] ${
+            isSidebarOpen ? "justify-between" : "justify-center"
+          }`}
+        >
+          {isSidebarOpen ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner border border-white/20 text-white">
+                  <GraduationCap size={24} />
+                </div>
+                <div className="text-white">
+                  <h1 className="font-extrabold text-lg leading-tight">
+                    Manager Portal
+                  </h1>
+                  <p className="text-[10px] text-orange-100 font-medium tracking-wider opacity-80">
+                    Quán lý
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="h-10 w-10 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center shadow-inner border border-white/20 text-white transition-all cursor-pointer"
+              title="Mở rộng"
+            >
+              <Menu size={24} />
+            </button>
+          )}
         </div>
-        <nav className="p-4 overflow-y-auto h-[calc(100vh-70px)] scrollbar-thin">
-          {/* --- TỔNG QUAN --- */}
-          <div className="mb-4">
-            <p
-              className={`text-xs font-medium text-gray-400 mb-2 ${
-                !isSidebarOpen && "text-center"
-              }`}
-            >
-              {isSidebarOpen ? "TỔNG QUAN" : ""}
-            </p>
-            <ul className="space-y-1">
-              <li>
-                <Link
-                  href="/manager/dashboard"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/dashboard")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <Home size={20} />
-                  {isSidebarOpen && <span className="ml-3">Trang chủ</span>}
-                </Link>
-              </li>
-            </ul>
+
+        <nav className="flex-1 px-3 py-6 overflow-y-auto scrollbar-none space-y-8">
+          {/* Dashboard */}
+          <div>
+            {isSidebarOpen && (
+              <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
+                Tổng quan
+              </p>
+            )}
+            <SidebarItem
+              href="/manager/dashboard"
+              icon={Home}
+              label="Trang chủ"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/dashboard")}
+            />
           </div>
 
-          {/* --- QUẢN LÝ TÀI KHOẢN --- */}
-          <div className="mb-4">
-            <p
-              className={`text-xs font-medium text-gray-400 mb-2 ${
-                !isSidebarOpen && "text-center"
+          {/* Quản trị */}
+          <div>
+            {isSidebarOpen && (
+              <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
+                Quản trị
+              </p>
+            )}
+
+            {/* Dropdown Tài khoản */}
+            <div
+              className={`rounded-xl transition-all ${
+                isAccountDropdownOpen ? "bg-orange-700/20" : ""
               }`}
             >
-              {isSidebarOpen ? "QUẢN LÝ TÀI KHOẢN" : ""}
-            </p>
-            <ul className="space-y-1">
-              <li>
-                <button
-                  onClick={() =>
-                    setIsAccountDropdownOpen(!isAccountDropdownOpen)
-                  }
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-between px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    pathname.startsWith("/manager/staff") ||
-                    pathname.startsWith("/manager/parents")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Users size={20} />
-                    {isSidebarOpen && (
-                      <span className="ml-3">Quản lý tài khoản</span>
-                    )}
-                  </div>
+              <button
+                onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                className={`flex items-center w-full ${
+                  isSidebarOpen ? "justify-between px-4" : "justify-center"
+                } py-3 rounded-xl text-orange-50 hover:bg-white/10 hover:text-white transition-all`}
+              >
+                <div className="flex items-center">
+                  <Users size={20} className="text-orange-100" />
                   {isSidebarOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform ${
-                        isAccountDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
+                    <span className="ml-3 font-medium">Tài khoản</span>
                   )}
-                </button>
-
-                {isAccountDropdownOpen && isSidebarOpen && (
-                  <ul className="ml-8 mt-2 space-y-1">
-                    <li>
-                      <Link
-                        href="/manager/staff"
-                        className={`flex items-center w-full px-3 py-2 text-sm rounded-lg ${
-                          pathname.startsWith("/manager/staff")
-                            ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600"
-                            : "text-gray-600 hover:bg-orange-50"
-                        }`}
-                      >
-                        <UserPlus size={16} className="mr-2" />
-                        Tài khoản nhân viên
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/manager/parents"
-                        className={`flex items-center w-full px-3 py-2 text-sm rounded-lg ${
-                          pathname.startsWith("/manager/parents")
-                            ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600"
-                            : "text-gray-600 hover:bg-orange-50"
-                        }`}
-                      >
-                        <Users size={16} className="mr-2" />
-                        Tài khoản phụ huynh
-                      </Link>
-                    </li>
-                  </ul>
+                </div>
+                {isSidebarOpen && (
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform duration-300 ${
+                      isAccountDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 )}
-              </li>
-            </ul>
+              </button>
+
+              {/* Sub-menu Tài khoản */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ${
+                  isAccountDropdownOpen
+                    ? "max-h-40 opacity-100 mt-1 space-y-1"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <Link
+                  href="/manager/staff"
+                  className={`flex items-center px-4 py-2 text-sm rounded-lg ml-4 ${
+                    isActive("/manager/staff")
+                      ? "text-white font-bold bg-white/20"
+                      : "text-orange-100 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-current mr-2"></div>
+                  {isSidebarOpen && "Nhân viên"}
+                </Link>
+                <Link
+                  href="/manager/parents"
+                  className={`flex items-center px-4 py-2 text-sm rounded-lg ml-4 ${
+                    isActive("/manager/parents")
+                      ? "text-white font-bold bg-white/20"
+                      : "text-orange-100 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-current mr-2"></div>
+                  {isSidebarOpen && "Phụ huynh"}
+                </Link>
+              </div>
+            </div>
+
+            <SidebarItem
+              href="/manager/classes"
+              icon={BookOpen}
+              label="Lớp học"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/classes")}
+            />
+            <SidebarItem
+              href="/manager/notifications"
+              icon={Bell}
+              label="Thông báo"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/notifications")}
+            />
           </div>
 
-          {/* --- QUẢN LÝ HỌC TẬP --- */}
-          <div className="mb-4">
-            <p
-              className={`text-xs font-medium text-gray-400 mb-2 ${
-                !isSidebarOpen && "text-center"
-              }`}
-            >
-              {isSidebarOpen ? "QUẢN LÝ HỌC TẬP" : ""}
-            </p>
-            <ul className="space-y-1">
-              <li>
-                <Link
-                  href="/manager/classes"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/classes")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <BookOpen size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Quản lý lớp học</span>
-                  )}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/manager/notifications"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/notifications")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <Bell size={20} />
-                  {isSidebarOpen && <span className="ml-3">Gửi thông báo</span>}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* --- KHO & BẾP --- */}
-          <div className="mb-4">
-            <p
-              className={`text-xs font-medium text-gray-400 mb-2 ${
-                !isSidebarOpen && "text-center"
-              }`}
-            >
-              {isSidebarOpen ? "KHO & BẾP" : ""}
-            </p>
-            <ul className="space-y-1">
-              <li>
-                <Link
-                  href="/manager/purchase-orders"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/purchase-orders")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <PackageCheck size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Duyệt đơn mua hàng</span>
-                  )}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* --- TÀI CHÍNH --- */}
-          <div className="mb-4">
-            <p
-              className={`text-xs font-medium text-gray-400 mb-2 ${
-                !isSidebarOpen && "text-center"
-              }`}
-            >
-              {isSidebarOpen ? "TÀI CHÍNH" : ""}
-            </p>
-            <ul className="space-y-1">
-              {/* 2. Thêm mục Quản lý hóa đơn ở đây */}
-              <li>
-                <Link
-                  href="/manager/invoices"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/invoices")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <Receipt size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Quản lý hóa đơn</span>
-                  )}
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  href="/manager/finance"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/finance")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <FileText size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Báo cáo tài chính</span>
-                  )}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/manager/payment-settings"
-                  className={`flex items-center w-full ${
-                    isSidebarOpen ? "justify-start px-4" : "justify-center"
-                  } py-3 rounded-lg ${
-                    isActive("/manager/payment-settings")
-                      ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 shadow-sm"
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <Settings size={20} />
-                  {isSidebarOpen && (
-                    <span className="ml-3">Cài đặt thanh toán</span>
-                  )}
-                </Link>
-              </li>
-            </ul>
+          {/* Nghiệp vụ */}
+          <div>
+            {isSidebarOpen && (
+              <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
+                Nghiệp vụ
+              </p>
+            )}
+            <SidebarItem
+              href="/manager/purchase-orders"
+              icon={PackageCheck}
+              label="Kho & Bếp"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/purchase-orders")}
+            />
+            <SidebarItem
+              href="/manager/invoices"
+              icon={Receipt}
+              label="Hóa đơn"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/invoices")}
+            />
+            <SidebarItem
+              href="/manager/finance"
+              icon={BarChart3}
+              label="Tài chính"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/finance")}
+            />
+            <SidebarItem
+              href="/manager/payment-settings"
+              icon={Settings}
+              label="Cấu hình phí"
+              isOpen={isSidebarOpen}
+              active={isActive("/manager/payment-settings")}
+            />
           </div>
         </nav>
       </div>
-      <div
-        className={`flex-1 ${
-          isSidebarOpen ? "ml-64" : "ml-20"
-        } transition-all duration-300`}
-      >
-        <header className="bg-white shadow-sm sticky top-0 z-20 border-b border-orange-100">
-          <div className="px-6 py-4 flex justify-between items-center">
-            <div className="flex-1">
-              <div className="relative max-w-md">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm..."
-                  className="pl-10 pr-4 py-2 border border-orange-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                />
-                <Search
-                  className="absolute left-3 top-2.5 text-orange-400"
-                  size={18}
-                />
-              </div>
-            </div>
 
-            <div className="flex items-center space-x-4">
-              <ManagerNotificationBell />
-              <div className="relative">
-                <button
-                  onClick={() => setShowAccountMenu((prev) => !prev)}
-                  className="flex items-center space-x-2 cursor-pointer"
-                >
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center shadow-sm">
-                    <span className="font-medium text-orange-600">
-                      {getInitials(user?.fullName || "MA")}
+      {/* --- MAIN CONTENT --- */}
+      <div
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
+          isSidebarOpen ? "ml-72" : "ml-20"
+        }`}
+      >
+        {/* HEADER CHÍNH */}
+        <header className="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-orange-100 px-6 py-4 flex justify-between items-center shadow-sm h-[73px]">
+          {/* Left: Search & Toggle Sidebar (Backup) */}
+          <div className="flex-1 max-w-xl flex items-center gap-4">
+            {/* Nút Menu phụ trợ nằm ở Header (Phòng trường hợp Sidebar bị kẹt) */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+            >
+              {isSidebarOpen ? (
+                <PanelLeftClose size={20} />
+              ) : (
+                <PanelLeftOpen size={20} />
+              )}
+            </button>
+
+            <div className="relative group w-full">
+              <input
+                type="text"
+                placeholder="Tìm kiếm nhanh..."
+                className="w-full pl-10 pr-4 py-2.5 bg-orange-50/50 border border-orange-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 transition-all text-gray-700 placeholder:text-gray-400"
+              />
+              <Search
+                className="absolute left-3.5 top-3 text-orange-300 group-focus-within:text-orange-500 transition-colors"
+                size={18}
+              />
+            </div>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center space-x-6">
+            <ManagerNotificationBell />
+
+            <div className="relative">
+              <button
+                onClick={() => setShowAccountMenu((prev) => !prev)}
+                className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-100"
+              >
+                <div className="text-right hidden md:block">
+                  <p className="text-sm font-bold text-gray-700 leading-none">
+                    {user?.fullName || "Manager"}
+                  </p>
+                  <p className="text-[10px] font-medium text-orange-500 uppercase mt-1">
+                    Quản lý cấp cao
+                  </p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 p-0.5 shadow-lg shadow-orange-200">
+                  <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
+                    <span className="font-bold text-orange-600 text-sm">
+                      {getInitials(user?.fullName || "AD")}
                     </span>
                   </div>
-                  {isSidebarOpen && (
-                    <>
-                      <div className="hidden md:block text-left">
-                        <p className="font-medium text-sm">
-                          {user?.fullName || "Đang tải..."}
-                        </p>
-                      </div>
-                      <ChevronDown
-                        size={16}
-                        className="text-gray-500 hidden md:block"
-                      />
-                    </>
-                  )}
-                </button>
+                </div>
+              </button>
 
-                {showAccountMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-orange-100 z-50">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut size={16} className="mr-2" />
-                      Đăng xuất
-                    </button>
+              {showAccountMenu && (
+                <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-orange-100 p-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-3 border-b border-gray-100 mb-1">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {user?.fullName}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
                   </div>
-                )}
-              </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
-        <main className="p-6">{children}</main>
+
+        <main className="flex-1 p-8 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

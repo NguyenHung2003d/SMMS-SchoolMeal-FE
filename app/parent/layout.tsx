@@ -23,7 +23,6 @@ export default function ParentLayoutWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  // Mặc định đóng sidebar trên mobile, mở trên desktop
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [mounted, setMounted] = useState(false);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
@@ -59,7 +58,6 @@ export default function ParentLayoutWrapper({
           </div>
         )}
 
-        {/* SIDEBAR */}
         <aside
           className={`${
             sidebarOpen
@@ -122,7 +120,6 @@ export default function ParentLayoutWrapper({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-full sm:rounded-lg transition-all border border-transparent hover:border-gray-200 focus:outline-none">
-                      {/* Đã đổi gradient avatar sang màu cam */}
                       <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-700 rounded-full flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white">
                         {user?.fullName?.substring(0, 1).toUpperCase() || "P"}
                       </div>

@@ -1,12 +1,12 @@
 "use client";
 import React, { useState } from "react";
-import { Plus, Loader2, Settings } from "lucide-react";
+import { Plus, Loader2, Settings, AlertTriangle } from "lucide-react";
 import { PaymentSettingCard } from "@/components/manager/paymentSettings/PaymentSettingCard";
 import { PaymentSettingModal } from "@/components/manager/paymentSettings/PaymentSettingModal";
 import { PayOsConfigModal } from "@/components/manager/paymentSettings/PayOsConfigModal";
 import { SchoolPaymentSettingDto } from "@/types/manager-payment";
 import { usePaymentSettings } from "@/hooks/manager/usePaymentSettings";
-import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function ManagerPaymentSettings() {
   const {
@@ -23,6 +23,10 @@ export default function ManagerPaymentSettings() {
   const [editingItem, setEditingItem] =
     useState<SchoolPaymentSettingDto | null>(null);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDeleteId, setItemToDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleOpenCreate = () => {
     setEditingItem(null);
     setIsModalOpen(true);
@@ -33,9 +37,24 @@ export default function ManagerPaymentSettings() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá cấu hình này không?")) {
-      await deleteSetting(id);
+  const confirmDelete = (id: number) => {
+    setItemToDeleteId(id);
+    setIsDeleteModalOpen(true);
+    toast.success("Xoá thành công");
+  };
+
+  const executeDelete = async () => {
+    if (itemToDeleteId) {
+      try {
+        setIsDeleting(true);
+        await deleteSetting(itemToDeleteId);
+        setIsDeleteModalOpen(false);
+        setItemToDeleteId(null);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -48,6 +67,7 @@ export default function ManagerPaymentSettings() {
             fromMonth: formData.fromMonth,
             toMonth: formData.toMonth,
             totalAmount: formData.totalAmount,
+            mealPricePerDay: formData.mealPricePerDay, // Nhớ cập nhật type như câu trả lời trước
             note: formData.note,
             isActive: formData.isActive,
           },
@@ -57,6 +77,7 @@ export default function ManagerPaymentSettings() {
           fromMonth: formData.fromMonth,
           toMonth: formData.toMonth,
           totalAmount: formData.totalAmount,
+          mealPricePerDay: formData.mealPricePerDay,
           note: formData.note,
         });
       }
@@ -68,7 +89,6 @@ export default function ManagerPaymentSettings() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen animate-in fade-in duration-500">
-      <Toaster position="top-right" />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
@@ -120,7 +140,7 @@ export default function ManagerPaymentSettings() {
                 key={item.settingId}
                 item={item}
                 onEdit={handleOpenEdit}
-                onDelete={handleDelete}
+                onDelete={confirmDelete}
               />
             ))
           )}
@@ -141,6 +161,52 @@ export default function ManagerPaymentSettings() {
         isOpen={isPayOsModalOpen}
         onClose={() => setIsPayOsModalOpen(false)}
       />
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 mx-4 transform transition-all scale-100">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4 text-red-600">
+                <AlertTriangle size={24} />
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Xác nhận xoá
+              </h3>
+
+              <p className="text-gray-500 mb-6">
+                Bạn có chắc chắn muốn xoá cấu hình này không? <br />
+                Hành động này không thể hoàn tác.
+              </p>
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  Hủy bỏ
+                </button>
+
+                <button
+                  onClick={executeDelete}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2 h-4 w-4" /> Đang
+                      xoá...
+                    </>
+                  ) : (
+                    "Xoá ngay"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

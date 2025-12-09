@@ -22,7 +22,7 @@ export const PaymentSettingModal = ({
     fromMonth: 1,
     toMonth: 1,
     totalAmount: 0,
-    mealPricePerDay: 0, // Trường mới thêm
+    mealPricePerDay: 0,
     note: "",
     isActive: true,
   });
@@ -34,7 +34,7 @@ export const PaymentSettingModal = ({
           fromMonth: initialData.fromMonth,
           toMonth: initialData.toMonth,
           totalAmount: initialData.totalAmount,
-          mealPricePerDay: initialData.mealPricePerDay, // Map dữ liệu cũ
+          mealPricePerDay: initialData.mealPricePerDay,
           note: initialData.note || "",
           isActive: initialData.isActive,
         });

@@ -9,6 +9,7 @@ export interface ManagerNotification {
   createdAt: string;
   totalRecipients: number;
   isSent: boolean;
+  targetRoles: string[];
 }
 
 export interface CreateNotificationRequest {

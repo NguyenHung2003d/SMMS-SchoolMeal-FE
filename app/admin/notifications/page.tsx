@@ -26,6 +26,8 @@ export default function NotificationManagement() {
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [formResetKey, setFormResetKey] = useState(0);
+
   const [viewingNotification, setViewingNotification] =
     useState<NotificationDetailDto | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -129,6 +131,9 @@ export default function NotificationManagement() {
       toast.success("Đã gửi thông báo thành công!");
       closeForm();
       loadNotifications();
+      setTimeout(() => {
+        setFormResetKey((prev) => prev + 1);
+      }, 300);
     } catch (error) {
       toast.error("Gửi thông báo thất bại. Vui lòng thử lại.");
       console.error(error);
@@ -150,6 +155,7 @@ export default function NotificationManagement() {
         />
 
         <CreateNotificationModal
+          key={formResetKey}
           isOpen={showForm}
           onClose={closeForm}
           onSubmit={handleSubmit}

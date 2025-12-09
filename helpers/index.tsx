@@ -6,9 +6,11 @@ import {
   AlertCircle,
   Bell,
   CheckCircle2,
+  ChefHat,
   Clock,
   DollarSign,
   FileText,
+  GraduationCap,
   School,
   User,
   UserPlus,
@@ -321,39 +323,48 @@ export const getSendTypeInfo = (type: string) => {
   };
 };
 
-export const renderRecipientsInfo = (notif: ManagerNotification) => {
-  const n = notif as any;
-  const count = n.totalRecipients || n.TotalRecipients || 0;
-
-  const sendToParents = n.sendToParents || n.SendToParents;
-  const sendToTeachers = n.sendToTeachers || n.SendToTeachers;
-  const sendToKitchenStaff = n.sendToKitchenStaff || n.SendToKitchenStaff;
-
-  const groups = [];
-  if (sendToParents) groups.push("Phụ huynh");
-  if (sendToTeachers) groups.push("Giáo viên");
-  if (sendToKitchenStaff) groups.push("Bếp");
+export const renderRecipientsInfo = (item: ManagerNotification) => {
+  if (!item.targetRoles || item.targetRoles.length === 0) {
+    return (
+      <div className="flex items-center gap-2 text-gray-500">
+        <Users size={16} />
+        <span className="text-sm">{item.totalRecipients} người nhận</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col">
-      <div className="flex items-center font-semibold text-gray-800">
-        <Users size={16} className="mr-1.5 text-blue-500" />
-        <span>{count} người</span>
+    <div className="flex flex-col items-start gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
+        {item.targetRoles.includes("Parent") && (
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 text-xs font-medium">
+            <Users size={11} /> Phụ huynh
+          </div>
+        )}
+
+        {(item.targetRoles.includes("Warden") ||
+          item.targetRoles.includes("Teacher")) && (
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-medium">
+            <GraduationCap size={11} /> Giáo viên
+          </div>
+        )}
+
+        {item.targetRoles.includes("KitchenStaff") && (
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-100 text-xs font-medium">
+            <ChefHat size={11} /> Nhà bếp
+          </div>
+        )}
       </div>
 
-      <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-1">
-        {groups.length > 0 ? (
-          groups.map((g, i) => (
-            <span
-              key={i}
-              className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200"
-            >
-              {g}
-            </span>
-          ))
-        ) : (
-          <span className="italic">Chưa gửi</span>
-        )}
+      <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+        <span>
+          Tổng cộng:{" "}
+          <span className="font-semibold text-gray-700">
+            {item.totalRecipients}
+          </span>{" "}
+          người
+        </span>
       </div>
     </div>
   );

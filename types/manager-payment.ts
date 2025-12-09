@@ -1,5 +1,3 @@
-// types/paymentTypes.ts
-
 export interface SchoolPaymentSettingDto {
   settingId: number;
   schoolId: string;
@@ -13,17 +11,19 @@ export interface SchoolPaymentSettingDto {
 }
 
 export interface CreateSchoolPaymentSettingRequest {
-  // schoolId: string;
   fromMonth: number;
   toMonth: number;
   totalAmount: number;
   note?: string;
+  mealPricePerDay: number;
 }
 
 export interface UpdateSchoolPaymentSettingRequest {
   fromMonth: number;
   toMonth: number;
   totalAmount: number;
+  mealPricePerDay: number;
+
   note?: string;
   isActive: boolean;
 }

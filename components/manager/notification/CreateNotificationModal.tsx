@@ -3,7 +3,6 @@ import React from "react";
 import { X, Send, Users, User, ChefHat, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateNotificationRequest } from "@/types/notification";
-import SentNotificationsTable from "./SentNotificationsTable";
 
 export default function CreateNotificationModal({
   open,
@@ -11,12 +10,14 @@ export default function CreateNotificationModal({
   setFormData,
   onSubmit,
   onClose,
+  isEditing,
 }: {
   open: boolean;
   formData: CreateNotificationRequest;
   setFormData: any;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
+  isEditing?: boolean;
 }) {
   if (!open) return null;
 
@@ -29,16 +30,10 @@ export default function CreateNotificationModal({
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">
-              Soạn thông báo mới
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Gửi thông báo đến các thành viên trong trường
-            </p>
-          </div>
+          <h3 className="font-bold text-lg text-gray-800">
+            {isEditing ? "Cập nhật thông báo" : "Tạo thông báo mới"}{" "}
+          </h3>
           <button
             onClick={onClose}
             className="p-2 bg-white rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-all border border-gray-200"
@@ -47,10 +42,8 @@ export default function CreateNotificationModal({
           </button>
         </div>
 
-        {/* Form Body */}
         <div className="flex-1 overflow-y-auto p-6">
           <div id="create-notif-form" className="space-y-6">
-            {/* Title */}
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-2">
                 Tiêu đề <span className="text-red-500">*</span>
@@ -203,7 +196,7 @@ export default function CreateNotificationModal({
             onClick={onSubmit}
             className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
           >
-            <Send size={18} /> Gửi thông báo
+            {isEditing ? "Lưu thay đổi" : "Gửi thông báo"}
           </Button>
         </div>
       </div>

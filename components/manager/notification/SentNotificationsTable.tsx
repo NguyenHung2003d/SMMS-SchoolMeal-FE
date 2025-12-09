@@ -12,13 +12,18 @@ import {
   Calendar,
   Bell,
   ChevronDown,
+  Pencil,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { renderRecipientsInfo } from "@/helpers";
 
-export default function SentNotificationsTable() {
+interface Props {
+  onEdit: (item: ManagerNotification) => void;
+}
+
+export default function SentNotificationsTable({ onEdit }: Props) {
   const [data, setData] = useState<ManagerNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -202,13 +207,23 @@ export default function SentNotificationsTable() {
                         <Calendar size={14} className="text-gray-400" />
                         {format(new Date(item.createdAt), "dd/MM/yyyy")}
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500 text-xs pl-5">
-                        {format(new Date(item.createdAt), "HH:mm")}
+                      <div className="flex items-center gap-2 text-gray-500 text-xs">
+                        <Clock size={14} className="text-gray-400" />
+                        <span>
+                          {format(
+                            new Date(
+                              new Date(item.createdAt).getTime() +
+                                7 * 60 * 60 * 1000
+                            ),
+                            "HH:mm"
+                          )}
+                        </span>{" "}
                       </div>
                     </div>
                   </td>
 
                   <td className="px-6 py-4 align-middle text-center">
+                    <div className="flex items-center justify-center gap-2"></div>
                     {item.sendType === "Immediate" ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
                         <CheckCircle size={12} className="mr-1.5" /> Gửi ngay
@@ -221,6 +236,13 @@ export default function SentNotificationsTable() {
                   </td>
 
                   <td className="px-6 py-4 align-middle text-center">
+                    <button
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      onClick={() => onEdit(item)}
+                      title="Chỉnh sửa"
+                    >
+                      <Pencil size={18} />
+                    </button>
                     <button
                       onClick={() => handleDeleteClick(item.notificationId)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"

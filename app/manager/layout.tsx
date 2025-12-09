@@ -118,7 +118,6 @@ export default function ManagerLayout({
         </div>
 
         <nav className="flex-1 px-3 py-6 overflow-y-auto scrollbar-none space-y-8">
-          {/* Dashboard */}
           <div>
             {isSidebarOpen && (
               <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
@@ -134,7 +133,6 @@ export default function ManagerLayout({
             />
           </div>
 
-          {/* Quản trị */}
           <div>
             {isSidebarOpen && (
               <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
@@ -142,7 +140,6 @@ export default function ManagerLayout({
               </p>
             )}
 
-            {/* Dropdown Tài khoản */}
             <div
               className={`rounded-xl transition-all ${
                 isAccountDropdownOpen ? "bg-orange-700/20" : ""
@@ -170,7 +167,6 @@ export default function ManagerLayout({
                 )}
               </button>
 
-              {/* Sub-menu Tài khoản */}
               <div
                 className={`overflow-hidden transition-all duration-300 ${
                   isAccountDropdownOpen
@@ -219,7 +215,6 @@ export default function ManagerLayout({
             />
           </div>
 
-          {/* Nghiệp vụ */}
           <div>
             {isSidebarOpen && (
               <p className="px-4 text-xs font-bold text-orange-200 mb-2 uppercase tracking-widest">
@@ -258,17 +253,13 @@ export default function ManagerLayout({
         </nav>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
       <div
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
           isSidebarOpen ? "ml-72" : "ml-20"
         }`}
       >
-        {/* HEADER CHÍNH */}
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-orange-100 px-6 py-4 flex justify-between items-center shadow-sm h-[73px]">
-          {/* Left: Search & Toggle Sidebar (Backup) */}
           <div className="flex-1 max-w-xl flex items-center gap-4">
-            {/* Nút Menu phụ trợ nằm ở Header (Phòng trường hợp Sidebar bị kẹt) */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
@@ -293,7 +284,6 @@ export default function ManagerLayout({
             </div>
           </div>
 
-          {/* Right: Actions */}
           <div className="flex items-center space-x-6">
             <ManagerNotificationBell />
 

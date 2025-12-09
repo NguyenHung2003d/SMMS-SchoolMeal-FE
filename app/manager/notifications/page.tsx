@@ -4,7 +4,10 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { CreateNotificationRequest } from "@/types/notification";
+import {
+  CreateNotificationRequest,
+  ManagerNotification,
+} from "@/types/notification";
 
 import SentNotificationsTable from "@/components/manager/notification/SentNotificationsTable";
 import CreateNotificationModal from "@/components/manager/notification/CreateNotificationModal";
@@ -13,6 +16,8 @@ export default function ManagerNotifications() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState<CreateNotificationRequest>({
     title: "",
@@ -24,28 +29,59 @@ export default function ManagerNotifications() {
     scheduleCron: "",
   });
 
+  const handleEditClick = (item: ManagerNotification) => {
+    setFormData({
+      title: item.title,
+      content: item.content,
+      attachmentUrl: "",
+      sendToParents: item.targetRoles?.includes("Parent") || false,
+      sendToTeachers:
+        item.targetRoles?.includes("Warden") ||
+        item.targetRoles?.includes("Teacher") ||
+        false,
+      sendToKitchenStaff: item.targetRoles?.includes("KitchenStaff") || false,
+      sendType: item.sendType || "Immediate",
+      scheduleCron: "",
+    });
+    setEditingId(item.notificationId);
+    setIsEditing(true);
+    setShowCreateModal(true);
+  };
+
+  const resetForm = () => {
+    setShowCreateModal(false);
+    setIsEditing(false);
+    setEditingId(null);
+    setFormData({
+      title: "",
+      content: "",
+      attachmentUrl: "",
+      sendToParents: true,
+      sendToTeachers: false,
+      sendToKitchenStaff: false,
+      sendType: "Immediate",
+      scheduleCron: "",
+    });
+  };
+
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await axiosInstance.post("/ManagerNotifications", formData);
-      toast.success("Đã tạo thông báo!");
-
+      if (isEditing && editingId) {
+        await axiosInstance.put(`/ManagerNotifications/${editingId}`, formData);
+        toast.success("Cập nhật thông báo thành công!");
+      } else {
+        await axiosInstance.post("/ManagerNotifications", formData);
+        toast.success("Đã tạo thông báo!");
+      }
       setShowCreateModal(false);
 
       setRefreshKey((prev) => prev + 1);
 
-      setFormData({
-        title: "",
-        content: "",
-        sendToParents: true,
-        sendToTeachers: false,
-        sendToKitchenStaff: false,
-        sendType: "Immediate",
-        scheduleCron: "",
-      });
+      resetForm();
     } catch {
-      toast.error("Tạo thông báo thất bại!");
+      toast.error(isEditing ? "Cập nhật thất bại!" : "Tạo thông báo thất bại!");
     }
   };
 
@@ -69,26 +105,15 @@ export default function ManagerNotifications() {
           </Button>
         </div>
 
-        <SentNotificationsTable key={refreshKey} />
+        <SentNotificationsTable key={refreshKey} onEdit={handleEditClick} />
 
         <CreateNotificationModal
           open={showCreateModal}
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleCreateSubmit}
-          onClose={() => {
-            setShowCreateModal(false);
-            setFormData({
-              title: "",
-              content: "",
-              attachmentUrl: "",
-              sendToParents: true,
-              sendToTeachers: false,
-              sendToKitchenStaff: false,
-              sendType: "Immediate",
-              scheduleCron: "",
-            });
-          }}
+          onClose={resetForm}
+          isEditing={isEditing}
         />
       </div>
     </div>

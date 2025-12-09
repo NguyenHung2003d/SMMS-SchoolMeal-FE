@@ -1,5 +1,6 @@
 "use client";
 
+import { KitchenStaffNotificationBell } from "@/components/layouts/kitchenStaff/KitchenStaffNotificationBell";
 import { getInitials } from "@/helpers";
 import { useAuth } from "@/hooks/auth/useAuth";
 import {
@@ -299,11 +300,7 @@ function Header({
               className="bg-transparent border-none outline-none text-sm ml-2 w-full text-gray-700 placeholder:text-gray-400"
             />
           </div>
-
-          <button className="relative p-2.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-orange-600 transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
-          </button>
+          <KitchenStaffNotificationBell />
 
           <div className="relative" ref={accountMenuRef}>
             <button

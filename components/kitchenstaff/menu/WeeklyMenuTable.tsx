@@ -12,6 +12,9 @@ const DishItem = ({
   dish: DisplayFoodItem;
   dotColorClass: string;
 }) => {
+  const validIngredients =
+    dish.ingredientNames?.filter((name) => name && name.trim().length > 0) ||
+    [];
   return (
     <div className="flex items-start gap-3 mb-3 last:mb-0 group/item">
       <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 mt-0.5 shadow-sm relative">
@@ -44,10 +47,10 @@ const DishItem = ({
             {dish.foodName}
           </span>
         </div>
-        {dish.ingredientNames && dish.ingredientNames.length > 0 && (
+        {validIngredients.length > 0 && (
           <span className="text-xs text-gray-400 mt-1 pl-4 leading-snug truncate">
-            {dish.ingredientNames.slice(0, 3).join(", ")}
-            {dish.ingredientNames.length > 3 ? ", ..." : ""}
+            {validIngredients.slice(0, 3).join(", ")}
+            {validIngredients.length > 3 ? ", ..." : ""}
           </span>
         )}
       </div>

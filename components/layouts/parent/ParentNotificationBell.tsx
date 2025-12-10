@@ -19,7 +19,6 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
 import { parseDate } from "@/helpers";
 
 interface NotificationDto {
@@ -107,6 +106,26 @@ export function ParentNotificationBell() {
     };
   }, [isAuthenticated]);
 
+  const handleMarkAsRead = async (
+    notificationId: number,
+    currentReadStatus: boolean
+  ) => {
+    if (currentReadStatus) return;
+    try {
+      await axiosInstance.post(
+        `/Attendance/notifications/${notificationId}/read`
+      );
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.notificationId === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Lỗi đánh dấu đã đọc:", error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -152,6 +171,10 @@ export function ParentNotificationBell() {
             notifications.map((item, index) => (
               <DropdownMenuItem
                 key={item.notificationId || index}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleMarkAsRead(item.notificationId, item.isRead);
+                }}
                 className={cn(
                   "flex flex-col items-start px-4 py-3 border-b last:border-0 cursor-pointer transition-colors focus:bg-blue-50",
                   !item.isRead

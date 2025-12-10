@@ -14,14 +14,14 @@ const nextConfig: NextConfig = {
   },
 
   //production thì mở nó ra
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: "/api/proxy/:path*",
-  //       destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*", cái ni là url của ngrok, sau này thay bằng link deploy của be
-  //     },
-  //   ];
-  // },
+  async rewrites() {
+    return [
+      {
+        source: "/api/proxy/:path*",
+        destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

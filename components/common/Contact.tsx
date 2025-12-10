@@ -11,8 +11,6 @@ import {
   MessageCircle,
   ArrowRight,
 } from "lucide-react";
-import Navbar from "@/components/layouts/Navbar";
-import Footer from "@/components/layouts/Footer";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -86,12 +84,8 @@ const ContactPage = () => {
 
   return (
     <div className="overflow-hidden bg-white">
-      <Navbar />
-
       <main ref={containerRef} className="pt-20 min-h-screen">
-        {/* --- HERO SECTION --- */}
         <section className="relative py-20 bg-orange-50/50 overflow-hidden">
-          {/* Decorative Background Elements */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-orange-200/20 to-pink-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-yellow-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
 
@@ -110,11 +104,9 @@ const ContactPage = () => {
           </div>
         </section>
 
-        {/* --- CONTENT SECTION (Grid) --- */}
         <section className="contact-content py-16 px-4">
           <div className="container max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-12 gap-12">
-              {/* LEFT COLUMN: Contact Info */}
               <div className="lg:col-span-5 space-y-6">
                 <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-orange-100 border border-orange-50">
                   <h3 className="text-2xl font-bold text-gray-900 mb-8">
@@ -143,34 +135,11 @@ const ContactPage = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Optional: Map Placeholder or Image */}
-                <div className="info-card relative h-64 rounded-[2rem] overflow-hidden shadow-lg border border-gray-100 bg-orange-50 group">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/city-fields.png')] opacity-20"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-                    <MapPin
-                      size={48}
-                      className="text-orange-400 mb-2 group-hover:animate-bounce"
-                    />
-                    <p className="font-bold text-gray-400">
-                      Bản đồ đang cập nhật
-                    </p>
-                    <a
-                      href="#"
-                      className="mt-4 px-4 py-2 bg-white text-orange-600 rounded-full text-sm font-bold shadow-sm hover:shadow-md transition-all"
-                    >
-                      Xem trên Google Maps
-                    </a>
-                  </div>
-                </div>
               </div>
 
-              {/* RIGHT COLUMN: Form */}
               <div className="lg:col-span-7">
                 <div className="contact-form-wrapper bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-orange-500/10 border border-gray-100 relative overflow-hidden">
-                  {/* Form Background Decoration */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-[100%] -mr-16 -mt-16 z-0" />
-
                   <div className="relative z-10">
                     <h3 className="text-3xl font-bold text-gray-900 mb-2">
                       Gửi tin nhắn
@@ -243,8 +212,6 @@ const ContactPage = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

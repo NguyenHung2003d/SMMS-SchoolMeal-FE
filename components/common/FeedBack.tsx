@@ -40,15 +40,15 @@ const ParentFeedbackSection = () => {
       if (validCards.length > 0) {
         gsap.fromTo(
           validCards,
-          { y: 100, opacity: 0 }, // Start
+          { y: 100, opacity: 0 },
           {
             y: 0,
-            opacity: 1, // End
+            opacity: 1,
             duration: 0.8,
             stagger: 0.2,
             ease: "back.out(1.2)",
             scrollTrigger: {
-              trigger: validCards[0], // Trigger dựa trên card đầu tiên
+              trigger: validCards[0],
               start: "top 85%",
               toggleActions: "play none none reverse",
             },

@@ -3,11 +3,20 @@ import { ChangeEvent, FormEvent } from "react";
 export interface ParentAccountDto {
   userId: string;
   fullName: string;
-  email: string 
+  email: string;
   phone: string;
   isActive: boolean;
   avatarUrl: string;
   dateOfBirth: string | null;
+}
+
+export interface FeedbackDto {
+  feedbackId: number;
+  senderId: string;
+  rating: number | null;
+  content: string | null;
+  dailyMealId: number | null;
+  createdAt: string;
 }
 
 export type ParentInfoFormProps = {
@@ -23,7 +32,7 @@ export type ParentInfoDisplayProps = {
 };
 
 export type UpdatedParentInfoFormProps = ParentInfoFormProps & {
-  onCancel: () => void; 
+  onCancel: () => void;
 };
 
 export interface AttendanceRequestDto {
@@ -118,12 +127,12 @@ export interface MenuFoodItemDto {
 
 export interface DayMenuDto {
   dailyMealId: number;
-  mealDate: string; 
+  mealDate: string;
   mealType: string;
   notes: string;
-  
-  items?: MenuFoodItemDto[]; 
-  foods?: MenuFoodItemDto[]; 
+
+  items?: MenuFoodItemDto[];
+  foods?: MenuFoodItemDto[];
 
   DailyMealId?: number;
   MealDate?: string;
@@ -152,7 +161,7 @@ export interface WeekMenuDto {
   EndDate?: string;
   Status?: string;
   Notes?: string;
-  Days?: DayMenuDto[]; 
+  Days?: DayMenuDto[];
 }
 export interface DailyMenuDto {
   date: string;
@@ -178,4 +187,6 @@ export interface DailyMenuCardProps {
 export interface MealDetailModalProps {
   selectedMeal: DayMenuDto;
   onClose: () => void;
+  onSuccess?: () => void;
+  existingFeedback?: FeedbackDto | null;
 }

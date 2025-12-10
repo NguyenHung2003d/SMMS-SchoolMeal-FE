@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { UtensilsCrossed, ChefHat, CalendarDays, Loader2 } from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { DayMenuDto, WeekMenuDto, WeekOptionDto } from "@/types/parent";
+import {
+  DayMenuDto,
+  FeedbackDto,
+  WeekMenuDto,
+  WeekOptionDto,
+} from "@/types/parent";
 import WeekSelector from "@/components/parents/menu/WeekSelector";
 import DailyMenuCard from "@/components/parents/menu/DailyMenuCard";
 import MealDetailModal from "@/components/parents/menu/MealDetailModal";
@@ -12,11 +17,28 @@ import { useSelectedStudent } from "@/context/SelectedChildContext";
 export default function MenuAndFeedbackPage() {
   const { selectedStudent } = useSelectedStudent();
 
+  const [myFeedbacks, setMyFeedbacks] = useState<FeedbackDto[]>([]);
+
   const [availableWeeks, setAvailableWeeks] = useState<WeekOptionDto[]>([]);
   const [selectedDateInWeek, setSelectedDateInWeek] = useState<string>("");
   const [menuData, setMenuData] = useState<WeekMenuDto | null>(null);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DayMenuDto | null>(null);
+
+  const fetchMyFeedbacks = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get<FeedbackDto[]>(
+        "/ParentFeedback/my-feedbacks"
+      );
+      setMyFeedbacks(res.data);
+    } catch (error) {
+      console.error("Lỗi tải lịch sử đánh giá:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMyFeedbacks();
+  }, [fetchMyFeedbacks]);
 
   useEffect(() => {
     if (!selectedStudent?.studentId) return;
@@ -99,6 +121,13 @@ export default function MenuAndFeedbackPage() {
     return map;
   }, [menuData]);
 
+  const existingFeedback = useMemo(() => {
+    if (!selectedMeal) return null;
+    const currentMealId = selectedMeal.dailyMealId || selectedMeal.DailyMealId;
+    if (!currentMealId) return null;
+    return myFeedbacks.find((f) => f.dailyMealId === currentMealId) || null;
+  }, [selectedMeal, myFeedbacks]);
+
   const handleOpenModal = (meal: any) => {
     const foodsList = meal?.items || meal?.foods || [];
     setSelectedMeal({ ...meal, foods: foodsList });
@@ -117,8 +146,9 @@ export default function MenuAndFeedbackPage() {
     );
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col h-[calc(100vh-100px)] gap-6 pb-6">
-      <div className="flex-none px-4 pt-2">
+    <div className="max-w-7xl min-h-screen mx-auto pb-6">
+      {" "}
+      <div className="px-4 pt-2">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-orange-100 rounded-xl text-orange-600 shadow-sm">
             <UtensilsCrossed size={28} />
@@ -139,8 +169,7 @@ export default function MenuAndFeedbackPage() {
           onSelectDate={setSelectedDateInWeek}
         />
       </div>
-
-      <div className="flex-1 px-4 overflow-y-auto min-h-0 custom-scrollbar pb-10">
+      <div className="px-4 mt-6">
         {loadingMenu ? (
           <div className="flex flex-col h-full items-center justify-center space-y-4">
             <Loader2 className="animate-spin text-orange-500" size={48} />
@@ -169,10 +198,11 @@ export default function MenuAndFeedbackPage() {
           </div>
         )}
       </div>
-
       {selectedMeal && (
         <MealDetailModal
           selectedMeal={selectedMeal}
+          existingFeedback={existingFeedback}
+          onSuccess={fetchMyFeedbacks}
           onClose={() => setSelectedMeal(null)}
         />
       )}

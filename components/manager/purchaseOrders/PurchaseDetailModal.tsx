@@ -5,9 +5,8 @@ import {
   FileText,
   Loader2,
   CheckCircle,
-  User,
-  CalendarDays,
   Package,
+  CalendarDays,
   MapPin,
 } from "lucide-react";
 import { PurchaseOrderDetail } from "@/types/manager-purchaseOrder";
@@ -34,11 +33,11 @@ export const PurchaseDetailModal = ({
 }: Props) => {
   if (!isOpen) return null;
 
-  // const totalAmount =
-  //   order?.lines?.reduce(
-  //     (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
-  //     0
-  //   ) || 0;
+  const totalAmount =
+    order?.lines?.reduce(
+      (acc, curr) => acc + curr.quantityGram * curr.unitPrice,
+      0
+    ) || 0;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -136,7 +135,6 @@ export const PurchaseDetailModal = ({
                         <th className="px-6 py-4 text-center">Hạn Dùng</th>
                         <th className="px-6 py-4 text-right">Số Lượng (g)</th>
                         <th className="px-6 py-4 text-right">Đơn Giá</th>
-                        {/* <th className="px-6 py-4 text-right">Thành Tiền</th> */}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -176,16 +174,11 @@ export const PurchaseDetailModal = ({
                           <td className="px-6 py-4 text-right text-gray-600">
                             {line.unitPrice.toLocaleString()} ₫
                           </td>
-                          {/* <td className="px-6 py-4 text-right font-bold text-gray-900">
-                            {(
-                              line.quantityGram * line.unitPrice
-                            ).toLocaleString()}{" "}
-                            ₫
-                          </td> */}
                         </tr>
                       ))}
                     </tbody>
-                    {/* <tfoot className="bg-gray-50 border-t border-gray-200">
+
+                    <tfoot className="bg-gray-50 border-t border-gray-200">
                       <tr>
                         <td
                           colSpan={5}
@@ -194,12 +187,12 @@ export const PurchaseDetailModal = ({
                           Tổng Tiền Dự Kiến
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <span className="text-xl font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg border border-orange-100">
+                          <span className="text-xl font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg border border-orange-100 whitespace-nowrap">
                             {totalAmount.toLocaleString()} ₫
                           </span>
                         </td>
                       </tr>
-                    </tfoot> */}
+                    </tfoot>
                   </table>
                 </div>
               </div>

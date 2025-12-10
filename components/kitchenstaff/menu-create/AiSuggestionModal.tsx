@@ -88,9 +88,10 @@ export default function AiSuggestionModal({
       const payload = {
         maxMainKcal: 700,
         maxSideKcal: 300,
-        mainIngredients: mainIngs.map((i) => i.ingredientName),
-        sideIngredients: sideIngs.map((i) => i.ingredientName),
+        mainIngredients: mainIngs.map((i) => i.ingredientId),
+        sideIngredients: sideIngs.map((i) => i.ingredientId),
       };
+      console.log("Payload gửi AI:", payload);
       const res = await kitchenMenuService.getAiSuggestion(payload);
       setResult(res);
       toast.success("AI đã đề xuất thực đơn!");
@@ -107,7 +108,6 @@ export default function AiSuggestionModal({
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-lg">
@@ -123,7 +123,6 @@ export default function AiSuggestionModal({
           </button>
         </div>
 
-        {/* Toolbar */}
         <div className="bg-purple-50 p-4 border-b border-purple-100 flex items-center gap-4 flex-wrap">
           <span className="text-sm font-semibold text-purple-800">
             <Filter size={16} className="inline mr-1" />
@@ -143,7 +142,6 @@ export default function AiSuggestionModal({
           <div className="ml-auto text-xs text-purple-600 italic">* Bấm vào món để thêm tự động</div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 bg-gray-50 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <IngredientSelector
@@ -188,7 +186,6 @@ export default function AiSuggestionModal({
 
           {result && (
             <div className="space-y-6 animate-in slide-in-from-bottom-4 fade-in duration-500">
-              {/* Main Dishes */}
               <div>
                 <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                   <span className="w-2 h-6 bg-orange-500 rounded-full"></span>
@@ -201,7 +198,6 @@ export default function AiSuggestionModal({
                 </div>
               </div>
 
-              {/* Side Dishes */}
               <div>
                 <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                   <span className="w-2 h-6 bg-blue-500 rounded-full"></span>

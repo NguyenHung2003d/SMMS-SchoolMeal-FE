@@ -2,12 +2,16 @@ export interface NavigationItem {
   label: string;
   href: string;
 }
-export interface Features {
+export interface Feature {
+  id: number;
+  icon: string;
   title: string;
-  desc: string;
-  image: string;
-  features?: string[];
-  badge?: string;
+  subtitle: string;
+  image: string,
+  color: string;
+  bgClass: string;
+  accentColor: string;
+  details: FeatureDetails;
 }
 
 export interface LoadingContextType {

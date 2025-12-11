@@ -9,7 +9,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  initialData?: FoodItemDto | null; // Nếu null là tạo mới, có data là edit
+  initialData?: FoodItemDto | null;
 }
 
 interface SelectedIngredientUI {

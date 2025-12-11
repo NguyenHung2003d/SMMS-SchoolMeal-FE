@@ -112,7 +112,6 @@ export const getCategoryLabel = (type?: string) => {
   const normalizedType = type.toLowerCase().trim();
 
   switch (normalizedType) {
-    // 1. Nhóm Thức ăn
     case "food":
     case "kitchenstaff":
     case "meal":

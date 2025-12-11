@@ -1,19 +1,24 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Plus, Search, Loader2 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { FoodItemDto } from "@/types/kitchen-nutrition";
 import { kitchenNutritionService } from "@/services/kitchenStaff/kitchenNutrion.service";
 import { FoodCard } from "@/components/kitchenstaff/food-library/FoodCard";
 import { DishModal } from "@/components/kitchenstaff/food-library/DishModal";
+import { ConfirmDeleteModal } from "@/components/kitchenstaff/food-library/ConfirmDeleteModal";
 
 export default function KitchenStaffFoodLibraryPage() {
   const [loading, setLoading] = useState(false);
   const [foods, setFoods] = useState<FoodItemDto[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   const [isDishModalOpen, setIsDishModalOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<FoodItemDto | null>(null);
+
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchFoods();
@@ -31,6 +36,13 @@ export default function KitchenStaffFoodLibraryPage() {
     }
   };
 
+  const filteredFoods = useMemo(() => {
+    if (filterType === "all") {
+      return foods;
+    }
+    return foods.filter((food) => food.foodType === filterType);
+  }, [foods, filterType]);
+
   const handleOpenCreate = () => {
     setEditingDish(null);
     setIsDishModalOpen(true);
@@ -41,21 +53,30 @@ export default function KitchenStaffFoodLibraryPage() {
     setIsDishModalOpen(true);
   };
 
-  const handleDeleteDish = async (id: number) => {
-    if (!confirm("Bạn có chắc muốn xóa món này?")) return;
+  const handleClickDelete = (id: number) => {
+    setDeleteId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+
+    setIsDeleting(true);
     try {
-      await kitchenNutritionService.deleteFood(id);
-      toast.success("Đã xóa món ăn");
-      fetchFoods();
+      await kitchenNutritionService.deleteFood(deleteId);
+      toast.success("Đã xóa món ăn thành công");
+
+      setFoods((prev) => prev.filter((f) => f.foodId !== deleteId));
+
+      setDeleteId(null);
     } catch (error) {
-      toast.error("Không thể xóa (có thể đang được sử dụng)");
+      toast.error("Không thể xóa (món ăn đang được sử dụng)");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <Toaster position="top-right" />
-
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Thư viện món ăn</h1>
@@ -86,7 +107,11 @@ export default function KitchenStaffFoodLibraryPage() {
               size={18}
             />
           </div>
-          <select className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
             <option value="all">Tất cả loại</option>
             <option value="Món chính">Món chính</option>
             <option value="Tráng miệng">Tráng miệng</option>
@@ -100,14 +125,20 @@ export default function KitchenStaffFoodLibraryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {foods.map((food) => (
-            <FoodCard
-              key={food.foodId}
-              food={food}
-              onEdit={handleOpenEdit}
-              onDelete={handleDeleteDish}
-            />
-          ))}
+          {filteredFoods.length > 0 ? (
+            filteredFoods.map((food) => (
+              <FoodCard
+                key={food.foodId}
+                food={food}
+                onEdit={handleOpenEdit}
+                onDelete={handleClickDelete}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10 text-gray-500">
+              Không tìm thấy món ăn nào phù hợp.
+            </div>
+          )}
         </div>
       )}
 
@@ -119,6 +150,15 @@ export default function KitchenStaffFoodLibraryPage() {
           initialData={editingDish}
         />
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+        title="Xác nhận xóa món ăn?"
+        description="Món ăn này sẽ bị xóa khỏi thư viện. Hành động này không thể hoàn tác."
+      />
     </div>
   );
 }

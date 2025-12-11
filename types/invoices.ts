@@ -32,10 +32,6 @@ export interface PayOSLinkResponse {
   paymentLinkId: string;
 }
 
-export type ViewInvoiceProps = {
-  selectedChild: Student | null;
-};
-
 export interface InvoiceListResponse {
   count: number;
   data: Invoice[];

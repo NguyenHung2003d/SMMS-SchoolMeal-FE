@@ -25,8 +25,3 @@ export interface TeacherSimpleDto {
   teacherId: number;
   fullName: string;
 }
-
-export interface TeacherStatusResponse {
-  teachersWithClass: TeacherSimpleDto[];
-  teachersWithoutClass: TeacherSimpleDto[];
-}

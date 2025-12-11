@@ -118,7 +118,6 @@ export default function LeaveApplication() {
     }
   };
 
-  // Nếu chưa chọn học sinh
   if (!selectedStudent) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gray-50 rounded-xl m-6 border-2 border-dashed border-gray-300">
@@ -136,7 +135,6 @@ export default function LeaveApplication() {
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 md:p-8 animate-in fade-in duration-500">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Trang */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
@@ -153,7 +151,6 @@ export default function LeaveApplication() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Cột Trái: Form Gửi Đơn (Chiếm 4 phần) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
@@ -166,7 +163,6 @@ export default function LeaveApplication() {
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                {/* Ngày Bắt Đầu */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Từ ngày
@@ -186,7 +182,6 @@ export default function LeaveApplication() {
                   </div>
                 </div>
 
-                {/* Ngày Kết Thúc */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Đến ngày
@@ -207,7 +202,6 @@ export default function LeaveApplication() {
                   </div>
                 </div>
 
-                {/* Lý Do */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Lý do nghỉ
@@ -221,7 +215,6 @@ export default function LeaveApplication() {
                   />
                 </div>
 
-                {/* Nút Gửi */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -241,7 +234,6 @@ export default function LeaveApplication() {
             </div>
           </div>
 
-          {/* Cột Phải: Lịch Sử (Chiếm 8 phần) */}
           <div className="lg:col-span-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px] flex flex-col">
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -275,7 +267,6 @@ export default function LeaveApplication() {
                         className="group relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                          {/* Icon & Ngày tháng */}
                           <div className="flex items-start gap-4">
                             <div className="bg-red-50 p-3 rounded-xl border border-red-100 group-hover:bg-red-100 transition-colors">
                               <Calendar className="text-red-500" size={24} />
@@ -291,7 +282,6 @@ export default function LeaveApplication() {
                             </div>
                           </div>
 
-                          {/* Trạng thái (Giả định là đã duyệt vì BE đã lưu) */}
                           <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-100 self-start">
                             <CheckCircle2 size={16} />
                             <span className="text-xs font-bold">
@@ -300,7 +290,6 @@ export default function LeaveApplication() {
                           </div>
                         </div>
 
-                        {/* Lý do */}
                         <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
                           <AlertCircle
                             size={18}
@@ -316,7 +305,6 @@ export default function LeaveApplication() {
                           </div>
                         </div>
 
-                        {/* Người gửi */}
                         {record.notifiedBy && (
                           <div className="mt-2 pl-[30px] text-xs text-gray-400 flex items-center gap-1">
                             <User size={12} /> Người gửi: {record.notifiedBy}

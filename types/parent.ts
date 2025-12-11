@@ -51,14 +51,6 @@ export interface AttendanceResponseDto {
   notifiedBy: string;
   createdAt: string;
 }
-
-export interface SelectIconProps {
-  selectedChild: {
-    studentId: string;
-    name: string;
-  } | null;
-}
-
 import { Student } from "./student";
 
 export type StudentBMIResultDto = {
@@ -78,11 +70,6 @@ export type HealthPoint = {
   weight: number; // kg
   bmi: number; // chỉ số BMI
 };
-
-export type TrackBMIProps = {
-  selectedChild: Student | null;
-};
-
 export interface WeekOptionDto {
   scheduleMealId: number;
   weekNo: number;
@@ -162,10 +149,6 @@ export interface WeekMenuDto {
   Status?: string;
   Notes?: string;
   Days?: DayMenuDto[];
-}
-export interface DailyMenuDto {
-  date: string;
-  dayOfWeek: string;
 }
 
 export interface HealthStatsProps {

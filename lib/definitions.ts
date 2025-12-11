@@ -10,7 +10,7 @@ const isPhone = (value: string) => {
 };
 export const loginSchema = z.object({
   PhoneOrEmail: z.string().refine((value) => isPhone(value) || isEmail(value), {
-    message: "Số điện thoại không hợp lệ",
+    message: "Số điện thoại hoặc email không hợp lệ",
   }),
   password: z
     .string()

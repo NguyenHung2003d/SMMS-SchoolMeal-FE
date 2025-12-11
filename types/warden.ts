@@ -10,12 +10,6 @@ export interface ClassDto {
   attendanceRate: number;
   shift?: string;
 }
-export interface WardenStats {
-  totalClasses: number;
-  totalStudents: number;
-  totalPresent: number;
-  issuesCount: number;
-}
 
 export interface StudentDto {
   studentId: string;
@@ -52,21 +46,4 @@ export interface StudentAttendanceDto {
   status: string;
   reason?: string;
   createdAt: string;
-}
-
-export interface StudentHealthDto {
-  studentId: string;
-  studentName: string;
-  heightCm?: number | null;
-  weightKg?: number | null;
-  bmi?: number | null;
-  bmiCategory?: string | null; // "Underweight", "Normal", "Overweight", "Obese"
-  recordDate: string;
-}
-
-export interface HealthStats {
-  underweight: number;
-  normal: number;
-  overweight: number;
-  obese: number;
 }

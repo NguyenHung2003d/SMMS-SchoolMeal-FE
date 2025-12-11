@@ -1,4 +1,3 @@
-import { formatCurrency } from "@/helpers";
 import { DollarSign, FileText, School, Users } from "lucide-react";
 import { StatCard } from "./StatCard";
 

@@ -46,5 +46,3 @@ export interface UpdateParentRequest {
   children: CreateChildDto[];
   updatedBy?: string;
 }
-
-export interface ParentDetailDto extends ParentAccountDto {}

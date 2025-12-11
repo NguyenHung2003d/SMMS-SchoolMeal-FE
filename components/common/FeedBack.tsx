@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
 import { TextPlugin } from "gsap/TextPlugin";
-import { ParentFeedbackData } from "@/data/dashboard/feedback";
+import { ParentFeedbackData } from "@/data/feedback";
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 

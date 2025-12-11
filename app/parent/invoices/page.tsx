@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Loader2, Building2, Calendar, Receipt, User } from "lucide-react";
+import { Loader2, Receipt } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { axiosInstance } from "@/lib/axiosInstance";
-import { formatCurrency, formatDate } from "@/helpers";
 import { Invoice, InvoiceSummary } from "@/types/invoices";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
+import { InvoiceDetail } from "@/components/parents/invoice/InvoiceDetail";
 
 export default function InvoicePage() {
   const { selectedStudent } = useSelectedStudent();
@@ -53,7 +53,12 @@ export default function InvoicePage() {
           setInvoicesList([]);
           setInvoiceDetail(null);
         } else {
-          toast.error("Không thể tải danh sách hóa đơn.");
+          const serverMessage =
+            error.response?.data?.message ||
+            error.response?.data ||
+            error.message ||
+            "Không thể tải danh sách hóa đơn.";
+          toast.error(serverMessage);
         }
       } finally {
         setIsListLoading(false);
@@ -78,9 +83,14 @@ export default function InvoicePage() {
           }
         );
         setInvoiceDetail(res.data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Lỗi lấy chi tiết:", error);
-        toast.error("Không thể tải chi tiết hóa đơn này.");
+        const serverMessage =
+          error.response?.data?.message ||
+          error.response?.data ||
+          error.message ||
+          "Không thể tải chi tiết hóa đơn này.";
+        toast.error(serverMessage);
       } finally {
         setIsDetailLoading(false);
       }
@@ -119,7 +129,6 @@ export default function InvoicePage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Dropdown chọn hóa đơn */}
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <label className="block text-sm font-medium mb-2 text-gray-700">
               Chọn kỳ thanh toán
@@ -146,126 +155,7 @@ export default function InvoicePage() {
               </span>
             </div>
           ) : invoiceDetail ? (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300 border border-gray-100">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <h3 className="font-bold text-2xl flex items-center gap-2">
-                      Tháng {invoiceDetail.monthNo}
-                    </h3>
-                    <p className="text-blue-100 text-sm mt-1">
-                      Mã hóa đơn: #{invoiceDetail.invoiceId}
-                    </p>
-                  </div>
-                  <div className="text-right bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
-                    <p className="text-xs font-medium text-blue-100 uppercase">
-                      Học sinh
-                    </p>
-                    <p className="font-bold text-lg">
-                      {invoiceDetail.studentName}
-                    </p>
-                    <p className="text-xs text-blue-100">
-                      Lớp: {invoiceDetail.className}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 md:p-8 space-y-8">
-                {/* Thông tin thời gian và ngày nghỉ */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-bold text-blue-800 flex items-center gap-2 mb-3">
-                      <Calendar size={18} /> Kỳ thanh toán
-                    </h4>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      <div className="flex justify-between">
-                        <span>Từ ngày:</span>
-                        <span className="font-medium">
-                          {formatDate(invoiceDetail.dateFrom)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Đến ngày:</span>
-                        <span className="font-medium">
-                          {formatDate(invoiceDetail.dateTo)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <h4 className="font-bold text-orange-800 flex items-center gap-2 mb-3">
-                      <User size={18} /> Điểm danh
-                    </h4>
-                    <div className="flex justify-between items-center text-sm text-gray-700 mt-2">
-                      <span>Số ngày nghỉ (có phép):</span>
-                      <span className="font-bold text-lg text-orange-600">
-                        {invoiceDetail.absentDay} ngày
-                      </span>
-                    </div>
-                    <p className="text-xs text-orange-600/70 mt-2 italic">
-                      * Đã được trừ vào tổng tiền
-                    </p>
-                  </div>
-                </div>
-
-                {/* Thông tin trường học (Lấy từ API chi tiết) */}
-                <div className="border rounded-xl p-5">
-                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
-                    <Building2 size={18} /> Thông tin chuyển khoản (Trường)
-                  </h4>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Trường học</p>
-                      <p className="font-medium text-gray-900">
-                        {invoiceDetail.schoolName}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Ngân hàng</p>
-                      <p className="font-medium text-gray-900">
-                        {invoiceDetail.settlementBankCode}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-gray-500">Số tài khoản thụ hưởng</p>
-                      <p className="font-mono font-bold text-gray-900 text-lg tracking-wide">
-                        {invoiceDetail.settlementAccountNo}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Phần tổng tiền */}
-                <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl gap-4">
-                  <div className="text-center md:text-left">
-                    <span
-                      className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold border ${
-                        invoiceDetail.status === "Paid" ||
-                        invoiceDetail.status === "Đã thanh toán"
-                          ? "bg-green-100 text-green-700 border-green-200"
-                          : "bg-red-100 text-red-700 border-red-200"
-                      }`}
-                    >
-                      {invoiceDetail.status === "Paid" ||
-                      invoiceDetail.status === "Đã thanh toán"
-                        ? "✓ ĐÃ THANH TOÁN"
-                        : "⏳ CHƯA THANH TOÁN"}
-                    </span>
-                  </div>
-
-                  <div className="text-center md:text-right">
-                    <p className="text-gray-500 text-sm mb-1">
-                      Tổng tiền phải đóng
-                    </p>
-                    <p className="text-3xl font-bold text-blue-600">
-                      {formatCurrency(invoiceDetail.amountToPay)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <InvoiceDetail invoice={invoiceDetail} />
           ) : null}
         </div>
       )}

@@ -33,7 +33,6 @@ export default function CreateNotificationModal({
       toast.error("Vui lòng nhập tiêu đề và nội dung!");
       return;
     }
-    // Gửi data lên parent
     onSubmit(formData);
   };
 
@@ -54,7 +53,6 @@ export default function CreateNotificationModal({
         </div>
 
         <div className="p-6 space-y-5 flex-1 overflow-y-auto">
-          {/* Title Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Tiêu đề <span className="text-red-500">*</span>
@@ -70,7 +68,6 @@ export default function CreateNotificationModal({
             />
           </div>
 
-          {/* Content Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Nội dung <span className="text-red-500">*</span>
@@ -87,7 +84,6 @@ export default function CreateNotificationModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Send Type - Hiện tại BE chỉ xử lý gửi ngay, nhưng FE cứ giữ UI */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Loại gửi
@@ -100,11 +96,9 @@ export default function CreateNotificationModal({
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-orange-500 outline-none transition bg-white"
               >
                 <option value="Immediate">Gửi ngay (Tức thời)</option>
-                {/* <option value="Scheduled" disabled>Lên lịch (Sắp ra mắt)</option> */}
               </select>
             </div>
 
-            {/* Attachment URL */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
                 <LinkIcon size={14} /> Link đính kèm (Optional)
@@ -121,7 +115,6 @@ export default function CreateNotificationModal({
             </div>
           </div>
 
-          {/* Warning Message */}
           <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2 text-sm text-blue-700">
             <Users size={16} className="mt-0.5 shrink-0" />
             <p>
@@ -132,7 +125,6 @@ export default function CreateNotificationModal({
           </div>
         </div>
 
-        {/* Footer Buttons */}
         <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-2xl shrink-0">
           <button
             onClick={onClose}

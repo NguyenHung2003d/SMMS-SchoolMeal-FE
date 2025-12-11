@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast  from "react-hot-toast";
 import Link from "next/link";
 import { kitchenInventoryService } from "@/services/kitchenStaff/kitchenInventory.service";
 import { InventoryItemDto } from "@/types/kitchen-inventory";
@@ -64,8 +64,6 @@ export default function KitchenStaffInventoryPage() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <Toaster position="top-right" />
-
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Quản lý kho nguyên liệu

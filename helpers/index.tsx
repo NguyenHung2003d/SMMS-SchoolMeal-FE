@@ -19,73 +19,8 @@ import {
 } from "lucide-react";
 import { ManagerNotification } from "@/types/notification";
 
-export function AllergyPill({
-  label,
-  selected,
-  onClick,
-  color,
-}: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  color: string;
-}) {
-  const baseClass =
-    "px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all border-2";
-  const selectedClass =
-    color === "yellow"
-      ? "bg-yellow-100 border-yellow-500 text-yellow-800"
-      : "bg-red-100 border-red-500 text-red-800";
-  const unselectedClass =
-    color === "yellow"
-      ? "bg-white border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`${baseClass} ${selected ? selectedClass : unselectedClass}`}
-    >
-      {label}
-    </button>
-  );
-}
-
 export const formatNumber = (num: number) => {
   return num?.toLocaleString("vi-VN");
-};
-
-export const calculateManualBMI = () => {
-  const [manualHeight, setManualHeight] = useState("");
-  const [manualWeight, setManualWeight] = useState("");
-  const [manualBMI, setManualBMI] = useState<string | null>(null);
-
-  if (manualHeight && manualWeight) {
-    const h = parseFloat(manualHeight) / 100;
-    const bmi = (parseFloat(manualWeight) / (h * h)).toFixed(1);
-    setManualBMI(bmi);
-  }
-};
-
-export const getIconComponent = (iconName: any) => {
-  const icons = {
-    School: <School size={16} />,
-    Utensils: <Utensils size={16} />,
-    FileText: <FileText size={16} />,
-    User: <User size={16} />,
-    UserPlus: <UserPlus size={16} />,
-    DollarSign: <DollarSign size={16} />,
-    AlertCircle: <AlertCircle size={16} />,
-    Bell: <Bell size={16} />,
-  };
-  return <Activity size={16} />;
-};
-
-export const formatGrowth = (growth: number) => {
-  if (growth === 0) return "0% so với tháng trước";
-  const sign = growth > 0 ? "+" : "";
-  return `${sign}${growth}% so với tháng trước`;
 };
 
 export const getBMIStatus = (bmi: number) => {
@@ -157,67 +92,6 @@ export const getRoleInfo = (role: string) => {
   return { text: role, className: "bg-gray-100 text-gray-800" };
 };
 
-export const getStatusInfo = (status: string) => {
-  const s = status.toLowerCase();
-  if (s === "paid" || s === "đã thanh toán")
-    return { text: "Đã thanh toán", className: "bg-green-100 text-green-800" };
-  if (s === "pending" || s === "chờ thanh toán")
-    return {
-      text: "Chờ thanh toán",
-      className: "bg-yellow-100 text-yellow-800",
-    };
-  if (s === "overdue" || s === "quá hạn")
-    return { text: "Quá hạn", className: "bg-red-100 text-red-800" };
-  return { text: status, className: "bg-gray-100 text-gray-800" };
-};
-
-export const getAuthHeaders = () => {
-  const token = localStorage.getItem("accessToken");
-  return {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  };
-};
-
-export const months = Array.from({ length: 12 }, (_, i) => ({
-  value: i + 1,
-  label: `Tháng ${i + 1}`,
-}));
-
-export const getBMIStatusColor = (category?: string | null) => {
-  const cat = category?.toLowerCase();
-  switch (cat) {
-    case "underweight":
-      return "bg-blue-100 text-blue-800";
-    case "normal":
-      return "bg-green-100 text-green-800";
-    case "overweight":
-      return "bg-yellow-100 text-yellow-800";
-    case "obese":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-export const getBMIStatusText = (category?: string | null) => {
-  const cat = category?.toLowerCase();
-  switch (cat) {
-    case "underweight":
-      return "Thiếu cân";
-    case "normal":
-      return "Bình thường";
-    case "overweight":
-      return "Thừa cân";
-    case "obese":
-      return "Béo phì";
-    default:
-      return "Chưa có dữ liệu";
-  }
-};
-
 export const getCategoryLabel = (type?: string) => {
   if (!type) return "Khác";
 
@@ -267,60 +141,11 @@ export const getCategoryColor = (type?: string) => {
   return "bg-gray-100 text-gray-700";
 };
 
-export const getStatusColor = (status?: string) => {
-  if (!status) return "bg-gray-100 text-gray-700";
-  switch (status.toLowerCase()) {
-    case "pending":
-      return "bg-amber-100 text-amber-700";
-    case "processing":
-    case "inprogress":
-      return "bg-blue-100 text-blue-700";
-    case "resolved":
-    case "completed":
-      return "bg-emerald-100 text-emerald-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
-export const getStatusLabel = (status?: string) => {
-  if (!status) return "Chờ xử lý";
-  switch (status.toLowerCase()) {
-    case "pending":
-      return "Chờ xử lý";
-    case "processing":
-    case "inprogress":
-      return "Đang xử lý";
-    case "resolved":
-    case "completed":
-      return "Đã giải quyết";
-    default:
-      return "Chờ xử lý";
-  }
-};
-
 export const getInitials = (name: string) => {
   if (!name) return "MN";
   const parts = name.split(" ");
   if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-};
-
-export const getSendTypeInfo = (type: string) => {
-  if (type === "Immediate" || type === "Tức thời") {
-    return {
-      bg: "bg-red-50",
-      text: "text-red-700",
-      label: "🚨 Tức thời",
-      icon: CheckCircle2,
-    };
-  }
-  return {
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    label: "📅 Định kỳ",
-    icon: Clock,
-  };
 };
 
 export const renderRecipientsInfo = (item: ManagerNotification) => {

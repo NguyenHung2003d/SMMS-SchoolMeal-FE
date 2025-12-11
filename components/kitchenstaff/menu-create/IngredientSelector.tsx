@@ -58,7 +58,6 @@ export default function IngredientSelector({
         ))}
       </div>
 
-      {/* Input tìm kiếm */}
       <div className="relative group">
         <input
           type="text"
@@ -69,7 +68,6 @@ export default function IngredientSelector({
         />
         <Search size={14} className="absolute left-2.5 top-2 text-gray-400" />
 
-        {/* Dropdown gợi ý */}
         {searchTerm && filteredSuggestions.length > 0 && (
           <div className="absolute z-50 w-full bg-white border border-gray-200 mt-1 rounded-md shadow-lg max-h-40 overflow-y-auto">
             {filteredSuggestions.map((ing) => (

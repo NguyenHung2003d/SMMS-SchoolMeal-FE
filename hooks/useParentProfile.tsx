@@ -158,7 +158,6 @@ export const useParentProfile = () => {
     }
   };
 
-  // --- HÀM LƯU HỌC SINH ---
   const saveStudentProfile = async () => {
     if (!selectedStudent) return;
 
@@ -166,7 +165,6 @@ export const useParentProfile = () => {
       let childAvatarUrl = selectedStudent.avatarUrl;
       const avatarFile = (selectedStudent as any).avatarFile;
 
-      // 1. Upload ảnh học sinh
       if (avatarFile) {
         const childAvatarFormData = new FormData();
         childAvatarFormData.append("File", avatarFile);
@@ -179,7 +177,6 @@ export const useParentProfile = () => {
         childAvatarUrl = uploadRes.data.avatarUrl;
       }
 
-      // 2. Chuẩn bị FormData cho thông tin con (Backend yêu cầu [FromForm])
       const formData = new FormData();
       formData.append("StudentId", selectedStudent.studentId.toString());
       formData.append("FullName", selectedStudent.fullName);
@@ -195,9 +192,7 @@ export const useParentProfile = () => {
         formData.append("AvatarUrl", childAvatarUrl);
       }
 
-      // Xử lý mảng dị ứng cho FormData trong .NET
       selectedStudent.allergies.forEach((food, index) => {
-        // Cách bind List<string> trong ASP.NET Core
         formData.append(`AllergyFoods[${index}]`, food);
       });
 

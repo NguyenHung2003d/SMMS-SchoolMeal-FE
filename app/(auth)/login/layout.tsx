@@ -10,12 +10,12 @@ export default function PublicLayout({
 }) {
   return (
     <div
-      className="relative min-h-screen flex flex-col"
+      className="relative min-h-screen flex flex-col w-full overflow-hidden"
       style={{ background: "linear-gradient(135deg, #D3CAE2, #E6C17A)" }}
     >
       <Navbar />
       <Suspense fallback={<Loader />}>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full flex-col">{children}</main>
       </Suspense>
       <Footer />
     </div>

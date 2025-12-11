@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { UserPlus, Users, BookOpen, Upload, Bell } from "lucide-react";
+import { UserPlus, Users, BookOpen, Upload, Bell, Package } from "lucide-react";
 
 export default function QuickAccessGrid() {
   const actions = [
@@ -21,7 +21,7 @@ export default function QuickAccessGrid() {
       bg: "bg-green-100",
     },
     {
-      href: "/manager/classes",
+      href: "/manager/classés",
       title: "Tạo lớp học",
       desc: "Quản lý lớp và phân công giáo viên",
       icon: BookOpen,
@@ -29,10 +29,10 @@ export default function QuickAccessGrid() {
       bg: "bg-purple-100",
     },
     {
-      href: "/manager/students",
-      title: "Nhập học sinh",
-      desc: "Nhập danh sách học sinh từ file",
-      icon: Upload,
+      href: "/manager/purchase-orders",
+      title: "Quản lý đơn hàng",
+      desc: "Theo dõi và xử lý các đơn đặt hàng nguyên liệu",
+      icon: Package,
       color: "text-yellow-500",
       bg: "bg-yellow-100",
     },

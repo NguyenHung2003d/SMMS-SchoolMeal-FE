@@ -44,6 +44,7 @@ export default function ManagerDashboardPage() {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
+        Đang tải hoá đơn
       </div>
     );
   }

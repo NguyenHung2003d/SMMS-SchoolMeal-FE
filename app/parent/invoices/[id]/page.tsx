@@ -142,7 +142,6 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
-      <Toaster position="top-right" /> {/* Thêm Toaster để hiện thông báo */}
       <div className="max-w-4xl mx-auto mb-6">
         <Link
           href="/parent/register-meal"

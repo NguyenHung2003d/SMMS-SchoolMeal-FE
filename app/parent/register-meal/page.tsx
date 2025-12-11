@@ -76,7 +76,7 @@ export default function RegisterMeal() {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Thanh toán học phí
+            Thanh toán tiền ăn trưa
           </h2>
           <p className="text-sm text-gray-500">
             Xem và thanh toán các khoản phí chưa đóng
@@ -99,21 +99,16 @@ export default function RegisterMeal() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* --- PHẦN ĐÃ SỬA IMG --- */}
           <div className="bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-xl p-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              {/* Container cho Avatar */}
               <div className="relative w-14 h-14 rounded-full shadow-sm border-2 border-white ring-1 ring-blue-100 bg-white flex items-center justify-center overflow-hidden shrink-0">
-                {/* 1. Icon mặc định nằm dưới cùng */}
                 <UserCircle size={32} className="text-blue-200" />
 
-                {/* 2. Nếu có avatarUrl thì hiển thị ảnh đè lên trên */}
                 {selectedStudent.avatarUrl && (
                   <img
                     src={selectedStudent.avatarUrl}
                     alt={selectedStudent.fullName}
                     className="absolute inset-0 w-full h-full object-cover"
-                    // Nếu ảnh bị lỗi (404), ẩn ảnh đi để lộ icon bên dưới
                     onError={(e) => (e.currentTarget.style.display = "none")}
                   />
                 )}
@@ -130,11 +125,10 @@ export default function RegisterMeal() {
             </div>
             {unpaidInvoices.length > 0 && (
               <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-200">
-                {unpaidInvoices.length} khoản nợ
+                {unpaidInvoices.length} khoản phí
               </span>
             )}
           </div>
-          {/* --- HẾT PHẦN SỬA --- */}
 
           {isLoadingInvoice ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -218,7 +212,7 @@ export default function RegisterMeal() {
                           </div>
 
                           <p className="font-bold text-gray-800 text-lg">
-                            Học phí & Bán trú
+                            Học phí bán trú
                           </p>
 
                           <div className="flex items-center gap-4 text-sm text-gray-500">

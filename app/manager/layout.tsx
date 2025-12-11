@@ -8,10 +8,8 @@ import {
   Settings,
   LogOut,
   Search,
-  Menu, // Icon Menu
+  Menu,
   ChevronDown,
-  User,
-  FileText,
   BarChart3,
   PackageCheck,
   Receipt,
@@ -270,18 +268,6 @@ export default function ManagerLayout({
                 <PanelLeftOpen size={20} />
               )}
             </button>
-
-            <div className="relative group w-full">
-              <input
-                type="text"
-                placeholder="Tìm kiếm nhanh..."
-                className="w-full pl-10 pr-4 py-2.5 bg-orange-50/50 border border-orange-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 transition-all text-gray-700 placeholder:text-gray-400"
-              />
-              <Search
-                className="absolute left-3.5 top-3 text-orange-300 group-focus-within:text-orange-500 transition-colors"
-                size={18}
-              />
-            </div>
           </div>
 
           <div className="flex items-center space-x-6">

@@ -35,7 +35,7 @@ export const PurchaseDetailModal = ({
 
   const totalAmount =
     order?.lines?.reduce(
-      (acc, curr) => acc + curr.quantityGram * curr.unitPrice,
+      (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
       0
     ) || 0;
 
@@ -203,7 +203,7 @@ export const PurchaseDetailModal = ({
         {order && (
           <div className="p-6 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
             {order.purchaseOrderStatus === "Draft" ||
-            order.purchaseOrderStatus === "Pending" ? (
+              order.purchaseOrderStatus === "Pending" ? (
               <>
                 <button
                   onClick={onReject}

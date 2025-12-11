@@ -68,7 +68,6 @@ export default function ParentProfileUpdate() {
         </p>
       </div>
 
-      {/* Modern Tabs */}
       <div className="flex justify-center sm:justify-start mb-8">
         <div className="bg-gray-100/80 p-1.5 rounded-2xl inline-flex shadow-inner">
           <button

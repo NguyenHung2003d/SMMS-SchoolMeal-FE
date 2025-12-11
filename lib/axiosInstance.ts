@@ -1,11 +1,12 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
+const BASE_URL = process.env.NEXT_PUBLIC_URL_API;
+
 export const axiosInstance = axios.create({
-  baseURL: "/api/proxy",
+  baseURL: BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
   },
 });
 

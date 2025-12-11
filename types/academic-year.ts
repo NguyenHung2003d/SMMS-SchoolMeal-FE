@@ -1,8 +1,8 @@
 export interface AcademicYearDto {
   yearId: number;
   yearName: string;
-  boardingStartDate?: string | null; // <-- Thêm | null
-  boardingEndDate?: string | null; // <-- Thêm | null
+  boardingStartDate?: string | null;
+  boardingEndDate?: string | null;
 }
 
 export interface CreateAcademicYearRequest {

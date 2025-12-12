@@ -30,4 +30,13 @@ export const adminSchoolService = {
     const res = await axiosInstance.delete(`/SchoolsControllerA/${id}`);
     return res.data;
   },
+
+  updateManagerStatus: async (schoolId: string, isActive: boolean) => {
+    const response = await axiosInstance.put(
+      `/SchoolsControllerA/manager-status?schoolId=${schoolId}`,
+      isActive,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  },
 };

@@ -28,6 +28,33 @@ import SchoolFormModal from "@/components/admin/schools/SchoolFormModal";
 import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal";
 import { adminSchoolRevenueService } from "@/services/admin/adminRevenue.service";
 
+const StatusSwitch = ({
+  checked,
+  onChange,
+  isLoading,
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+  isLoading?: boolean;
+}) => (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      if (!isLoading) onChange(!checked);
+    }}
+    disabled={isLoading}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+      checked ? "bg-green-500" : "bg-gray-200"
+    } ${isLoading ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+  >
+    <span
+      className={`${
+        checked ? "translate-x-6" : "translate-x-1"
+      } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`}
+    />
+  </button>
+);
+
 export default function SchoolManagementPage() {
   const [schools, setSchools] = useState<SchoolDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +68,8 @@ export default function SchoolManagementPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [schoolToDeleteId, setSchoolToDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const loadSchools = async () => {
     try {
@@ -57,6 +86,35 @@ export default function SchoolManagementPage() {
   useEffect(() => {
     loadSchools();
   }, []);
+
+  const handleToggleStatus = async (
+    schoolId: string,
+    currentStatus: boolean
+  ) => {
+    try {
+      setTogglingId(schoolId);
+      const newStatus = !currentStatus;
+
+      await adminSchoolService.updateManagerStatus(schoolId, newStatus);
+
+      setSchools((prev) =>
+        prev.map((s) =>
+          s.schoolId === schoolId ? { ...s, isActive: newStatus } : s
+        )
+      );
+
+      toast.success(
+        `Đã ${
+          newStatus ? "kích hoạt" : "vô hiệu hóa"
+        } quản lý trường thành công`
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Lỗi cập nhật trạng thái");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const filteredSchools = schools.filter((s) => {
     const matchesSearch =
@@ -216,18 +274,22 @@ export default function SchoolManagementPage() {
                 key={school.schoolId}
                 className="group bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 p-5 relative flex flex-col"
               >
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 flex items-center gap-2">
                   <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                      school.isActive
-                        ? "bg-green-50 text-green-700 border-green-100"
-                        : "bg-gray-100 text-gray-600 border-gray-200"
+                    className={`text-[10px] font-semibold uppercase tracking-wider ${
+                      school.isActive ? "text-green-600" : "text-gray-400"
                     }`}
                   >
-                    {school.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                    {school.isActive ? "Active" : "Inactive"}
                   </span>
+                  <StatusSwitch
+                    checked={school.isActive}
+                    isLoading={togglingId === school.schoolId}
+                    onChange={() =>
+                      handleToggleStatus(school.schoolId, school.isActive)
+                    }
+                  />
                 </div>
-
                 <div className="mb-4 pr-16">
                   <h3 className="font-bold text-lg text-gray-800 line-clamp-1">
                     {school.schoolName}

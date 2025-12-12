@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Menu, X, LogOut, Loader2 } from "lucide-react";
+import { X, LogOut, Loader2 } from "lucide-react"; // Đã xóa import Menu
 import { useAuth } from "@/hooks/auth/useAuth";
 import { menuItems } from "@/data";
 import { SidebarContent } from "@/components/layouts/parent/SidebarContent";
@@ -92,16 +92,9 @@ export default function ParentLayoutWrapper({
         )}
 
         <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative transition-all duration-300">
-          <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
-            <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+          <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 w-full shadow-sm">
+            <div className="px-4 sm:px-6 py-3 flex items-center justify-between w-full">
               <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-                >
-                  <Menu className="w-6 h-6" />
-                </button>
-
                 <div className="flex flex-col">
                   <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-700 to-orange-600 truncate">
                     Parent Dashboard
@@ -114,9 +107,6 @@ export default function ParentLayoutWrapper({
 
               <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
                 <ParentNotificationBell />
-
-                <div className="h-8 w-[1px] bg-gray-200 hidden sm:block"></div>
-
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-full sm:rounded-lg transition-all border border-transparent hover:border-gray-200 focus:outline-none">
@@ -165,47 +155,49 @@ export default function ParentLayoutWrapper({
               </div>
             </div>
 
-            <div className="overflow-x-auto no-scrollbar w-full border-t border-gray-100 bg-white">
-              <div className="flex gap-2 px-6 py-2 min-w-max">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.path;
-                  const isHovered = hoveredItemId === item.id;
+            <div className="w-full border-t border-gray-100 bg-white">
+              <div className="w-full overflow-x-auto no-scrollbar">
+                <div className="flex items-center px-4 sm:px-6 py-2 min-w-full gap-2">
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.path;
+                    const isHovered = hoveredItemId === item.id;
 
-                  return (
-                    <Link
-                      key={item.id}
-                      href={item.path || "#"}
-                      onMouseEnter={() => setHoveredItemId(item.id)}
-                      onMouseLeave={() => setHoveredItemId(null)}
-                      className={`
-                        relative flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-sm transition-all duration-200
-                        ${
-                          isActive
-                            ? "bg-orange-600 text-white shadow-md shadow-orange-200"
-                            : isHovered
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-500 hover:text-gray-700"
-                        }
-                      `}
-                    >
-                      <Icon
-                        className={`w-4 h-4 ${
-                          isActive
-                            ? "text-white"
-                            : item.color || "text-gray-400"
-                        }`}
-                      />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.path || "#"}
+                        onMouseEnter={() => setHoveredItemId(item.id)}
+                        onMouseLeave={() => setHoveredItemId(null)}
+                        className={`
+                          relative flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-sm transition-all duration-200 whitespace-nowrap
+                          ${
+                            isActive
+                              ? "bg-orange-600 text-white shadow-md shadow-orange-200"
+                              : isHovered
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-500 hover:text-gray-700"
+                          }
+                        `}
+                      >
+                        <Icon
+                          className={`w-4 h-4 ${
+                            isActive
+                              ? "text-white"
+                              : item.color || "text-gray-400"
+                          }`}
+                        />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </header>
 
           <main className="flex-1 overflow-y-auto bg-[#f8fafc] p-4 sm:p-6 no-scrollbar scroll-smooth">
-            <div className="max-w-6xl mx-auto pb-10 animate-in slide-in-from-bottom-2 fade-in duration-500">
+            <div className="w-full mx-auto pb-10 animate-in slide-in-from-bottom-2 fade-in duration-500 transition-all ease-in-out">
               {children}
             </div>
           </main>

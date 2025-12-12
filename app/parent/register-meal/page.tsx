@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
@@ -20,6 +20,8 @@ import { useSelectedStudent } from "@/context/SelectedChildContext";
 export default function RegisterMeal() {
   const router = useRouter();
   const { selectedStudent } = useSelectedStudent();
+
+  const isOpen = false;
 
   const [unpaidInvoices, setUnpaidInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -69,7 +71,12 @@ export default function RegisterMeal() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+    <div
+      className={`
+        mx-auto space-y-6 pb-10 transition-all duration-300 ease-in-out
+        ${isOpen ? "max-w-4xl" : "max-w-6xl"} 
+      `}
+    >
       <div className="flex items-center gap-3 border-b pb-4">
         <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
           <Wallet size={24} />

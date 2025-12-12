@@ -70,16 +70,6 @@ export default function AdminDashboard() {
               Chào mừng quay trở lại, Admin {user?.fullName || "Admin"}! 👋
             </p>
           </div>
-
-          <div className="flex gap-3 w-full md:w-auto">
-            <button className="flex-1 md:flex-none px-5 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 shadow-sm hover:shadow-md">
-              📅 Lọc thời gian
-            </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
-              <FilePlus size={18} />
-              <span>Xuất báo cáo</span>
-            </button>
-          </div>
         </div>
 
         {dashboardData && <DashboardStats data={dashboardData} />}

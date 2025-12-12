@@ -1,12 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ShoppingCart } from "lucide-react";
-import toast  from "react-hot-toast";
-import Link from "next/link";
+import toast from "react-hot-toast";
+import { Package } from "lucide-react"; // Thêm icon Package
 import { kitchenInventoryService } from "@/services/kitchenStaff/kitchenInventory.service";
 import { InventoryItemDto } from "@/types/kitchen-inventory";
 import StatsOverview from "@/components/kitchenstaff/inventory/StatsOverview";
-import InventoryControlBar from "@/components/kitchenstaff/inventory/InventoryControlBar";
 import InventoryTable from "@/components/kitchenstaff/inventory/InventoryTable";
 import EditInventoryModal from "@/components/kitchenstaff/inventory/EditInventoryModal";
 
@@ -72,36 +70,33 @@ export default function KitchenStaffInventoryPage() {
 
       <StatsOverview totalCount={totalCount} items={items} />
 
-      <InventoryControlBar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      {activeTab === "inventory" && (
-        <InventoryTable
-          loading={loading}
-          items={items}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          setPageIndex={setPageIndex}
-          onEdit={handleEditClick}
-        />
-      )}
-
-      {activeTab === "orders" && (
-        <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-          <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-800">
-            Quản lý Đơn đặt hàng
-          </h3>
-          <p className="text-gray-500 mb-4">
-            Vui lòng truy cập trang Lịch sử mua hàng để quản lý chi tiết.
-          </p>
-          <Link
-            href="/kitchen-staff/purchase-history"
-            className="text-orange-600 font-medium hover:underline"
+      <div className="mb-6 border-b border-gray-200">
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`
+              flex items-center gap-2 pb-3 pt-1 text-sm font-semibold transition-all border-b-2
+              ${
+                activeTab === "inventory"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }
+            `}
           >
-            Đi tới Lịch sử mua hàng &rarr;
-          </Link>
+            <Package size={18} />
+            Danh Sách Tồn Kho
+          </button>
         </div>
-      )}
+      </div>
+
+      <InventoryTable
+        loading={loading}
+        items={items}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        setPageIndex={setPageIndex}
+        onEdit={handleEditClick}
+      />
 
       <EditInventoryModal
         isOpen={isEditModalOpen}

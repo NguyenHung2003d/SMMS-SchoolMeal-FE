@@ -117,7 +117,6 @@ export default function InventoryTable({
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
         <button
           disabled={pageIndex === 1}

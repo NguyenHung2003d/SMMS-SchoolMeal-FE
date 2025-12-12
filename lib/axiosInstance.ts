@@ -154,17 +154,9 @@ axiosInstance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await axios.post(
-        `${
-          process.env.NEXT_PUBLIC_URL_API ||
-          "http://localhost:5000/api" ||
-          "https://localhost:5000/api"
-        }/Auth/refresh-token`,
-
-        {},
-
-        { withCredentials: true }
-      );
+      await axios.post("http://localhost:5000/api/Auth/refresh-token", {
+        withCredentials: true,
+      });
 
       processQueue(null);
 

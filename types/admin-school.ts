@@ -24,3 +24,24 @@ export interface UpdateSchoolDto {
   schoolAddress?: string;
   isActive: boolean;
 }
+
+export interface UpdateSchoolRevenueDto {
+  revenueId: number;
+  schoolId: string; 
+  revenueDate: string;
+  revenueAmount: number;
+  contractCode: string;
+  contractNote?: string;
+}
+
+export interface SchoolRevenue {
+  schoolRevenueId: number;
+  schoolId: string;
+  contractCode: string;
+  revenueAmount: number;
+  revenueDate: string; // ISO string
+  contractNote?: string;
+  contractFileUrl?: string; // URL ảnh/file trên Cloudinary
+  isActive: boolean;
+  createdAt?: string;
+}

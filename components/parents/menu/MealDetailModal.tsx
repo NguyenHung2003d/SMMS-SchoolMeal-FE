@@ -120,46 +120,54 @@ export default function MealDetailModal({
             >
               <div className="p-6 space-y-4">
                 {selectedMeal.foods && selectedMeal.foods.length > 0 ? (
-                  selectedMeal.foods.map((food: MenuFoodItemDto) => (
-                    <div
-                      key={food.foodId || food.FoodId}
-                      className="group flex gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-100 transition-all"
-                    >
-                      <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100 relative">
-                        <Image
-                          src={food.imageUrl || food.ImageUrl || ""}
-                          alt={food.foodName || food.FoodName || "Food"}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <p className="font-bold text-gray-800 text-base line-clamp-2">
-                          {food.foodName || food.FoodName}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-                          {food.foodDesc ||
-                            food.FoodDesc ||
-                            "Món ăn giàu dinh dưỡng, được chế biến an toàn."}
-                        </p>
-                        {(food.isAllergenic || food.IsAllergenic) && (
-                          <div className="mt-3 flex items-start gap-2 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 w-fit">
-                            <AlertCircle
-                              size={14}
-                              className="text-red-500 mt-0.5 shrink-0"
+                  selectedMeal.foods.map((food: MenuFoodItemDto) => {
+                    const foodImage = food.imageUrl || food.ImageUrl;
+
+                    return (
+                      <div
+                        key={food.foodId || food.FoodId}
+                        className="group flex gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-100 transition-all"
+                      >
+                        <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100 relative flex items-center justify-center">
+                          {foodImage ? (
+                            <Image
+                              src={foodImage}
+                              alt={food.foodName || food.FoodName || "Food"}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <span className="text-xs text-red-700 font-medium">
-                              Cảnh báo dị ứng:{" "}
-                              <span className="font-bold">
-                                {food.allergenicNames?.join(", ") ||
-                                  food.AllergenicNames?.join(", ")}
+                          ) : (
+                            <Utensils className="text-gray-300" size={32} />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <p className="font-bold text-gray-800 text-base line-clamp-2">
+                            {food.foodName || food.FoodName}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+                            {food.foodDesc ||
+                              food.FoodDesc ||
+                              "Món ăn giàu dinh dưỡng, được chế biến an toàn."}
+                          </p>
+                          {(food.isAllergenic || food.IsAllergenic) && (
+                            <div className="mt-3 flex items-start gap-2 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 w-fit">
+                              <AlertCircle
+                                size={14}
+                                className="text-red-500 mt-0.5 shrink-0"
+                              />
+                              <span className="text-xs text-red-700 font-medium">
+                                Cảnh báo dị ứng:{" "}
+                                <span className="font-bold">
+                                  {food.allergenicNames?.join(", ") ||
+                                    food.AllergenicNames?.join(", ")}
+                                </span>
                               </span>
-                            </span>
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-16 flex flex-col items-center">
                     <div className="bg-gray-100 p-4 rounded-full mb-3">

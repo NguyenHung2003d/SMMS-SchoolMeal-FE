@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { UtensilsCrossed, ChefHat, CalendarDays, Loader2 } from "lucide-react";
+import {
+  UtensilsCrossed,
+  ChefHat,
+  CalendarDays,
+  Loader2,
+  AlertTriangle,
+} from "lucide-react";
 import { axiosInstance } from "@/lib/axiosInstance";
 import {
   DayMenuDto,
@@ -12,15 +18,17 @@ import {
 import WeekSelector from "@/components/parents/menu/WeekSelector";
 import DailyMenuCard from "@/components/parents/menu/DailyMenuCard";
 import MealDetailModal from "@/components/parents/menu/MealDetailModal";
+
 import { useSelectedStudent } from "@/context/SelectedChildContext";
+import toast from "react-hot-toast";
 
 export default function MenuAndFeedbackPage() {
   const { selectedStudent } = useSelectedStudent();
 
   const [myFeedbacks, setMyFeedbacks] = useState<FeedbackDto[]>([]);
-
   const [availableWeeks, setAvailableWeeks] = useState<WeekOptionDto[]>([]);
   const [selectedDateInWeek, setSelectedDateInWeek] = useState<string>("");
+
   const [menuData, setMenuData] = useState<WeekMenuDto | null>(null);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DayMenuDto | null>(null);
@@ -48,13 +56,8 @@ export default function MenuAndFeedbackPage() {
           `/weekly-menu/available-weeks`,
           { params: { studentId: selectedStudent.studentId } }
         );
+
         setAvailableWeeks(res.data);
-        if (res.data.length > 0) {
-          const firstWeek = res.data[0];
-          setSelectedDateInWeek(
-            firstWeek.weekStart || firstWeek.WeekStart || ""
-          );
-        }
       } catch (error) {
         console.error("Lỗi tải tuần:", error);
       }
@@ -81,10 +84,12 @@ export default function MenuAndFeedbackPage() {
             },
           }
         );
+
         setMenuData(res.data);
       } catch (error) {
         console.error("Lỗi tải menu:", error);
         setMenuData(null);
+        toast.error("Không thể tải thực đơn cho tuần này");
       } finally {
         setLoadingMenu(false);
       }
@@ -92,45 +97,68 @@ export default function MenuAndFeedbackPage() {
     fetchMenu();
   }, [selectedStudent?.studentId, selectedDateInWeek]);
 
-  const weekDays = useMemo(() => {
-    if (!selectedDateInWeek) return [];
-    const start = new Date(selectedDateInWeek);
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + i);
-      days.push(date.toISOString().split("T")[0]);
+  const calendarDays = useMemo(() => {
+    if (!menuData) return [];
+
+    console.log(
+      "LOG 3: Bắt đầu tính CalendarDays từ:",
+      menuData.weekStart,
+      "đến",
+      menuData.weekEnd
+    );
+
+    const start = new Date(menuData.weekStart);
+    const end = new Date(menuData.weekEnd);
+    const days: string[] = [];
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      days.push(`${year}-${month}-${day}`);
     }
+
     return days;
-  }, [selectedDateInWeek]);
+  }, [menuData]);
 
-  const mealsMap = useMemo(() => {
-    if (!menuData?.days) return {};
-    const daysList = menuData.days || menuData.Days || [];
-    const map: Record<string, DayMenuDto> = {};
+  const mealsByDate = useMemo(() => {
+    const rawDays = menuData?.days || (menuData as any)?.Days || [];
 
-    daysList.forEach((d: any) => {
-      const rawDate = d.mealDate || d.MealDate || d.date;
-      const type = d.mealType || d.MealType;
+    if (!rawDays || rawDays.length === 0) {
+      return {};
+    }
+    const map: Record<string, DayMenuDto[]> = {};
 
-      if (rawDate && (type === "Bữa Trưa" || type === "Lunch")) {
-        const dateKey = rawDate.split("T")[0];
-        map[dateKey] = d;
+    rawDays.forEach((dayMenu: any) => {
+      const rawDate = dayMenu.mealDate || dayMenu.MealDate;
+      if (!rawDate) {
+        return;
       }
+
+      const dateKey = rawDate.split("T")[0];
+
+      if (!map[dateKey]) {
+        map[dateKey] = [];
+      }
+      map[dateKey].push(dayMenu);
     });
+
     return map;
   }, [menuData]);
 
   const existingFeedback = useMemo(() => {
     if (!selectedMeal) return null;
-    const currentMealId = selectedMeal.dailyMealId || selectedMeal.DailyMealId;
-    if (!currentMealId) return null;
-    return myFeedbacks.find((f) => f.dailyMealId === currentMealId) || null;
+    return (
+      myFeedbacks.find((f) => f.dailyMealId === selectedMeal.dailyMealId) ||
+      null
+    );
   }, [selectedMeal, myFeedbacks]);
 
-  const handleOpenModal = (meal: any) => {
-    const foodsList = meal?.items || meal?.foods || [];
-    setSelectedMeal({ ...meal, foods: foodsList });
+  const handleOpenModal = (meal: DayMenuDto) => {
+    setSelectedMeal(meal);
   };
 
   if (!selectedStudent)
@@ -147,7 +175,6 @@ export default function MenuAndFeedbackPage() {
 
   return (
     <div className="max-w-7xl min-h-screen mx-auto pb-6">
-      {" "}
       <div className="px-4 pt-2">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-orange-100 rounded-xl text-orange-600 shadow-sm">
@@ -169,6 +196,7 @@ export default function MenuAndFeedbackPage() {
           onSelectDate={setSelectedDateInWeek}
         />
       </div>
+
       <div className="px-4 mt-6">
         {loadingMenu ? (
           <div className="flex flex-col h-full items-center justify-center space-y-4">
@@ -177,27 +205,69 @@ export default function MenuAndFeedbackPage() {
               Đang tải thực đơn...
             </p>
           </div>
-        ) : weekDays.length === 0 ? (
-          <div className="flex flex-col h-full items-center justify-center text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200">
+        ) : !menuData || calendarDays.length === 0 ? (
+          <div className="flex flex-col h-full items-center justify-center text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200 py-10">
             <CalendarDays size={48} className="mb-2 opacity-50" />
             <p>Không có dữ liệu hiển thị cho tuần này.</p>
+            {menuData && (
+              <p className="text-xs text-red-400 mt-2">
+                (Data loaded but calendarDays empty or mismatch)
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {weekDays.map((date) => {
-              const meal = mealsMap[date];
+            {calendarDays.map((date) => {
+              const mealsInDay = mealsByDate[date] || [];
+
+              if (mealsInDay.length === 0) return null;
+              const allFoods = mealsInDay.flatMap(
+                (m) => m.items || (m as any).Items || []
+              );
+
+              const primaryMealInfo = mealsInDay[0];
+
+              const combinedMeal = {
+                ...primaryMealInfo,
+                foods: allFoods,
+                items: allFoods,
+              };
+
+              const hasAllergyWarning = allFoods.some(
+                (f: any) => f.isAllergenic || f.IsAllergenic
+              );
+
               return (
-                <DailyMenuCard
-                  key={date}
-                  date={date}
-                  meal={meal}
-                  onOpenModal={handleOpenModal}
-                />
+                <div key={date} className="flex flex-col gap-4">
+                  <div
+                    key={
+                      combinedMeal.dailyMealId ||
+                      (combinedMeal as any).DailyMealId
+                    }
+                    className="relative"
+                  >
+                    {hasAllergyWarning && (
+                      <div
+                        className="absolute -top-2 -right-2 z-10 bg-red-100 text-red-600 p-1.5 rounded-full shadow-sm border border-red-200"
+                        title="Có thành phần gây dị ứng!"
+                      >
+                        <AlertTriangle size={16} />
+                      </div>
+                    )}
+
+                    <DailyMenuCard
+                      date={date}
+                      meal={combinedMeal}
+                      onOpenModal={handleOpenModal}
+                    />
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
       {selectedMeal && (
         <MealDetailModal
           selectedMeal={selectedMeal}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Plus, Save, Sparkles, Loader2, Calendar, X } from "lucide-react";
+import { Plus, Save, Sparkles, Loader2, Calendar, X, Copy } from "lucide-react";
 import { format, startOfWeek, addDays, parseISO } from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import {
 import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
 import ManualDishModal from "@/components/kitchenstaff/menu-create/ManualDishModal";
 import AiSuggestionModal from "@/components/kitchenstaff/menu-create/AiSuggestionModal";
+import MenuTemplateModal from "@/components/kitchenstaff/menu/MenuTemplateModal";
 
 const DAYS_OF_WEEK = [
   { value: 2, label: "Thứ 2" },
@@ -28,7 +29,7 @@ const MEAL_TYPES = [
 
 export default function KitchenStaffMenuCreationPage() {
   const router = useRouter();
-
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd")
   );
@@ -147,6 +148,39 @@ export default function KitchenStaffMenuCreationPage() {
     }
   };
 
+  const handleTemplateSelect = (templateData: any) => {
+    if (templateData && Array.isArray(templateData.days)) {
+      const newGridData = { ...gridData };
+
+      templateData.days.forEach((dayItem: any) => {
+        const dayValue = dayItem.dayOfWeek;
+        const mealType = dayItem.mealType;
+
+        if (dayValue && mealType) {
+          const gridKey = `${dayValue}_${mealType}`;
+          const foods: FoodItemDto[] = (dayItem.foodItems || []).map(
+            (f: any) => ({
+              foodId: f.foodId,
+              foodName: f.foodName,
+              foodType: f.foodType || (f.isMainDish ? "Món chính" : "Món phụ"),
+              imageUrl: f.imageUrl || "",
+            })
+          );
+
+          if (foods.length > 0) {
+            newGridData[gridKey] = foods;
+          }
+        }
+      });
+
+      setGridData(newGridData);
+      toast.success("Đã điền menu mẫu vào lịch!");
+    } else {
+      console.error("Lỗi cấu trúc: API không trả về mảng 'days'", templateData);
+      toast.error("Dữ liệu menu mẫu không hợp lệ");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen pb-32">
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
@@ -154,12 +188,20 @@ export default function KitchenStaffMenuCreationPage() {
           <h1 className="text-xl font-bold text-gray-800">Lên thực đơn tuần</h1>
           <p className="text-sm text-gray-500">Chọn món ăn cho từng ngày</p>
         </div>
-        <button
-          onClick={() => setIsAiModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 font-medium border border-purple-200"
-        >
-          <Sparkles size={18} /> AI Gợi ý & Thêm nhanh
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsTemplateModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium shadow-sm transition-colors"
+          >
+            <Copy size={18} /> Dùng menu mẫu
+          </button>
+          <button
+            onClick={() => setIsAiModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 font-medium border border-purple-200"
+          >
+            <Sparkles size={18} /> AI Gợi ý & Thêm nhanh
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -255,6 +297,12 @@ export default function KitchenStaffMenuCreationPage() {
           </button>
         </div>
       </div>
+
+      <MenuTemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        onSelectTemplate={handleTemplateSelect}
+      />
 
       <ManualDishModal
         isOpen={isManualModalOpen}

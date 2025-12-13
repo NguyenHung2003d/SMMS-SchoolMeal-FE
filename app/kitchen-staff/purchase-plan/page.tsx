@@ -4,8 +4,10 @@ import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { PurchasePlan } from "@/types/kitchen-purchasePlan";
+
 import { kitchenPurchasePlanService } from "@/services/kitchenStaff/kitchenPurchasePlan.service";
 import { kitchenPurchaseOrderService } from "@/services/kitchenStaff/kitchenPurchaseOrder.service";
+
 import EmptyPlanState from "@/components/kitchenstaff/purchase-plan/EmptyPlanState";
 import PurchasePlanHeader from "@/components/kitchenstaff/purchase-plan/PurchasePlanHeader";
 import PurchasePlanStats from "@/components/kitchenstaff/purchase-plan/PurchasePlanStats";
@@ -71,18 +73,41 @@ export default function KitchenStaffPurchasePlanPage() {
     toast.success("Đã xóa dòng (Vui lòng Lưu nháp để cập nhật)");
   };
 
-  const handleAddItem = (newItem: { name: string; quantity: number }) => {
+  const handleAddItem = (newItem: {
+    name: string;
+    quantity: number;
+    ingredientId: number;
+    type?: string;
+  }) => {
     if (!plan) return;
+
+    const existingItemIndex = plan.lines.findIndex(
+      (l) => l.ingredientId === newItem.ingredientId
+    );
+
+    if (existingItemIndex !== -1) {
+      const newLines = [...plan.lines];
+      const existingLine = newLines[existingItemIndex];
+
+      existingLine.rqQuanityGram += newItem.quantity;
+
+      setPlan({ ...plan, lines: newLines });
+      setIsAddItemModalOpen(false);
+      toast.success(`Đã cộng thêm ${newItem.quantity} vào ${newItem.name}`);
+      return;
+    }
+
     const newLine: any = {
-      ingredientId: -1,
+      ingredientId: newItem.ingredientId,
       ingredientName: newItem.name,
       rqQuanityGram: newItem.quantity,
       actualPrice: 0,
       status: "Pending",
       batchNo: "",
       origin: "",
-      category: "Thêm thủ công",
+      category: newItem.type || "Thêm thủ công",
     };
+
     setPlan({ ...plan, lines: [...plan.lines, newLine] });
     setIsAddItemModalOpen(false);
     toast.success("Đã thêm mặt hàng mới");
@@ -178,7 +203,6 @@ export default function KitchenStaffPurchasePlanPage() {
     });
   };
 
-  // --- Renders ---
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">

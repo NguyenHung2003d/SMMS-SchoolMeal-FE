@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { adminSchoolService } from "@/services/admin/adminSchool.service";
@@ -16,6 +16,8 @@ import DeleteSchoolModal from "@/components/admin/schools/DeleteSchoolModal";
 import { adminSchoolRevenueService } from "@/services/admin/adminRevenue.service";
 import SchoolCard from "@/components/admin/schools/SchoolCard";
 import SchoolFilters from "@/components/admin/schools/SchoolFilters";
+import { adminAiMenuService } from "@/services/admin/adminAiMenu.service";
+import { cn } from "@/lib/utils";
 
 export default function SchoolManagementPage() {
   const [schools, setSchools] = useState<SchoolDTO[]>([]);
@@ -33,6 +35,9 @@ export default function SchoolManagementPage() {
 
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const [needsRebuild, setNeedsRebuild] = useState(false);
+  const [isRebuilding, setIsRebuilding] = useState(false);
+
   const loadSchools = async () => {
     try {
       setLoading(true);
@@ -45,9 +50,32 @@ export default function SchoolManagementPage() {
     }
   };
 
+  const checkAiStatus = async () => {
+    try {
+      const needed = await adminAiMenuService.checkNeedRebuild();
+      setNeedsRebuild(needed);
+    } catch (error) {
+      console.error("Lỗi kiểm tra trạng thái AI", error);
+    }
+  };
+
   useEffect(() => {
     loadSchools();
+    checkAiStatus();
   }, []);
+
+  const handleRebuildAi = async () => {
+    try {
+      setIsRebuilding(true);
+      await adminAiMenuService.rebuild();
+      toast.success("Đã gửi yêu cầu xây dựng lại dữ liệu AI");
+      setNeedsRebuild(false);
+    } catch (error) {
+      toast.error("Lỗi khi gửi yêu cầu rebuild AI");
+    } finally {
+      setIsRebuilding(false);
+    }
+  };
 
   const handleToggleStatus = async (
     schoolId: string,
@@ -118,6 +146,7 @@ export default function SchoolManagementPage() {
       setIsModalOpen(false);
       setEditingSchool(null);
       loadSchools();
+      checkAiStatus();
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."
@@ -127,7 +156,6 @@ export default function SchoolManagementPage() {
     }
   };
 
-  // HÀM MỚI: CẬP NHẬT HỢP ĐỒNG
   const handleContractUpdate = async (
     revenueId: number,
     data: any,
@@ -148,6 +176,7 @@ export default function SchoolManagementPage() {
       toast.success("Đã xóa (vô hiệu hóa) trường học");
       loadSchools();
       setIsDeleteModalOpen(false);
+      checkAiStatus();
     } catch (error) {
       toast.error("Đã xảy ra lỗi khi xóa.");
     } finally {
@@ -198,13 +227,39 @@ export default function SchoolManagementPage() {
             Hệ thống quản lý đối tác giáo dục của EduMeal
           </p>
         </div>
-        <Button
-          onClick={openCreateModal}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl flex items-center space-x-2 transition shadow-sm hover:shadow-md"
-        >
-          <Plus size={20} />
-          <span className="font-medium">Thêm trường mới</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleRebuildAi}
+            disabled={!needsRebuild || isRebuilding}
+            className={cn(
+              "relative px-4 py-2.5 rounded-xl flex items-center space-x-2 transition shadow-sm",
+              needsRebuild
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-md"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+            )}
+          >
+            {isRebuilding ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Bot size={20} />
+            )}
+            <span className="font-medium">Xây dựng lại AI</span>
+            {needsRebuild && !isRebuilding && (
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+            )}
+          </Button>
+
+          <Button
+            onClick={openCreateModal}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl flex items-center space-x-2 transition shadow-sm hover:shadow-md"
+          >
+            <Plus size={20} />
+            <span className="font-medium">Thêm trường mới</span>
+          </Button>
+        </div>
       </div>
 
       <SchoolFilters

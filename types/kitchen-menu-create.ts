@@ -12,8 +12,8 @@ export interface MenuTemplateDto {
 }
 
 export interface CreateScheduleMealRequest {
-  weekStart: string; // YYYY-MM-DD
-  weekEnd?: string; // YYYY-MM-DD
+  weekStart: string;
+  weekEnd?: string;
   dailyMeals: DailyMealRequestDto[];
 }
 

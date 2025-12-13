@@ -6,7 +6,8 @@ export interface IngredientDto {
   proteinG?: number;
   fatG?: number;
   carbG?: number;
-  unit?: string;
+  schoolId?: string;
+  isActive?: boolean;
 }
 
 export interface FoodItemIngredientDto {

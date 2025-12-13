@@ -1,4 +1,3 @@
-// services/kitchenStaff/inventory.service.ts
 import { axiosInstance } from "@/lib/axiosInstance";
 import { 
   InventoryItemDto, 

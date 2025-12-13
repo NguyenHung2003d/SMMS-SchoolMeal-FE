@@ -31,7 +31,7 @@ export const kitchenMenuService = {
       return [];
     }
   },
-  
+
   getWeekMenuByDate: async (date: Date): Promise<WeeklyScheduleDto | null> => {
     try {
       const dateStr = date.toISOString().split("T")[0];
@@ -107,5 +107,15 @@ export const kitchenMenuService = {
       }
     );
     return response.data;
+  },
+
+  getAllMenus: async () => {
+    const res = await axiosInstance.get("/Menus");
+    return res.data;
+  },
+
+  getMenuDetail: async (id: number) => {
+    const res = await axiosInstance.get(`/Menus/${id}`);
+    return res.data;
   },
 };

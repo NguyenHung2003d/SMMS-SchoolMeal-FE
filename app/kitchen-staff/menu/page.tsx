@@ -73,7 +73,7 @@ export default function Menu() {
       foodName: f.foodName,
       imageUrl: f.imageUrl || f.image || "",
       ingredientNames: Array.isArray(f.ingredients)
-        ? f.ingredients.map((i: any) => (typeof i === "string" ? i : i.name))
+        ? f.ingredients.map((i: any) => (typeof i === "string" ? i : i.ingredientName))
         : [],
     });
 

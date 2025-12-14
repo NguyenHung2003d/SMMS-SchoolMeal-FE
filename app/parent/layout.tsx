@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, LogOut, Loader2 } from "lucide-react"; // Đã xóa import Menu
+import { X, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { menuItems } from "@/data";
 import { SidebarContent } from "@/components/layouts/parent/SidebarContent";

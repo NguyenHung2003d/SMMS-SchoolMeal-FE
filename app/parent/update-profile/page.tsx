@@ -32,8 +32,6 @@ export default function ParentProfileUpdate() {
     e.preventDefault();
     if (activeTab === "parent-info") {
       handleSave("parent");
-      // Dòng dưới đây đã được xóa để giữ user ở lại trang chỉnh sửa
-      // setIsEditingParent(false);
     } else {
       handleSave("child");
     }

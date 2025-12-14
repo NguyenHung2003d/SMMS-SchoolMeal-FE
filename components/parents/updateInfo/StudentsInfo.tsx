@@ -12,11 +12,14 @@ import {
   CheckCircle2,
   ChevronRight,
   Baby,
+  Loader2,
 } from "lucide-react";
 import { StudentsInfoProps } from "@/types/student";
 import toast from "react-hot-toast";
 import { getImageUrl } from "@/lib/utils";
-import { ALLERGY_LIST } from "@/data";
+import { useQuery } from "@tanstack/react-query";
+import { parentService } from "@/services/parent/parent.service";
+import { Button } from "@/components/ui/button";
 
 export function StudentsInfo({
   students,
@@ -30,6 +33,16 @@ export function StudentsInfo({
   const Icon = selectedStudent?.avatar || User;
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: allergyList = [], isLoading: isAllergyLoading } = useQuery({
+    queryKey: ["allergens", selectedStudent?.studentId],
+    queryFn: () =>
+      selectedStudent
+        ? parentService.getAllergensByStudent(selectedStudent.studentId)
+        : Promise.resolve([]),
+    enabled: !!selectedStudent?.studentId,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const handleInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -74,14 +87,28 @@ export function StudentsInfo({
 
   const handleOtherAllergyChange = (value: string) => {
     if (!selectedStudent) return;
-    let next = selectedStudent.allergies.filter((a) => !a.startsWith("Khác:"));
-    if (value.trim()) {
-      if (!next.includes("Khác")) next.push("Khác");
-      next.push(`Khác: ${value.trim()}`);
-    }
-    onUpdateStudent({ ...selectedStudent, allergies: next });
-  };
 
+    let nextAllergies = selectedStudent.allergies.filter(
+      (a) => !a.startsWith("Khác:")
+    );
+
+    if (value.trim()) {
+      if (!nextAllergies.includes("Khác")) {
+        nextAllergies.push("Khác");
+      }
+      nextAllergies.push(`Khác: ${value.trim()}`);
+    } else {
+      if (!nextAllergies.includes("Khác")) {
+        nextAllergies.push("Khác");
+      }
+    }
+
+    onUpdateStudent({
+      ...selectedStudent,
+      allergies: nextAllergies,
+    });
+  };
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -300,50 +327,63 @@ export function StudentsInfo({
                     <p className="text-sm text-gray-500 mb-4">
                       Vui lòng chọn các loại thực phẩm mà bé bị dị ứng:
                     </p>
-                    <div className="flex flex-wrap gap-3">
-                      {ALLERGY_LIST.map((item) => {
-                        const isSelected =
-                          selectedStudent.allergies.includes(item);
-                        return (
-                          <button
-                            key={item}
-                            type="button"
-                            onClick={() => handleToggleAllergy(item)}
-                            className={`
-                                                relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
-                                                ${
-                                                  isSelected
-                                                    ? "bg-orange-500 text-white border-orange-600 shadow-md shadow-orange-200 pl-9"
-                                                    : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:bg-orange-50"
-                                                }
-                                            `}
-                          >
-                            {isSelected && (
-                              <CheckCircle2
-                                className="absolute left-2 top-2"
-                                size={16}
-                              />
-                            )}
-                            {item}
-                          </button>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        onClick={handleToggleOther}
-                        className={`
-                                        px-4 py-2 rounded-full text-sm font-medium transition-all border
-                                        ${
-                                          hasOtherChecked
-                                            ? "bg-gray-800 text-white border-gray-900 shadow-md"
-                                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                                        }
-                                    `}
-                      >
-                        Khác...
-                      </button>
-                    </div>
-
+                    {isAllergyLoading ? (
+                      <div className="flex items-center justify-center py-6 text-orange-400">
+                        <Loader2 className="animate-spin mr-2" />
+                        Đang tải danh sách dị ứng...
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {allergyList
+                          .filter((a) => a.allergenName !== "Khác")
+                          .map((allergen) => {
+                            const isSelected =
+                              selectedStudent.allergies.includes(
+                                allergen.allergenName
+                              );
+                            return (
+                              <Button
+                                key={allergen.allergenId}
+                                type="button"
+                                onClick={() =>
+                                  handleToggleAllergy(allergen.allergenName)
+                                }
+                                title={allergen.allergenInfo || ""}
+                                className={`
+                                relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+                                ${
+                                  isSelected
+                                    ? "bg-orange-500 text-white border-orange-600 shadow-md shadow-orange-200 pl-9"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:bg-orange-50"
+                                }
+                              `}
+                              >
+                                {isSelected && (
+                                  <CheckCircle2
+                                    size={16}
+                                    className="absolute left-2 top-2"
+                                  />
+                                )}
+                                {allergen.allergenName}
+                              </Button>
+                            );
+                          })}
+                        <Button
+                          type="button"
+                          onClick={handleToggleOther}
+                          className={`
+                            px-4 py-2 rounded-full text-sm font-medium transition-all border
+                            ${
+                              hasOtherChecked
+                                ? "bg-gray-800 text-white border-gray-900 shadow-md"
+                                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                            }
+                          `}
+                        >
+                          Khác ...
+                        </Button>
+                      </div>
+                    )}
                     <div
                       className={`grid transition-all duration-300 ease-in-out ${
                         hasOtherChecked

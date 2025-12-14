@@ -80,13 +80,20 @@ export function SidebarContent() {
   const renderAllergies = (allergies: string[]) => {
     if (!allergies || allergies.length === 0) return null;
 
-    const displayItems = allergies.slice(0, 3).join(", ");
+    const firstTwo = allergies.slice(0, 2).join(", ");
+    const remainingCount = allergies.length - 2;
+
+    const displayText =
+      remainingCount > 0 ? `${firstTwo} (+${remainingCount})` : firstTwo;
 
     return (
-      <div className="flex items-start gap-1.5 mt-2 bg-red-50 px-2 py-1 rounded-md border border-red-100 w-fit">
+      <div className="flex items-start gap-1.5 mt-2 bg-red-50 px-2 py-1 rounded-md border border-red-100 max-w-full">
         <AlertCircle size={12} className="text-red-500 mt-0.5 shrink-0" />
-        <p className="text-xs font-medium text-red-600 truncate max-w-[180px]">
-          Dị ứng: {displayItems}
+        <p
+          className="text-xs font-medium text-red-600 truncate"
+          title={allergies.join(", ")}
+        >
+          Dị ứng: {displayText}
         </p>
       </div>
     );

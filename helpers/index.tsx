@@ -18,6 +18,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { ManagerNotification } from "@/types/notification";
+import axios from "axios";
 
 export const formatNumber = (num: number) => {
   return num?.toLocaleString("vi-VN");
@@ -333,6 +334,44 @@ export const DAY_MAP: Record<number, string> = {
   6: "Thứ 6",
   7: "Thứ 7",
   8: "Chủ Nhật",
+};
+
+export const getAxiosErrorMessage = (
+  err: unknown,
+  fallback: string = "Đã xảy ra lỗi"
+): string => {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data;
+
+    if (typeof data === "string") {
+      return data;
+    }
+
+    if (data && typeof data === "object") {
+      if (typeof (data as any).title === "string") {
+        return (data as any).title;
+      }
+
+      if ((data as any).errors) {
+        const errors = (data as any).errors;
+        const messages = Object.values(errors).flat().filter(Boolean);
+
+        if (messages.length > 0) {
+          return messages.join(", ");
+        }
+      }
+    }
+
+    if (err.message) {
+      return err.message;
+    }
+  }
+
+  if (err instanceof Error) {
+    return err.message;
+  }
+
+  return fallback;
 };
 
 export const MEAL_MAP: Record<string, string> = {

@@ -11,51 +11,53 @@ export const useLoginMutation = () => {
 
   return useMutation<AuthResponse, AxiosError, LoginVariables>({
     mutationFn: ({ data }) => authService.login(data),
-    onSuccess: (res) => {
-      queryClient.setQueryData(USER_QUERY_KEY, res.user);
+
+    onSuccess: (res, variables) => {
       if (res.requirePasswordReset) {
         toast("Vui lòng đổi mật khẩu lần đầu", { icon: "🔑" });
+
+        const phoneOrEmail = variables.data.PhoneOrEmail;
+
         window.location.href = `/reset-first-password?phoneOrEmail=${encodeURIComponent(
-          res.user.phone || res.user.email || ""
+          phoneOrEmail
         )}`;
         return;
       }
 
-      const { path, message } = (() => {
-        switch (res.user.role) {
-          case ROLES.ADMIN:
-            return {
-              path: PATHS.ADMIN_DASHBOARD,
-              message: "Xin chào Admin! Đăng nhập hệ thống thành công.",
-            };
-          case ROLES.MANAGER:
-            return {
-              path: PATHS.MANAGER_DASHBOARD,
-              message: "Chào mừng Quản lý quay trở lại!",
-            };
-          case ROLES.TEACHER:
-            return {
-              path: PATHS.WARDEN_DASHBOARD,
-              message: "Xin chào Giáo viên! Chúc bạn một ngày tốt lành.",
-            };
-          case ROLES.KITCHEN_STAFF:
-            return {
-              path: PATHS.KITCHEN_DASHBOARD,
-              message: "Xin chào Nhân viên bếp! Đăng nhập thành công.",
-            };
-          default:
-            return {
-              path: PATHS.PARENT_DASHBOARD,
-              message: "Chào mừng Phụ huynh! Đăng nhập thành công.",
-            };
-        }
-      })();
+      if (res.user) {
+        queryClient.setQueryData(USER_QUERY_KEY, res.user);
 
-      toast.success(message);
+        const { path, message } = (() => {
+          switch (res.user.role) {
+            case ROLES.MANAGER:
+              return {
+                path: PATHS.MANAGER_DASHBOARD,
+                message: "Chào mừng Quản lý quay trở lại!",
+              };
+            case ROLES.TEACHER:
+              return {
+                path: PATHS.WARDEN_DASHBOARD,
+                message: "Xin chào Giáo viên! Chúc bạn một ngày tốt lành.",
+              };
+            case ROLES.KITCHEN_STAFF:
+              return {
+                path: PATHS.KITCHEN_DASHBOARD,
+                message: "Xin chào Nhân viên bếp! Đăng nhập thành công.",
+              };
+            default:
+              return {
+                path: PATHS.PARENT_DASHBOARD,
+                message: "Chào mừng Phụ huynh! Đăng nhập thành công.",
+              };
+          }
+        })();
 
-      setTimeout(() => {
-        window.location.href = path;
-      }, 500);
+        toast.success(message);
+
+        setTimeout(() => {
+          window.location.href = path;
+        }, 500);
+      }
     },
 
     onError: (error: any) => {

@@ -6,14 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { axiosInstance } from "@/lib/axiosInstance"; // Đảm bảo đường dẫn đúng
+import { axiosInstance } from "@/lib/axiosInstance";
 import { Eye, EyeOff, Lock, Mail, KeyRound } from "lucide-react";
 
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const phoneOrEmailFromUrl = searchParams.get("phone") || "";
+  const phoneOrEmailFromUrl = searchParams.get("phoneOrEmail") || "";
 
   const [formData, setFormData] = useState({
     email: phoneOrEmailFromUrl,

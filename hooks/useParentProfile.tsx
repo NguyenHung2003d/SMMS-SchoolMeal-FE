@@ -6,6 +6,7 @@ import { ParentAccountDto } from "@/types/parent";
 import { Student } from "@/types/student";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { getAxiosErrorMessage } from "@/helpers";
 
 const getAvatarUrl = (url: string | null | undefined) => {
   if (!url) return undefined;
@@ -131,8 +132,12 @@ export const useParentProfile = () => {
       setParentAvatarFile(null);
       return true;
     } catch (err) {
-      console.error(err);
-      toast.error("Lỗi khi cập nhật thông tin phụ huynh!");
+      console.error("❌ Save parent error:", err);
+      const msg = getAxiosErrorMessage(
+        err,
+        "Lỗi khi cập nhật thông tin phụ huynh!"
+      );
+      toast.error(msg);
       return false;
     }
   };

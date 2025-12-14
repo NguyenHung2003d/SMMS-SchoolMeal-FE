@@ -44,7 +44,6 @@ export default function ManualDishModal({
       }
     };
 
-    // Debounce initial and search calls
     const timer = setTimeout(() => fetchFoods(), 300);
     return () => clearTimeout(timer);
   }, [isOpen, searchTerm, mealType]);

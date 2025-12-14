@@ -1,7 +1,7 @@
 import React from "react";
 import { TriangleAlert } from "lucide-react";
 import { format } from "date-fns";
-import { InventoryAlertShortDto } from "@/types/kitchen-dashboard"; // Import type của bạn
+import { InventoryAlertShortDto } from "@/types/kitchen-dashboard";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 
@@ -19,14 +19,16 @@ export const InventoryTable = ({ items }: InventoryTableProps) => {
       {items.length === 0 ? (
         <EmptyState message="Kho hàng ổn định, không có cảnh báo." />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 font-medium">
+            <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="px-4 py-3 rounded-l-lg">Tên nguyên liệu</th>
-                <th className="px-4 py-3">Số lượng</th>
-                <th className="px-4 py-3">Hạn dùng</th>
-                <th className="px-4 py-3 rounded-r-lg text-center">
+                <th className="px-4 py-3 rounded-l-lg bg-gray-50">
+                  Tên nguyên liệu
+                </th>
+                <th className="px-4 py-3 bg-gray-50">Số lượng</th>
+                <th className="px-4 py-3 bg-gray-50">Hạn dùng</th>
+                <th className="px-4 py-3 rounded-r-lg text-center bg-gray-50">
                   Trạng thái
                 </th>
               </tr>

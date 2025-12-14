@@ -18,7 +18,7 @@ export const AbsenceList = ({ requests }: AbsenceListProps) => {
       {requests.length === 0 ? (
         <EmptyState message="Không có học sinh báo nghỉ hôm nay." />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
           {requests.map((req) => (
             <div
               key={req.attendanceId}
@@ -35,7 +35,7 @@ export const AbsenceList = ({ requests }: AbsenceListProps) => {
                   {req.reasonShort || "Không có lý do"}
                 </p>
               </div>
-              <div className="text-left sm:text-right">
+              <div className="text-left sm:text-right flex-shrink-0">
                 <span className="inline-block text-xs font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded mb-1">
                   Nghỉ ngày: {format(new Date(req.absentDate), "dd/MM")}
                 </span>

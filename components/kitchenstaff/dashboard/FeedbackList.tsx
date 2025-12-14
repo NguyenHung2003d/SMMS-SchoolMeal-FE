@@ -11,16 +11,19 @@ interface FeedbackListProps {
 export const FeedbackList = ({ feedbacks }: FeedbackListProps) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full flex flex-col">
-      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-        <MessageSquare className="mr-2 text-green-500" size={20} />
-        Phản hồi gần đây
-      </h3>
+      <div className="flex-shrink-0">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <MessageSquare className="mr-2 text-green-500" size={20} />
+          Phản hồi gần đây
+        </h3>
+      </div>
+
       {feedbacks.length === 0 ? (
-        <div className="flex-grow flex items-center justify-center">
+        <div className="flex-grow flex items-center justify-center min-h-[200px]">
           <EmptyState message="Chưa có phản hồi nào." />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
           {feedbacks.map((fb) => (
             <div
               key={fb.feedbackId}

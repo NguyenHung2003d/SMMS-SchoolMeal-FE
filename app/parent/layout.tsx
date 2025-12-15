@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, LogOut, Loader2 } from "lucide-react";
+import { X, LogOut, Loader2, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { menuItems } from "@/data";
 import { SidebarContent } from "@/components/layouts/parent/SidebarContent";
@@ -62,7 +62,7 @@ export default function ParentLayoutWrapper({
           className={`${
             sidebarOpen
               ? "w-80 translate-x-0"
-              : "w-0 -translate-x-full lg:translate-x-0 lg:w-0"
+              : "w-0 -translate-x-full lg:w-0 lg:-translate-x-0" // Sửa nhẹ logic translate để mượt hơn
           } fixed lg:relative z-30 bg-white border-r border-gray-200 shadow-xl lg:shadow-none transition-all duration-300 ease-in-out h-full flex flex-col overflow-hidden`}
         >
           <div className="p-5 flex-shrink-0 flex justify-between items-center bg-gradient-to-r from-orange-600 to-orange-500 text-white">
@@ -94,7 +94,15 @@ export default function ParentLayoutWrapper({
         <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative transition-all duration-300">
           <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 w-full shadow-sm">
             <div className="px-4 sm:px-6 py-3 flex items-center justify-between w-full">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-lg hover:bg-orange-50 text-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-200"
+                  title={sidebarOpen ? "Đóng danh sách" : "Mở danh sách con"}
+                >
+                  {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+
                 <div className="flex flex-col">
                   <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-700 to-orange-600 truncate">
                     Parent Dashboard

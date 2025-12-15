@@ -1,15 +1,18 @@
 "use client";
 import React, { useState } from "react";
-import { Calendar, Download, Loader2 } from "lucide-react";
+import { Calendar, Download, Filter, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { FinanceStats } from "@/components/manager/finance/FinanceStats";
+
 import { FinanceCharts } from "@/components/manager/finance/FinanceCharts";
 import { InvoicesTable } from "@/components/manager/finance/InvoicesTable";
 import { InvoiceDetailModal } from "@/components/manager/finance/FinanceModals";
 import { ShoppingOrdersModal } from "@/components/manager/finance/ShoppingOrdersModal";
+
 import { managerFinanceService } from "@/services/manager/managerFinance.service";
+
 import { InvoiceDetailDto } from "@/types/manager-finance";
 
 import { useFinanceData } from "@/hooks/manager/useFinanceData";
@@ -17,6 +20,9 @@ import { useFinanceData } from "@/hooks/manager/useFinanceData";
 export default function ManagerFinance() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+
+  const [isYearlyView, setIsYearlyView] = useState(false);
+
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -50,12 +56,17 @@ export default function ManagerFinance() {
     try {
       const blob = await managerFinanceService.exportFinanceReport(
         selectedMonth,
-        selectedYear
+        selectedYear,
+        isYearlyView
       );
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `BaoCaoTaiChinh_${selectedMonth}_${selectedYear}.xlsx`;
+
+      const fileName = isYearlyView
+        ? `BaoCaoTaiChinh_Nam_${selectedYear}.xlsx`
+        : `BaoCaoTaiChinh_Thang_${selectedMonth}_${selectedYear}.xlsx`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -76,7 +87,34 @@ export default function ManagerFinance() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap space-x-2">
+          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
+            <Filter size={16} className="text-gray-500" />
+            <select
+              className="bg-transparent text-sm outline-none cursor-pointer font-medium text-gray-700"
+              value={isYearlyView ? "year" : "month"}
+              onChange={(e) => setIsYearlyView(e.target.value === "year")}
+            >
+              <option value="month">Xem theo Tháng</option>
+              <option value="year">Xem theo Năm</option>
+            </select>
+          </div>
+          {!isYearlyView && (
+            <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
+              <span className="text-sm text-gray-500 mr-1">Tháng</span>
+              <select
+                className="bg-transparent text-sm outline-none cursor-pointer"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm">
             <Calendar size={16} className="text-gray-500" />
             <select

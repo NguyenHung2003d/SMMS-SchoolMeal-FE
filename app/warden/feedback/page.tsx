@@ -3,14 +3,17 @@
 import React, { useState, useMemo } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { wardenFeedbackService } from "@/services/wardens/wardenFeedback.service";
 import { FeedbackDto } from "@/types/warden-feedback";
 import toast from "react-hot-toast";
+
+import { wardenFeedbackService } from "@/services/wardens/wardenFeedback.service";
+
 import { FeedbackFilterBar } from "@/components/warden/feedback/FeedbackFilterBar";
 import { FeedbackItem } from "@/components/warden/feedback/FeedbackItem";
 import { EmptyFeedbackState } from "@/components/warden/feedback/EmptyFeedbackState";
 import { CreateFeedbackModal } from "@/components/warden/feedback/CreateFeedbackModal";
-import { DeleteConfirmModal } from "@/components/warden/feedback/DeleteConfirmModal"; // Import modal mới
+import { DeleteConfirmModal } from "@/components/warden/feedback/DeleteConfirmModal";
+
 import { getNormalizedCategory } from "@/helpers";
 
 export default function TeacherFeedbackPage() {
@@ -42,7 +45,7 @@ export default function TeacherFeedbackPage() {
     mutationFn: wardenFeedbackService.deleteFeedback,
     onSuccess: () => {
       toast.success("Đã xóa thành công");
-      setShowDeleteModal(false); // Đóng modal sau khi xóa xong
+      setShowDeleteModal(false);
       setDeleteId(null);
       queryClient.invalidateQueries({ queryKey: ["wardenFeedbacks"] });
     },
@@ -165,7 +168,7 @@ export default function TeacherFeedbackPage() {
                   key={issue.feedbackId}
                   issue={issue}
                   onEdit={openEditModal}
-                  onDelete={handleDeleteClick} // Truyền hàm mở modal xóa
+                  onDelete={handleDeleteClick}
                 />
               ))
             ) : (

@@ -42,10 +42,21 @@ export const managerFinanceService = {
     return res.data;
   },
 
-  exportFinanceReport: async (month: number, year: number) => {
+  exportFinanceReport: async (
+    month: number,
+    year: number,
+    isYearly: boolean = false
+  ) => {
     const res = await axiosInstance.get(
       `/ManagerFinance/export?month=${month}&year=${year}`,
-      { responseType: "blob" }
+      {
+        responseType: "blob",
+        params: {
+          month,
+          year,
+          isYearly,
+        },
+      }
     );
     return res.data;
   },

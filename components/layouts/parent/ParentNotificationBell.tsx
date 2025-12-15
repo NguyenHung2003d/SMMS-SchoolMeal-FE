@@ -20,15 +20,7 @@ import { vi } from "date-fns/locale";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
 import { parseDate } from "@/helpers";
-
-interface NotificationDto {
-  notificationId: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  isRead: boolean;
-  sendType?: string;
-}
+import { NotificationDto } from "@/types/notification";
 
 export function ParentNotificationBell() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
@@ -72,8 +64,8 @@ export function ParentNotificationBell() {
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        // skipNegotiation: true,
-        // transport: HttpTransportType.WebSockets,
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets,
         withCredentials: true,
       })
       .withAutomaticReconnect()

@@ -64,9 +64,8 @@ export function ParentNotificationBell() {
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        skipNegotiation: true,
-        transport: HttpTransportType.WebSockets,
         withCredentials: true,
+        skipNegotiation: false
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)

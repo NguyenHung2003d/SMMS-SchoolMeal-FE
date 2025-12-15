@@ -58,23 +58,34 @@ export function ParentNotificationBell() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const HUB_URL =
-      "https://outragedly-guidebookish-mitzie.ngrok-free.dev/hubs/notifications";
+    let connection: HubConnection | null = null;
 
-    const connection = new HubConnectionBuilder()
-      .withUrl(HUB_URL, {
-        withCredentials: true,
-        skipNegotiation: true,
-        transport: HttpTransportType.WebSockets,
-      })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
-    const startConnection = async () => {
+    const startSignalR = async () => {
       try {
+        const response = await axiosInstance.get("/Auth/connection-token");
+        const accessToken = response.data.token;
+
+        if (!accessToken) {
+          console.error("Không lấy được token để kết nối SignalR");
+          return;
+        }
+
+        const HUB_URL =
+          "https://outragedly-guidebookish-mitzie.ngrok-free.dev/hubs/notifications";
+
+        connection = new HubConnectionBuilder()
+          .withUrl(HUB_URL, {
+            accessTokenFactory: () => accessToken,
+
+            skipNegotiation: true,
+
+            transport: HttpTransportType.WebSockets,
+          })
+          .withAutomaticReconnect()
+          .configureLogging(LogLevel.Information)
+          .build();
+
         await connection.start();
-        console.log("🟢 [Parent SignalR] Connected successfully");
 
         connection.on("ReceiveNotification", (newNotif: NotificationDto) => {
           console.log("🔔 [SignalR] Received:", newNotif);
@@ -87,7 +98,7 @@ export function ParentNotificationBell() {
       }
     };
 
-    startConnection();
+    startSignalR();
     connectionRef.current = connection;
 
     return () => {

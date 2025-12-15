@@ -59,13 +59,13 @@ export function ParentNotificationBell() {
     if (!isAuthenticated) return;
 
     const HUB_URL =
-      process.env.NEXT_PUBLIC_HUB_URL ||
-      "http://localhost:5000/hubs/notifications";
+      "https://outragedly-guidebookish-mitzie.ngrok-free.dev/hubs/notifications";
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
         withCredentials: true,
-        skipNegotiation: false
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)

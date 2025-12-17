@@ -59,8 +59,7 @@ export const FoodCard: React.FC<Props> = ({ food, onEdit, onDelete }) => {
         <p className="text-gray-500 text-sm line-clamp-2 h-10 mb-3">
           {food.foodDesc || "Chưa có mô tả"}
         </p>
-        <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
-          <span>{food.ingredients?.length || 0} nguyên liệu</span>
+        <div className="pt-3 border-t border-gray-100 flex justify-end items-center text-xs text-gray-500">
           <span>#{food.foodId}</span>
         </div>
       </div>

@@ -168,17 +168,6 @@ export default function ManagerNotificationBell() {
               </ul>
             )}
           </div>
-
-          <div className="p-2 border-t border-gray-100 bg-gray-50 text-center">
-            <button
-              className="text-xs font-medium text-gray-500 hover:text-orange-600 transition-colors flex items-center justify-center w-full gap-1"
-              onClick={() => {
-                setUnreadCount(0);
-              }}
-            >
-              <Check size={14} /> Đánh dấu tất cả là đã đọc
-            </button>
-          </div>
         </div>
       )}
     </div>

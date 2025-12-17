@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Plus, Save, Sparkles, Loader2, Calendar, X, Copy } from "lucide-react";
-import { format, startOfWeek, addDays, parseISO } from "date-fns";
+import { format, startOfWeek, addDays, parseISO, isMonday } from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
@@ -9,7 +9,9 @@ import {
   DailyMealRequestDto,
   AiDishDto,
 } from "@/types/kitchen-menu-create";
+
 import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
+
 import ManualDishModal from "@/components/kitchenstaff/menu-create/ManualDishModal";
 import AiSuggestionModal from "@/components/kitchenstaff/menu-create/AiSuggestionModal";
 import MenuTemplateModal from "@/components/kitchenstaff/menu/MenuTemplateModal";
@@ -29,6 +31,7 @@ const MEAL_TYPES = [
 
 export default function KitchenStaffMenuCreationPage() {
   const router = useRouter();
+  const [mealNotes, setMealNotes] = useState<Record<string, string>>({});
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd")
@@ -55,9 +58,18 @@ export default function KitchenStaffMenuCreationPage() {
   const handleWeekStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (val) {
+      const dateObj = parseISO(val);
+      if (!isMonday(dateObj)) {
+        toast("Lưu ý: Tuần học phải bắt đầu từ Thứ 2", { icon: "⚠️" });
+      }
       setWeekStart(val);
       setWeekEnd(format(addDays(parseISO(val), 6), "yyyy-MM-dd"));
     }
+  };
+
+  const handleNoteChange = (day: number, mealType: string, note: string) => {
+    const key = `${day}_${mealType}`;
+    setMealNotes((pre) => ({ ...pre, [key]: note }));
   };
 
   const openManualAdd = (day: number, mealType: string) => {
@@ -67,6 +79,12 @@ export default function KitchenStaffMenuCreationPage() {
 
   const addDishToGrid = (dish: FoodItemDto, day: number, mealType: string) => {
     const key = `${day}_${mealType}`;
+    const currentItems = gridData[key] || [];
+    const isDuplicate = currentItems.some((x) => x.foodId === dish.foodId);
+    if (isDuplicate) {
+      toast.error("Món này đã có trong bữa ăn!", { id: `dup-${dish.foodId}` });
+      return;
+    }
     setGridData((prev) => {
       const existing = prev[key] || [];
       if (existing.find((x) => x.foodId === dish.foodId)) {
@@ -102,37 +120,50 @@ export default function KitchenStaffMenuCreationPage() {
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(gridData).length === 0)
-      return toast.error("Thực đơn trống");
+    const startDate = parseISO(weekStart);
+
+    if (!isMonday(startDate)) {
+      return toast.error("Vui lòng chọn ngày bắt đầu là Thứ 2!");
+    }
+
     setSubmitting(true);
     try {
-      const startDate = parseISO(weekStart);
-      const groupedMeals: Record<string, DailyMealRequestDto> = {};
+      const dailyMealsPayload: DailyMealRequestDto[] = [];
+      let validationError = null;
 
-      Object.entries(gridData).forEach(([key, foods]) => {
-        if (!foods.length) return;
-        const [dayStr, mealType] = key.split("_");
-        const mealDateStr = format(
-          addDays(startDate, parseInt(dayStr) - 2),
-          "yyyy-MM-dd"
-        );
-        const groupKey = `${mealDateStr}_${mealType}`;
-
-        if (!groupedMeals[groupKey]) {
-          groupedMeals[groupKey] = {
+      for (const dayItem of DAYS_OF_WEEK) {
+        for (const mealItem of MEAL_TYPES) {
+          const key = `${dayItem.value}_${mealItem.key}`;
+          const foods = gridData[key] || [];
+          const note = mealNotes[key] || "";
+          if (foods.length === 0 && !note.trim()) {
+            validationError = `Thứ ${dayItem.value} - ${mealItem.label}: Vui lòng chọn món hoặc nhập lý do (ghi chú).`;
+            break;
+          }
+          const mealDateStr = format(
+            addDays(startDate, dayItem.value - 2),
+            "yyyy-MM-dd"
+          );
+          const dto: DailyMealRequestDto = {
             mealDate: mealDateStr,
-            mealType,
-            notes: "",
-            foodIds: [],
+            mealType: mealItem.key,
+            notes: note.trim(),
+            foodIds: foods.length > 0 ? foods.map((f) => f.foodId) : [],
           };
+          dailyMealsPayload.push(dto);
         }
-        foods.forEach((f) => groupedMeals[groupKey].foodIds.push(f.foodId));
-      });
+        if (validationError) break;
+      }
+
+      if (validationError) {
+        setSubmitting(false);
+        return toast.error(validationError);
+      }
 
       const res = await kitchenMenuService.createSchedule({
         weekStart,
         weekEnd,
-        dailyMeals: Object.values(groupedMeals),
+        dailyMeals: dailyMealsPayload,
       });
 
       const id = res.scheduleMealId || res.data?.scheduleMealId;
@@ -142,7 +173,9 @@ export default function KitchenStaffMenuCreationPage() {
         router.push("/kitchen-staff/purchase-plan");
       }
     } catch (e: any) {
-      toast.error(e.response?.data?.message || "Lỗi khi lưu");
+      toast.error(
+        e.response?.data?.error || e.response?.data?.message || "Lỗi khi lưu"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -246,6 +279,21 @@ export default function KitchenStaffMenuCreationPage() {
                         </button>
                       </div>
                     ))}
+                  </div>
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      placeholder="Ghi chú (bắt buộc nếu k có món)..."
+                      value={mealNotes[key] || ""}
+                      onChange={(e) =>
+                        handleNoteChange(day.value, meal.key, e.target.value)
+                      }
+                      className={`w-full text-xs border rounded px-2 py-1 outline-none transition-colors ${
+                        items.length === 0 && !(mealNotes[key] || "")
+                          ? "border-red-200 bg-red-50 focus:border-red-400 placeholder:text-red-300"
+                          : "border-gray-200 focus:border-orange-400"
+                      }`}
+                    />
                   </div>
                   <button
                     onClick={() => openManualAdd(day.value, meal.key)}

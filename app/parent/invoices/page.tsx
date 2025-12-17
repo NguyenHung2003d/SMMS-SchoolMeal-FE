@@ -14,9 +14,9 @@ export default function InvoicePage() {
   const [invoicesList, setInvoicesList] = useState<InvoiceSummary[]>([]);
   const [isListLoading, setIsListLoading] = useState(false);
 
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
-    null
-  );
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<
+    number | string | null
+  >(null);
   const [invoiceDetail, setInvoiceDetail] = useState<Invoice | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
@@ -25,6 +25,10 @@ export default function InvoicePage() {
       setInvoicesList([]);
       setSelectedInvoiceId(null);
       setInvoiceDetail(null);
+      return;
+    }
+
+    if (!selectedStudent?.studentId) {
       return;
     }
 
@@ -53,12 +57,7 @@ export default function InvoicePage() {
           setInvoicesList([]);
           setInvoiceDetail(null);
         } else {
-          const serverMessage =
-            error.response?.data?.message ||
-            error.response?.data ||
-            error.message ||
-            "Không thể tải danh sách hóa đơn.";
-          toast.error(serverMessage);
+          toast.error("Không thể tải danh sách hóa đơn.");
         }
       } finally {
         setIsListLoading(false);
@@ -84,13 +83,16 @@ export default function InvoicePage() {
         );
         setInvoiceDetail(res.data);
       } catch (error: any) {
-        console.error("Lỗi lấy chi tiết:", error);
-        const serverMessage =
-          error.response?.data?.message ||
-          error.response?.data ||
-          error.message ||
-          "Không thể tải chi tiết hóa đơn này.";
-        toast.error(serverMessage);
+        console.error("Chi tiết lỗi fetchDetail:", error);
+
+        if (error.response?.status === 404) {
+          setInvoiceDetail(null);
+          console.warn("API trả về 404 cho hóa đơn:", selectedInvoiceId);
+        } else {
+          const msg =
+            error.response?.data?.message || "Lỗi tải chi tiết hóa đơn.";
+          toast.error(msg);
+        }
       } finally {
         setIsDetailLoading(false);
       }
@@ -156,7 +158,15 @@ export default function InvoicePage() {
             </div>
           ) : invoiceDetail ? (
             <InvoiceDetail invoice={invoiceDetail} />
-          ) : null}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg border border-dashed text-gray-500">
+              <Receipt className="w-10 h-10 mb-2 opacity-20" />
+              <p>Không tìm thấy nội dung chi tiết cho hóa đơn này.</p>
+              <p className="text-xs text-gray-400 mt-1">
+                (Mã hóa đơn: {selectedInvoiceId})
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

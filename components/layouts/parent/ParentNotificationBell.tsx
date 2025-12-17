@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,52 +58,41 @@ export function ParentNotificationBell() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    let connection: HubConnection | null = null;
+    const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || "";
 
-    const startSignalR = async () => {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl(HUB_URL, {
+        withCredentials: true,
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets,
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    connectionRef.current = newConnection;
+
+    const startConnection = async () => {
       try {
-        const response = await axiosInstance.get("/Auth/connection-token");
-        const accessToken = response.data.token;
+        await newConnection.start();
+        console.log("✅ [SignalR] Connected successfully");
 
-        if (!accessToken) {
-          console.error("Không lấy được token để kết nối SignalR");
-          return;
-        }
-
-        const HUB_URL =
-          "https://outragedly-guidebookish-mitzie.ngrok-free.dev/hubs/notifications";
-
-        connection = new HubConnectionBuilder()
-          .withUrl(HUB_URL, {
-            accessTokenFactory: () => accessToken,
-
-            skipNegotiation: true,
-
-            transport: HttpTransportType.WebSockets,
-          })
-          .withAutomaticReconnect()
-          .configureLogging(LogLevel.Information)
-          .build();
-
-        await connection.start();
-
-        connection.on("ReceiveNotification", (newNotif: NotificationDto) => {
+        newConnection.on("ReceiveNotification", (newNotif: NotificationDto) => {
           console.log("🔔 [SignalR] Received:", newNotif);
-
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
         });
       } catch (err) {
-        console.error("🔴 [Parent SignalR] Connection failed:", err);
+        console.error("🔴 [SignalR] Connection failed:", err);
       }
     };
 
-    startSignalR();
-    connectionRef.current = connection;
+    startConnection();
 
     return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop();
+      if (newConnection) {
+        newConnection.off("ReceiveNotification");
+        newConnection.stop().catch((err) => console.error("Stop error:", err));
       }
     };
   }, [isAuthenticated]);
@@ -113,16 +102,15 @@ export function ParentNotificationBell() {
     currentReadStatus: boolean
   ) => {
     if (currentReadStatus) return;
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.notificationId === notificationId ? { ...n, isRead: true } : n
+      )
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
     try {
-      await axiosInstance.post(
-        `/Attendance/notifications/${notificationId}/read`
-      );
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.notificationId === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      await axiosInstance.put(`/Attendance/${notificationId}/read`);
     } catch (error) {
       console.error("Lỗi đánh dấu đã đọc:", error);
     }

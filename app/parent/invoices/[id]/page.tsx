@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,7 +14,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast"; // Thêm Toaster
+import toast from "react-hot-toast"; // Thêm Toaster
 
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
@@ -24,7 +24,6 @@ import { useSelectedStudent } from "@/context/SelectedChildContext";
 export default function InvoiceDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { selectedStudent, isInitialized } = useSelectedStudent();
 
   const invoiceId = Number(params.id);
@@ -66,10 +65,6 @@ export default function InvoiceDetailPage() {
         setInvoiceData(data);
       } catch (err: any) {
         console.error("Lỗi chi tiết:", err);
-        setError(
-          err.message ||
-            "Không tìm thấy hóa đơn hoặc bạn không có quyền truy cập."
-        );
       } finally {
         setIsLoading(false);
       }

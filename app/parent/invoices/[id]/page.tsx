@@ -13,8 +13,10 @@ import {
   User,
   AlertCircle,
   CheckCircle2,
+  Coins,
+  Calculator,
 } from "lucide-react";
-import toast from "react-hot-toast"; // Thêm Toaster
+import toast from "react-hot-toast";
 
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
@@ -55,10 +57,10 @@ export default function InvoiceDetailPage() {
 
       try {
         setIsLoading(true);
-        const data = await billService.getInvoiceDetail(
+        const data = (await billService.getInvoiceDetail(
           invoiceId,
           String(targetStudentId)
-        );
+        )) as unknown as Invoice;
         if (!data) {
           throw new Error("Dữ liệu trả về rỗng");
         }
@@ -135,6 +137,9 @@ export default function InvoiceDetailPage() {
   const isPaid =
     invoiceData.status === "Paid" || invoiceData.status === "Đã thanh toán";
 
+  const totalAbsentDays = invoiceData.absentDay || 0;
+  const refundedAmount = totalAbsentDays * (invoiceData.mealPricePerDay || 0);
+
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
       <div className="max-w-4xl mx-auto mb-6">
@@ -155,7 +160,9 @@ export default function InvoiceDetailPage() {
             <div className="flex items-center gap-2 mb-2 opacity-90 text-sm font-semibold uppercase tracking-wider">
               <Receipt size={18} /> Chi tiết hóa đơn
             </div>
-            <h1 className="text-3xl font-bold">#{invoiceData.invoiceId}</h1>
+            <h1 className="text-3xl font-bold">
+              #{invoiceData.invoiceId}
+            </h1>
           </div>
 
           <div
@@ -209,6 +216,13 @@ export default function InvoiceDetailPage() {
                     value={invoiceData.settlementAccountNo}
                     valueClass="font-mono font-bold tracking-wide"
                   />
+                  {invoiceData.settlementAccountName && (
+                    <InfoRow
+                      label="Chủ tài khoản"
+                      value={invoiceData.settlementAccountName}
+                      valueClass="uppercase text-xs font-semibold text-gray-600"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -230,12 +244,46 @@ export default function InvoiceDetailPage() {
                     - {new Date(invoiceData.dateTo).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
+                <div className="border-t border-amber-200/50 my-2"></div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Số ngày nghỉ (đã trừ):</span>
-                  <span className="font-bold text-amber-700">
-                    {invoiceData.absentDay} ngày
+                  <span className="text-gray-600 flex items-center gap-1">
+                    <Coins size={14} /> Đơn giá ngày ăn:
+                  </span>{" "}
+                  <span className="font-medium text-gray-900">
+                    {formatCurrency(invoiceData.mealPricePerDay)} / ngày
                   </span>
                 </div>
+                {invoiceData.holiday > 0 && (
+                  <div className="flex justify-between items-center text-gray-500">
+                    <span>Nghỉ lễ/trường (tháng trước):</span>
+                    <span>{invoiceData.holiday} ngày</span>{" "}
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Số ngày nghỉ có phép:</span>
+                  <span
+                    className={`font-bold ${
+                      invoiceData.absentDay > 0
+                        ? "text-green-600"
+                        : "text-gray-900"
+                    }`}
+                  >
+                    {invoiceData.absentDay > 0
+                      ? `-${invoiceData.absentDay}`
+                      : 0}{" "}
+                    ngày
+                  </span>
+                </div>
+                {refundedAmount > 0 && (
+                  <div className="flex justify-between items-center bg-green-50 px-3 py-2 rounded-lg border border-green-100 mt-2">
+                    <span className="text-green-700 text-xs font-semibold flex items-center gap-1">
+                      <Calculator size={14} /> Khấu trừ ngày nghỉ:
+                    </span>
+                    <span className="font-bold text-green-700">
+                      -{formatCurrency(refundedAmount)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -292,8 +340,8 @@ export default function InvoiceDetailPage() {
           <div className="bg-yellow-50 px-8 py-4 text-sm text-yellow-800 border-t border-yellow-100 flex items-start gap-3">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <p>
-              Vui lòng kiểm tra kỹ thông tin trước khi thanh toán. Nếu có sai
-              sót, vui lòng liên hệ nhà trường để được hỗ trợ.
+              Vui lòng kiểm tra kỹ thông tin (Số ngày nghỉ đã được trừ vào hóa
+              đơn). Nếu có sai sót, vui lòng liên hệ nhà trường để được hỗ trợ.
             </p>
           </div>
         )}
@@ -313,6 +361,6 @@ const InfoRow = ({
 }) => (
   <div className="flex justify-between items-start gap-4">
     <span className="text-gray-500 text-sm shrink-0">{label}</span>
-    <span className={`${valueClass} text-right break-words`}>{value}</span>
+    <span className={`${valueClass} text-right wrap-break-word`}>{value}</span>
   </div>
 );

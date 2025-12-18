@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Loader2, Utensils, DollarSign } from "lucide-react";
+import { X, Loader2, Utensils, Calendar } from "lucide-react";
 import { SchoolPaymentSettingDto } from "@/types/manager-payment";
 import { toast } from "react-hot-toast";
 
@@ -20,8 +20,6 @@ export const PaymentSettingModal = ({
 }: PaymentSettingModalProps) => {
   const [form, setForm] = useState({
     fromMonth: 1,
-    toMonth: 1,
-    totalAmount: 0,
     mealPricePerDay: 0,
     note: "",
     isActive: true,
@@ -32,8 +30,6 @@ export const PaymentSettingModal = ({
       if (initialData) {
         setForm({
           fromMonth: initialData.fromMonth,
-          toMonth: initialData.toMonth,
-          totalAmount: initialData.totalAmount,
           mealPricePerDay: initialData.mealPricePerDay,
           note: initialData.note || "",
           isActive: initialData.isActive,
@@ -42,9 +38,7 @@ export const PaymentSettingModal = ({
         const currentMonth = new Date().getMonth() + 1;
         setForm({
           fromMonth: currentMonth,
-          toMonth: currentMonth,
-          totalAmount: 0,
-          mealPricePerDay: 0, // Mặc định 0
+          mealPricePerDay: 0,
           note: "",
           isActive: true,
         });
@@ -55,14 +49,6 @@ export const PaymentSettingModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (form.fromMonth > form.toMonth) {
-      toast.error("Tháng bắt đầu không được lớn hơn tháng kết thúc");
-      return;
-    }
-    if (form.totalAmount < 0) {
-      toast.error("Tổng số tiền không được âm");
-      return;
-    }
     if (form.mealPricePerDay < 0) {
       toast.error("Tiền ăn mỗi ngày không được âm");
       return;
@@ -85,7 +71,7 @@ export const PaymentSettingModal = ({
               {initialData ? "Cập nhật cấu hình" : "Thêm đợt thu mới"}
             </h2>
             <p className="text-xs text-gray-500 mt-1">
-              Thiết lập thông tin thu phí cho học kỳ
+              Thiết lập đơn giá tiền ăn cho tháng
             </p>
           </div>
           <button
@@ -99,8 +85,8 @@ export const PaymentSettingModal = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Từ tháng
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
+                <Calendar size={14} className="text-orange-500" /> Tháng áp dụng
               </label>
               <select
                 className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 block p-3 outline-none transition-all"
@@ -116,27 +102,7 @@ export const PaymentSettingModal = ({
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Đến tháng
-              </label>
-              <select
-                className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 block p-3 outline-none transition-all"
-                value={form.toMonth}
-                onChange={(e) =>
-                  setForm({ ...form, toMonth: Number(e.target.value) })
-                }
-              >
-                {[...Array(12)].map((_, i) => (
-                  <option key={i} value={i + 1}>
-                    Tháng {i + 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
                 <Utensils size={14} className="text-blue-500" /> Tiền ăn/ngày
@@ -160,28 +126,11 @@ export const PaymentSettingModal = ({
                 </span>
               </div>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
-                <DollarSign size={14} className="text-green-500" /> Tổng thu
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  className="w-full pl-3 pr-10 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-gray-800 font-medium outline-none transition-all placeholder:text-gray-300"
-                  placeholder="0"
-                  value={form.totalAmount}
-                  onChange={(e) =>
-                    setForm({ ...form, totalAmount: Number(e.target.value) })
-                  }
-                />
-                <span className="absolute right-3 top-3.5 text-xs font-bold text-gray-400">
-                  VNĐ
-                </span>
-              </div>
-            </div>
+          <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm border border-blue-100">
+            <strong>Lưu ý:</strong> Tổng số tiền thu sẽ được hệ thống tự động
+            tính toán dựa trên số ngày làm việc thực tế của tháng này.
           </div>
 
           <div>
@@ -192,7 +141,7 @@ export const PaymentSettingModal = ({
               className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none h-24 placeholder:text-gray-400"
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              placeholder="Nhập ghi chú cho đợt thu này (ví dụ: Bao gồm tiền cơ sở vật chất...)"
+              placeholder="Nhập ghi chú (ví dụ: Đã bao gồm phụ phí...)"
             />
           </div>
 

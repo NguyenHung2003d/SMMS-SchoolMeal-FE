@@ -55,7 +55,7 @@ export default function StudentGalleryPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <ImageIcon className="text-blue-600" />
-          Thư viện ảnh của bé
+          Thư viện ảnh lớp của bé
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           Những khoảnh khắc đáng nhớ của {selectedStudent.fullName} tại trường.

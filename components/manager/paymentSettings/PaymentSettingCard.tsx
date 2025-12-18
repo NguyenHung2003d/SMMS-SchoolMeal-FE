@@ -1,5 +1,12 @@
 import React from "react";
-import { Edit, Trash2, Calendar, AlertCircle, Utensils, Coins } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Calendar,
+  AlertCircle,
+  Utensils,
+  Coins,
+} from "lucide-react";
 import { SchoolPaymentSettingDto } from "@/types/manager-payment";
 import { formatCurrency } from "@/helpers";
 
@@ -37,38 +44,43 @@ export const PaymentSettingCard = ({
           <Calendar size={20} />
         </div>
         <div>
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Kỳ thu</p>
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+            Tháng áp dụng
+          </p>
           <h3 className="font-bold text-gray-800 text-lg">
-            Tháng {item.fromMonth} {item.fromMonth !== item.toMonth && `- ${item.toMonth}`}
+            Tháng {item.fromMonth}
           </h3>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-            <div className="flex items-center gap-1.5 mb-1 text-blue-700">
-                <Utensils size={14} />
-                <span className="text-xs font-semibold">Tiền ăn/ngày</span>
-            </div>
-            <p className="font-bold text-blue-900 text-lg">
-                {formatCurrency(item.mealPricePerDay)}
-            </p>
+          <div className="flex items-center gap-1.5 mb-1 text-blue-700">
+            <Utensils size={14} />
+            <span className="text-xs font-semibold">Tiền ăn/ngày</span>
+          </div>
+          <p className="font-bold text-blue-900 text-lg">
+            {formatCurrency(item.mealPricePerDay)}
+          </p>
         </div>
 
         <div className="bg-green-50/50 p-3 rounded-xl border border-green-100">
-            <div className="flex items-center gap-1.5 mb-1 text-green-700">
-                <Coins size={14} />
-                <span className="text-xs font-semibold">Tổng thu</span>
-            </div>
-            <p className="font-bold text-green-900 text-lg">
-                {formatCurrency(item.totalAmount)}
-            </p>
+          <div className="flex items-center gap-1.5 mb-1 text-green-700">
+            <Coins size={14} />
+            <span className="text-xs font-semibold">Tổng thu (Dự kiến)</span>
+          </div>
+          <p className="font-bold text-green-900 text-lg">
+            {formatCurrency(item.totalAmount)}
+          </p>
         </div>
       </div>
 
       {item.note && (
         <div className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg text-xs text-gray-600 mb-4 border border-gray-100">
-          <AlertCircle size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
+          <AlertCircle
+            size={14}
+            className="text-gray-400 mt-0.5 flex-shrink-0"
+          />
           <p className="line-clamp-2 leading-relaxed">{item.note}</p>
         </div>
       )}

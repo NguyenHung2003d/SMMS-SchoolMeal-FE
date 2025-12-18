@@ -26,7 +26,6 @@ export function StudentsInfo({
   selectedStudent,
   onSelectStudent,
   onUpdateStudent,
-  onSubmit,
   isSaving,
   onStudentAvatarChange,
 }: StudentsInfoProps) {
@@ -89,16 +88,14 @@ export function StudentsInfo({
     if (!selectedStudent) return;
 
     let nextAllergies = selectedStudent.allergies.filter(
-      (a) => !a.startsWith("Khác:")
+      (a) => a !== "Khác" && !a.startsWith("Khác:")
     );
 
     if (value.trim()) {
-      if (!nextAllergies.includes("Khác")) {
-        nextAllergies.push("Khác");
-      }
-      nextAllergies.push(`Khác: ${value.trim()}`);
+      nextAllergies.push("Khác");
+      nextAllergies.push(`Khác: ${value}`);
     } else {
-      if (!nextAllergies.includes("Khác")) {
+      if (hasOtherChecked) {
         nextAllergies.push("Khác");
       }
     }
@@ -108,7 +105,47 @@ export function StudentsInfo({
       allergies: nextAllergies,
     });
   };
-  
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+
+    try {
+      const uniqueAllergies = Array.from(new Set(selectedStudent.allergies));
+
+      const apiCalls = uniqueAllergies.map((item) => {
+        if (item === "Khác") return null;
+
+        if (item.startsWith("Khác:")) {
+          const customName = item.replace("Khác:", "").trim();
+          return parentService.addStudentAllergy(selectedStudent.studentId, {
+            allergenId: null,
+            allergenName: customName,
+            allergenInfo: "Dị ứng khác",
+          });
+        }
+
+        const existingAllergen = allergyList.find(
+          (a) => a.allergenName === item
+        );
+        if (existingAllergen) {
+          return parentService.addStudentAllergy(selectedStudent.studentId, {
+            allergenId: existingAllergen.allergenId,
+            allergenName: null,
+            allergenInfo: existingAllergen.allergenInfo,
+          });
+        }
+        return null;
+      });
+
+      await Promise.all(apiCalls.filter(Boolean));
+      toast.success("Cập nhật hồ sơ thành công!");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi lưu thông tin.");
+      console.error(error);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -208,7 +245,7 @@ export function StudentsInfo({
             </button>
           </div>
 
-          <form onSubmit={onSubmit} className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row gap-10">
               <div className="flex flex-col items-center space-y-4 md:w-1/4">
                 <div className="relative group">

@@ -39,3 +39,15 @@ export interface CreateAccountRequest {
   password?: string;
   schoolId?: string
 }
+
+export interface ClassDTO {
+  classId: string;
+  className: string;
+  gradeLevel?: number;
+  academicYearId?: number;
+}
+
+export interface ClassResponse {
+  count: number;
+  data: ClassDTO[];
+}

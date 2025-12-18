@@ -1,21 +1,21 @@
-import { Student } from "./student";
-
 export type Invoice = {
   invoiceId: number;
+  invoiceCode?: string
   studentId?: string;
-  studentName: string,
-  schoolName: string
-  className: string
+  studentName: string;
+  schoolName: string;
+  className: string;
   monthNo: number;
   dateFrom: string;
   dateTo: string;
   absentDay: number;
+  holiday: number;
   status: string;
-  amountToPay: number;
+  totalPrice: number;
+  mealPricePerDay: number;
   settlementBankCode: string;
   settlementAccountNo: string;
   settlementAccountName: string;
-
 };
 
 export interface InvoiceSummary {
@@ -52,6 +52,8 @@ export interface UpdateInvoiceRequest {
 
 export interface InvoiceFilter {
   monthNo?: number;
-  year?: number;
+  year: number;
   status?: string;
+  classId: string,
+  studentName: string
 }

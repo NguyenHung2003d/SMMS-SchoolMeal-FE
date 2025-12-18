@@ -16,7 +16,6 @@ export const useClassMutations = ({ onSuccess }: UseClassMutationsProps) => {
     closeModal: () => void
   ) => {
     if (editingClass) {
-      // --- UPDATE ---
       try {
         const payload = {
           className: formData.className,
@@ -32,7 +31,6 @@ export const useClassMutations = ({ onSuccess }: UseClassMutationsProps) => {
         toast.error(serverMessage || "Cập nhật thất bại");
       }
     } else {
-      // --- CREATE ---
       const currentUserRaw = authService.getCurrentUser();
       const currentUser = currentUserRaw instanceof Promise ? await currentUserRaw : currentUserRaw;
 

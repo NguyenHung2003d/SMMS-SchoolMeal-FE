@@ -40,7 +40,6 @@ export default function ManagerPaymentSettings() {
   const confirmDelete = (id: number) => {
     setItemToDeleteId(id);
     setIsDeleteModalOpen(true);
-    toast.success("Xoá thành công");
   };
 
   const executeDelete = async () => {
@@ -60,29 +59,29 @@ export default function ManagerPaymentSettings() {
 
   const handleSave = async (formData: any) => {
     try {
+      const payload = {
+        fromMonth: Number(formData.fromMonth),
+        mealPricePerDay: Number(formData.mealPricePerDay),
+        note: formData.note,
+      };
+
       if (editingItem) {
         await updateSetting({
           id: editingItem.settingId,
           data: {
-            fromMonth: formData.fromMonth,
-            toMonth: formData.toMonth,
-            totalAmount: formData.totalAmount,
-            mealPricePerDay: formData.mealPricePerDay, // Nhớ cập nhật type như câu trả lời trước
-            note: formData.note,
+            ...payload,
             isActive: formData.isActive,
           },
         });
       } else {
-        await createSetting({
-          fromMonth: formData.fromMonth,
-          toMonth: formData.toMonth,
-          totalAmount: formData.totalAmount,
-          mealPricePerDay: formData.mealPricePerDay,
-          note: formData.note,
-        });
+        await createSetting(payload);
       }
+
       setIsModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Có lỗi xảy ra khi lưu.";
+      toast.error(message);
       console.error(error);
     }
   };
@@ -95,7 +94,7 @@ export default function ManagerPaymentSettings() {
             Cấu hình thu phí ăn
           </h1>
           <p className="text-gray-600 text-sm mt-1">
-            Quản lý các đợt thu phí theo tháng cho toàn trường
+            Quản lý đơn giá và đợt thu phí theo tháng
           </p>
         </div>
 

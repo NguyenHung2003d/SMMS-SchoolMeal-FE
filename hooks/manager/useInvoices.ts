@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { managerInvoiceService } from "@/services/manager/managerInvoice.service";
-import {
-  InvoiceFilter,
-  UpdateInvoiceRequest,
-} from "@/types/invoices";
+import { InvoiceFilter, UpdateInvoiceRequest } from "@/types/invoices";
 import toast from "react-hot-toast";
 
 export const useInvoices = (filter: InvoiceFilter) => {
@@ -13,10 +10,9 @@ export const useInvoices = (filter: InvoiceFilter) => {
     queryKey: ["invoices", filter],
     queryFn: async () => {
       const res = await managerInvoiceService.getAll(filter);
-      return res.data;
+      return res.data || [];
     },
     staleTime: 1000 * 60 * 5,
-    placeholderData: (prev) => prev,
   });
 
   const deleteMutation = useMutation({
@@ -51,14 +47,62 @@ export const useInvoices = (filter: InvoiceFilter) => {
     },
   });
 
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      if (!filter.monthNo) {
+        throw new Error("Vui lòng chọn tháng để xuất báo cáo.");
+      }
+      return managerInvoiceService.exportFeeBoard(filter.monthNo, filter.year);
+    },
+    onSuccess: (res) => {
+      try {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        const contentDisposition = res.headers["content-disposition"];
+        let fileName = `Bang-thu-thang-${filter.monthNo}-${filter.year}.xlsx`;
+        if (contentDisposition) {
+          const fileNameMatch =
+            contentDisposition.match(/filename="?([^"]+)"?/);
+          if (fileNameMatch && fileNameMatch.length === 2) {
+            fileName = fileNameMatch[1];
+          }
+        }
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success("Xuất file thành công!");
+      } catch (error) {
+        console.error("Lỗi khi tải file xuống", error);
+        toast.error("Có lỗi xảy ra khi xử lý file.");
+      }
+    },
+    onError: (err: any) => {
+      if (err.message === "Vui lòng chọn tháng để xuất báo cáo.") {
+        toast.error(err.message);
+        return;
+      }
+      console.error(err);
+      toast.error("Lỗi khi xuất báo cáo Excel.");
+    },
+  });
+
   return {
     invoices,
     isLoading,
+
     deleteInvoice: deleteMutation.mutateAsync,
     generateInvoices: generateMutation.mutateAsync,
     updateInvoice: updateMutation.mutateAsync,
+
+    exportFeeBoard: exportMutation.mutate,
+
     isGenerating: generateMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isExporting: exportMutation.isPending,
   };
 };

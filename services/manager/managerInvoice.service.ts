@@ -9,13 +9,17 @@ import {
 
 export const managerInvoiceService = {
   getAll: async (filter: InvoiceFilter) => {
-    const params = new URLSearchParams();
-    if (filter.monthNo) params.append("monthNo", filter.monthNo.toString());
-    if (filter.year) params.append("year", filter.year.toString());
-    if (filter.status) params.append("status", filter.status);
-
     const response = await axiosInstance.get<InvoiceListResponse>(
-      `/ManagerInvoice/?${params.toString()}`
+      "/ManagerInvoice",
+      {
+        params: {
+          year: filter.year,
+          monthNo: filter.monthNo,
+          classId: filter.classId,
+          status: filter.status,
+          studentName: filter.studentName,
+        },
+      }
     );
     return response.data;
   },
@@ -38,5 +42,17 @@ export const managerInvoiceService = {
   delete: async (id: number) => {
     const response = await axiosInstance.delete(`/ManagerInvoice/${id}`);
     return response.data;
+  },
+
+  exportFeeBoard: async (monthNo: number, year: number, classId?: string) => {
+    const res = await axiosInstance.get("/ManagerInvoice/export-fee-board", {
+      params: {
+        monthNo,
+        year,
+        classId,
+      },
+      responseType: "blob",
+    });
+    return res;
   },
 };

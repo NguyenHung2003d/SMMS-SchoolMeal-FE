@@ -8,4 +8,18 @@ export const parentService = {
     );
     return response.data;
   },
+
+  addStudentAllergy: async (
+    studentId: string,
+    data: {
+      allergenId: string | number | null;
+      allergenName: string | null;
+      allergenInfo?: string;
+    }
+  ) => {
+    return axiosInstance.post(
+      `/ParentViewAllergen/by-student/${studentId}`,
+      data
+    );
+  },
 };

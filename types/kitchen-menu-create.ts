@@ -21,7 +21,7 @@ export interface DailyMealRequestDto {
   mealDate: string;
   mealType: string;
   notes?: string;
-  foodIds: number[];
+  foodIds: number[] | null;
 }
 
 export interface AiMenuResponse {

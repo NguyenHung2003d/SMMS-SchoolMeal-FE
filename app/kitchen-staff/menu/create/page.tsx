@@ -4,6 +4,7 @@ import { Plus, Save, Sparkles, Loader2, Calendar, X, Copy } from "lucide-react";
 import { format, startOfWeek, addDays, parseISO, isMonday } from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+
 import {
   FoodItemDto,
   DailyMealRequestDto,
@@ -31,7 +32,13 @@ const MEAL_TYPES = [
 
 export default function KitchenStaffMenuCreationPage() {
   const router = useRouter();
+
+  const [missingSlots, setMissingSlots] = useState<
+    { day: number; meal: string; label: string }[]
+  >([]);
+  const [isMissingNoteModalOpen, setIsMissingNoteModalOpen] = useState(false);
   const [mealNotes, setMealNotes] = useState<Record<string, string>>({});
+
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd")
@@ -80,17 +87,15 @@ export default function KitchenStaffMenuCreationPage() {
   const addDishToGrid = (dish: FoodItemDto, day: number, mealType: string) => {
     const key = `${day}_${mealType}`;
     const currentItems = gridData[key] || [];
+
     const isDuplicate = currentItems.some((x) => x.foodId === dish.foodId);
     if (isDuplicate) {
       toast.error("Món này đã có trong bữa ăn!", { id: `dup-${dish.foodId}` });
       return;
     }
+
     setGridData((prev) => {
       const existing = prev[key] || [];
-      if (existing.find((x) => x.foodId === dish.foodId)) {
-        toast.error("Món này đã có trong bữa ăn!");
-        return prev;
-      }
       return { ...prev, [key]: [...existing, dish] };
     });
     toast.success(`Đã thêm món vào Thứ ${day}`);
@@ -119,45 +124,32 @@ export default function KitchenStaffMenuCreationPage() {
     }));
   };
 
-  const handleSubmit = async () => {
+  const submitFinalData = async () => {
     const startDate = parseISO(weekStart);
-
-    if (!isMonday(startDate)) {
-      return toast.error("Vui lòng chọn ngày bắt đầu là Thứ 2!");
-    }
-
     setSubmitting(true);
     try {
       const dailyMealsPayload: DailyMealRequestDto[] = [];
-      let validationError = null;
 
       for (const dayItem of DAYS_OF_WEEK) {
         for (const mealItem of MEAL_TYPES) {
           const key = `${dayItem.value}_${mealItem.key}`;
           const foods = gridData[key] || [];
-          const note = mealNotes[key] || "";
-          if (foods.length === 0 && !note.trim()) {
-            validationError = `Thứ ${dayItem.value} - ${mealItem.label}: Vui lòng chọn món hoặc nhập lý do (ghi chú).`;
-            break;
-          }
-          const mealDateStr = format(
-            addDays(startDate, dayItem.value - 2),
-            "yyyy-MM-dd"
-          );
-          const dto: DailyMealRequestDto = {
-            mealDate: mealDateStr,
-            mealType: mealItem.key,
-            notes: note.trim(),
-            foodIds: foods.length > 0 ? foods.map((f) => f.foodId) : [],
-          };
-          dailyMealsPayload.push(dto);
-        }
-        if (validationError) break;
-      }
+          const rawNote = mealNotes[key] || "";
 
-      if (validationError) {
-        setSubmitting(false);
-        return toast.error(validationError);
+          const hasFood = foods.length > 0;
+          const finalNote = hasFood ? "" : rawNote.trim();
+          const finalFoodIds = hasFood ? foods.map((f) => f.foodId) : [];
+
+          dailyMealsPayload.push({
+            mealDate: format(
+              addDays(startDate, dayItem.value - 2),
+              "yyyy-MM-dd"
+            ),
+            mealType: mealItem.key,
+            notes: finalNote,
+            foodIds: finalFoodIds,
+          });
+        }
       }
 
       const res = await kitchenMenuService.createSchedule({
@@ -170,15 +162,54 @@ export default function KitchenStaffMenuCreationPage() {
       if (id) {
         await kitchenMenuService.createPurchasePlanFromSchedule(id);
         toast.success("Tạo kế hoạch thành công!");
+        setIsMissingNoteModalOpen(false);
         router.push("/kitchen-staff/purchase-plan");
       }
     } catch (e: any) {
-      toast.error(
-        e.response?.data?.error || e.response?.data?.message || "Lỗi khi lưu"
-      );
+      console.error(e);
+      if (e.response?.data?.errors) {
+        const errorMessages = Object.values(e.response.data.errors).flat();
+        toast.error((errorMessages[0] as string) || "Dữ liệu không hợp lệ!");
+      } else if (e.response?.data?.title) {
+        toast.error(e.response.data.title);
+      } else {
+        toast.error(e.response?.data?.error || "Đã có lỗi xảy ra khi lưu!");
+      }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSubmit = async () => {
+    const startDate = parseISO(weekStart);
+    if (!isMonday(startDate))
+      return toast.error("Vui lòng chọn ngày bắt đầu là Thứ 2!");
+
+    const missing: { day: number; meal: string; label: string }[] = [];
+
+    for (const dayItem of DAYS_OF_WEEK) {
+      for (const mealItem of MEAL_TYPES) {
+        const key = `${dayItem.value}_${mealItem.key}`;
+        const foods = gridData[key] || [];
+        const savedNote = mealNotes[key] || "";
+
+        if (foods.length === 0 && !savedNote.trim()) {
+          missing.push({
+            day: dayItem.value,
+            meal: mealItem.key,
+            label: `${dayItem.label} - ${mealItem.label}`,
+          });
+        }
+      }
+    }
+
+    if (missing.length > 0) {
+      setMissingSlots(missing);
+      setIsMissingNoteModalOpen(true);
+      return;
+    }
+
+    await submitFinalData();
   };
 
   const handleTemplateSelect = (templateData: any) => {
@@ -209,7 +240,6 @@ export default function KitchenStaffMenuCreationPage() {
       setGridData(newGridData);
       toast.success("Đã điền menu mẫu vào lịch!");
     } else {
-      console.error("Lỗi cấu trúc: API không trả về mảng 'days'", templateData);
       toast.error("Dữ liệu menu mẫu không hợp lệ");
     }
   };
@@ -243,9 +273,14 @@ export default function KitchenStaffMenuCreationPage() {
             <div className="text-center p-3 bg-white rounded-lg border border-gray-200 shadow-sm font-bold text-gray-700">
               {day.label}
             </div>
+
             {MEAL_TYPES.map((meal) => {
               const key = `${day.value}_${meal.key}`;
               const items = gridData[key] || [];
+              const noteContent = mealNotes[key] || "";
+              const hasFood = items.length > 0;
+              const hasNote = noteContent.trim().length > 0;
+
               return (
                 <div
                   key={meal.key}
@@ -260,6 +295,7 @@ export default function KitchenStaffMenuCreationPage() {
                       {meal.label}
                     </div>
                   </div>
+
                   <div className="flex-1 space-y-2">
                     {items.map((food, idx) => (
                       <div
@@ -280,26 +316,54 @@ export default function KitchenStaffMenuCreationPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mb-2">
+
+                  <div className="mb-2 mt-2">
                     <input
                       type="text"
-                      placeholder="Ghi chú (bắt buộc nếu k có món)..."
-                      value={mealNotes[key] || ""}
+                      placeholder={
+                        hasFood ? "Đang có món" : "Nhập lý do nghỉ..."
+                      }
+                      value={noteContent}
                       onChange={(e) =>
                         handleNoteChange(day.value, meal.key, e.target.value)
                       }
-                      className={`w-full text-xs border rounded px-2 py-1 outline-none transition-colors ${
-                        items.length === 0 && !(mealNotes[key] || "")
-                          ? "border-red-200 bg-red-50 focus:border-red-400 placeholder:text-red-300"
-                          : "border-gray-200 focus:border-orange-400"
-                      }`}
+                      disabled={hasFood}
+                      className={`w-full text-xs border rounded px-2 py-1 outline-none transition-colors 
+                        ${
+                          hasFood
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                            : hasNote
+                            ? "border-orange-300 bg-orange-50 text-gray-700"
+                            : "border-gray-200 focus:border-orange-400"
+                        }
+                      `}
                     />
                   </div>
+
                   <button
-                    onClick={() => openManualAdd(day.value, meal.key)}
-                    className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-gray-400 hover:text-orange-500 hover:bg-orange-50 text-xs flex justify-center items-center gap-1"
+                    onClick={() => {
+                      if (hasNote) {
+                        toast.error("Vui lòng xóa ghi chú trước khi thêm món!");
+                        return;
+                      }
+                      openManualAdd(day.value, meal.key);
+                    }}
+                    disabled={hasNote}
+                    className={`mt-auto w-full py-1.5 border border-dashed rounded text-xs flex justify-center items-center gap-1 transition-all
+                      ${
+                        hasNote
+                          ? "border-gray-200 text-gray-300 bg-gray-50 cursor-not-allowed"
+                          : "border-gray-300 text-gray-400 hover:text-orange-500 hover:bg-orange-50 hover:border-orange-300 cursor-pointer"
+                      }
+                    `}
                   >
-                    <Plus size={14} /> Thêm món
+                    {hasNote ? (
+                      <>🚫 Đang là ngày nghỉ</>
+                    ) : (
+                      <>
+                        <Plus size={14} /> Thêm món
+                      </>
+                    )}
                   </button>
                 </div>
               );
@@ -334,7 +398,7 @@ export default function KitchenStaffMenuCreationPage() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="px-8 py-2.5 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 flex items-center gap-2 disabled:opacity-70"
+            className="px-8 py-2.5 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <Loader2 className="animate-spin" />
@@ -370,6 +434,85 @@ export default function KitchenStaffMenuCreationPage() {
         selectedDay={aiSelectedDay}
         onDayChange={setAiSelectedDay}
       />
+
+      {isMissingNoteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-gray-100 bg-orange-50 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  ⚠️ Xác nhận ngày nghỉ
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Các bữa ăn sau chưa có món. Vui lòng nhập lý do nghỉ (VD: Nghỉ
+                  lễ).
+                </p>
+              </div>
+              <button
+                onClick={() => setIsMissingNoteModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-4 flex-1">
+              {missingSlots.map((slot, index) => {
+                const key = `${slot.day}_${slot.meal}`;
+                return (
+                  <div key={index} className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-gray-700">
+                      {slot.label}
+                    </label>
+                    <input
+                      type="text"
+                      autoFocus={index === 0}
+                      placeholder="VD: Nghỉ lễ, Tự túc, Họp hội đồng..."
+                      value={mealNotes[key] || ""}
+                      onChange={(e) =>
+                        handleNoteChange(slot.day, slot.meal, e.target.value)
+                      }
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-200 outline-none w-full"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button
+                onClick={() => setIsMissingNoteModalOpen(false)}
+                className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg text-sm"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => {
+                  const stillMissing = missingSlots.some(
+                    (s) => !mealNotes[`${s.day}_${s.meal}`]?.trim()
+                  );
+                  if (stillMissing) {
+                    toast.error(
+                      "Vui lòng điền lý do cho tất cả các ngày nghỉ!"
+                    );
+                    return;
+                  }
+                  submitFinalData();
+                }}
+                disabled={submitting}
+                className="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg shadow hover:bg-orange-700 text-sm flex items-center gap-2 disabled:opacity-70"
+              >
+                {submitting ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : (
+                  <Save size={16} />
+                )}
+                Lưu tất cả
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

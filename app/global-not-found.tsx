@@ -6,7 +6,7 @@ import ButtonRedirect from "@/components/ui/ButtonRedirect";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function NotFound() {
+export default function GlobalNotFound() {
   return (
     <html lang="vi" className={inter.className}>
       <body

@@ -2,20 +2,12 @@ import React, { useState } from "react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-  Activity,
   AlertCircle,
-  Bell,
   CheckCircle2,
   ChefHat,
   Clock,
-  DollarSign,
-  FileText,
   GraduationCap,
-  School,
-  User,
-  UserPlus,
   Users,
-  Utensils,
 } from "lucide-react";
 import { ManagerNotification } from "@/types/notification";
 import axios from "axios";

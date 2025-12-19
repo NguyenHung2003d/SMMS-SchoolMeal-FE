@@ -34,7 +34,7 @@ function CancelContent() {
         </Link>
 
         <Link
-          href="/parent/register"
+          href="/"
           className="flex items-center justify-center w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
         >
           <Home className="w-5 h-5 mr-2" />

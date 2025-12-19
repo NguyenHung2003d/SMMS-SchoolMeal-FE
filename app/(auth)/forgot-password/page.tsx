@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
                   <Button
                     type="submit"
                     disabled={isSendingOtp}
-                    className="w-full h-12 bg-orange-500 text-white"
+                    className="w-full h-12 bg-orange-500 text-white hover:bg-orange-600"
                   >
                     {isSendingOtp ? "Đang gửi..." : "Gửi mã OTP"}
                   </Button>

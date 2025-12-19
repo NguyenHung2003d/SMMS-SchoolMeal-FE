@@ -8,6 +8,7 @@ export type Invoice = {
   monthNo: number;
   dateFrom: string;
   dateTo: string;
+  amountToPay: number
   absentDay: number;
   holiday: number;
   status: string;

@@ -27,6 +27,7 @@ export function StudentsInfo({
   onSelectStudent,
   onUpdateStudent,
   isSaving,
+  onSubmit,
   onStudentAvatarChange,
 }: StudentsInfoProps) {
   const [otherValue, setOtherValue] = React.useState("");
@@ -120,10 +121,9 @@ export function StudentsInfo({
     if (!selectedStudent) return;
 
     try {
+      onSubmit(e);
       const currentAllergyIds = allergyList.map((a) => a.allergenId);
-
       const uniqueAllergies = Array.from(new Set(selectedStudent.allergies));
-
       const apiCalls = uniqueAllergies.map((item) => {
         if (item === "Khác") return null;
 
@@ -404,7 +404,7 @@ export function StudentsInfo({
                                 relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
                                 ${
                                   isSelected
-                                    ? "bg-orange-500 text-white border-orange-600 shadow-md shadow-orange-200 pl-9"
+                                    ? "bg-orange-500 text-white hover:bg-orange-700 border-orange-600 shadow-md shadow-orange-200 pl-9"
                                     : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:bg-orange-50"
                                 }
                               `}

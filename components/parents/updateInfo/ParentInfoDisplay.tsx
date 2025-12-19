@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Mail, Phone, Calendar, User, ShieldCheck } from "lucide-react";
+import { Edit, Mail, Phone, Calendar, User } from "lucide-react";
 import { ParentInfoDisplayProps } from "@/types/parent";
 import { getImageUrl } from "@/lib/utils";
 
@@ -33,12 +33,6 @@ export function ParentInfoDisplay({
                   <User className="w-12 h-12 text-slate-300" />
                 </div>
               )}
-            </div>
-            <div
-              className="absolute bottom-1 right-1 bg-green-500 p-1.5 rounded-full border-4 border-white"
-              title="Verified Parent"
-            >
-              <ShieldCheck size={14} className="text-white" />
             </div>
           </div>
 

@@ -30,11 +30,18 @@ export default function InvoiceDetailPage() {
 
   const invoiceId = Number(params.id);
 
+  const [customDescription, setCustomDescription] = useState("");
   const [invoiceData, setInvoiceData] = useState<InvoiceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  useEffect(() => {
+    if (invoiceData && !customDescription) {
+      setCustomDescription(`Thanh toan HD ${invoiceData.invoiceId}`);
+    }
+  }, [invoiceData]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -89,7 +96,7 @@ export default function InvoiceDetailPage() {
       const response = await billService.createPaymentLink(
         invoiceData.invoiceId,
         invoiceData.amountToPay,
-        `Thanh toan HD ${invoiceData.invoiceCode || invoiceData.invoiceId}`
+        customDescription || `Thanh toan HD ${invoiceData.invoiceId}`
       );
 
       if (response && response.checkoutUrl) {
@@ -164,9 +171,7 @@ export default function InvoiceDetailPage() {
             <div className="flex items-center gap-2 mb-2 opacity-90 text-sm font-semibold uppercase tracking-wider">
               <Receipt size={18} /> Chi tiết hóa đơn
             </div>
-            <h1 className="text-3xl font-bold">
-              #{invoiceData.invoiceId}
-            </h1>
+            <h1 className="text-3xl font-bold">#{invoiceData.invoiceId}</h1>
           </div>
 
           <div
@@ -289,6 +294,32 @@ export default function InvoiceDetailPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-blue-200 shadow-sm">
+              <label className="block text-sm font-bold text-gray-700 mb-2 flex justify-between">
+                <span>Nội dung lời nhắn</span>
+                <span
+                  className={
+                    customDescription.length > 25
+                      ? "text-red-500"
+                      : "text-gray-400"
+                  }
+                >
+                  {customDescription.length}/25
+                </span>
+              </label>
+              <input
+                type="text"
+                value={customDescription}
+                onChange={(e) => setCustomDescription(e.target.value)}
+                placeholder="Ví dụ: Hoc sinh Nguyen Van A dong tien"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                maxLength={25}
+              />
+              <p className="text-[11px] text-gray-500 mt-2">
+                * Lưu ý: PayOS chỉ chấp nhận tối đa 25 ký tự.
+              </p>
             </div>
 
             <div

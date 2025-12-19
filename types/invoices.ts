@@ -1,29 +1,23 @@
-export type Invoice = {
+export interface Invoice {
   invoiceId: number;
-  invoiceCode?: string
-  studentId?: string;
+  invoiceCode: string;
   studentName: string;
-  schoolName: string;
-  className: string;
   monthNo: number;
   dateFrom: string;
   dateTo: string;
-  amountToPay: number
   absentDay: number;
   holiday: number;
   status: string;
-  totalPrice: number;
+  amountToPay: number;
+  totalPrice: number
+}
+export interface InvoiceDetails extends Invoice {
+  className: string;
+  schoolName: string;
   mealPricePerDay: number;
   settlementBankCode: string;
   settlementAccountNo: string;
   settlementAccountName: string;
-};
-
-export interface InvoiceSummary {
-  invoiceId: number;
-  monthNo: number;
-  dateFrom: string;
-  status: string;
 }
 
 export interface PayOSLinkResponse {
@@ -55,6 +49,6 @@ export interface InvoiceFilter {
   monthNo?: number;
   year: number;
   status?: string;
-  classId: string,
-  studentName: string
+  classId: string;
+  studentName: string;
 }

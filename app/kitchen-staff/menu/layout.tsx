@@ -36,7 +36,7 @@ export default function MenuLayout({
           )}
         </div>
       </div>
-      <div className="min-h-[500px]">{children}</div>
+      <div>{children}</div>
     </div>
   );
 }

@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 
 import { formatCurrency } from "@/helpers";
 import { billService } from "@/services/bill.service";
-import { Invoice } from "@/types/invoices";
+import { InvoiceDetails } from "@/types/invoices";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
 
 export default function InvoiceDetailPage() {
@@ -30,7 +30,7 @@ export default function InvoiceDetailPage() {
 
   const invoiceId = Number(params.id);
 
-  const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,20 +60,24 @@ export default function InvoiceDetailPage() {
         const data = (await billService.getInvoiceDetail(
           invoiceId,
           String(targetStudentId)
-        )) as unknown as Invoice;
+        )) as unknown as InvoiceDetails;
+
         if (!data) {
           throw new Error("Dữ liệu trả về rỗng");
         }
         setInvoiceData(data);
       } catch (err: any) {
         console.error("Lỗi chi tiết:", err);
+        const msg =
+          err.response?.data?.message || "Không thể tải thông tin hóa đơn.";
+        setError(msg);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [invoiceId, isInitialized, searchParams]);
+  }, [invoiceId, isInitialized, searchParams, selectedStudent?.studentId]);
 
   const handlePayNow = async () => {
     if (!invoiceData) return;
@@ -85,7 +89,7 @@ export default function InvoiceDetailPage() {
       const response = await billService.createPaymentLink(
         invoiceData.invoiceId,
         invoiceData.amountToPay,
-        `Thanh toan HD ${invoiceData.invoiceId}`
+        `Thanh toan HD ${invoiceData.invoiceCode || invoiceData.invoiceId}`
       );
 
       if (response && response.checkoutUrl) {
@@ -99,7 +103,7 @@ export default function InvoiceDetailPage() {
     } catch (err: any) {
       console.error(err);
       const msg =
-        err.response?.data?.error || err.message || "Lỗi khi tạo giao dịch";
+        err.response?.data?.message || err.message || "Lỗi khi tạo giao dịch";
       toast.error(msg, { id: loadingToastId });
       setIsProcessingPayment(false);
     }
@@ -125,10 +129,10 @@ export default function InvoiceDetailPage() {
         </h2>
         <p className="text-gray-500 mb-6">{error}</p>
         <Link
-          href="/parent/register-meal"
+          href="/parent/invoices"
           className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
         >
-          Quay lại trang chủ
+          Quay lại danh sách
         </Link>
       </div>
     );
@@ -144,7 +148,7 @@ export default function InvoiceDetailPage() {
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
       <div className="max-w-4xl mx-auto mb-6">
         <Link
-          href="/parent/register-meal"
+          href="/parent/invoices"
           className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors font-medium group"
         >
           <ArrowLeft

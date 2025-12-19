@@ -1,10 +1,10 @@
 import React from "react";
 import { Building2, Calendar, User } from "lucide-react";
-import { Invoice } from "@/types/invoices";
+import { InvoiceDetails } from "@/types/invoices";
 import { formatCurrency, formatDate } from "@/helpers";
 
 interface Props {
-  invoice: Invoice;
+  invoice: InvoiceDetails;
 }
 
 export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {

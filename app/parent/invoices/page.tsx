@@ -4,20 +4,23 @@ import { Loader2, Receipt } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { axiosInstance } from "@/lib/axiosInstance";
-import { Invoice, InvoiceSummary } from "@/types/invoices";
+import { Invoice, InvoiceDetails } from "@/types/invoices";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
 import { InvoiceDetail } from "@/components/parents/invoice/InvoiceDetail";
 
 export default function InvoicePage() {
   const { selectedStudent } = useSelectedStudent();
 
-  const [invoicesList, setInvoicesList] = useState<InvoiceSummary[]>([]);
+  const [invoicesList, setInvoicesList] = useState<Invoice[]>([]);
   const [isListLoading, setIsListLoading] = useState(false);
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<
     number | string | null
   >(null);
-  const [invoiceDetail, setInvoiceDetail] = useState<Invoice | null>(null);
+
+  const [invoiceDetail, setInvoiceDetail] = useState<InvoiceDetails | null>(
+    null
+  );
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   useEffect(() => {
@@ -28,26 +31,16 @@ export default function InvoicePage() {
       return;
     }
 
-    if (!selectedStudent?.studentId) {
-      return;
-    }
-
     const fetchInvoicesList = async () => {
       try {
         setIsListLoading(true);
-        const res = await axiosInstance.get<InvoiceSummary[]>(
-          "/Invoice/my-invoices",
-          {
-            params: { studentId: selectedStudent.studentId },
-          }
-        );
+        const res = await axiosInstance.get<Invoice[]>("/Invoice/my-invoices", {
+          params: { studentId: selectedStudent.studentId },
+        });
         setInvoicesList(res.data);
 
         if (res.data && res.data.length > 0) {
-          const sorted = [...res.data].sort(
-            (a, b) => b.invoiceId - a.invoiceId
-          );
-          setSelectedInvoiceId(sorted[0].invoiceId);
+          setSelectedInvoiceId(res.data[0].invoiceId);
         } else {
           setSelectedInvoiceId(null);
           setInvoiceDetail(null);
@@ -75,7 +68,8 @@ export default function InvoicePage() {
         setIsDetailLoading(true);
         setInvoiceDetail(null);
 
-        const res = await axiosInstance.get<Invoice>(
+        // Gọi API lấy chi tiết
+        const res = await axiosInstance.get<InvoiceDetails>(
           `/Invoice/${selectedInvoiceId}`,
           {
             params: { studentId: selectedStudent.studentId },

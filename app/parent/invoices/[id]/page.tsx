@@ -145,11 +145,11 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const isPaid =
-    invoiceData.status === "Paid" || invoiceData.status === "Đã thanh toán";
+  const isPaid = invoiceData.status === "Paid";
 
   const totalAbsentDays = invoiceData.absentDay || 0;
-  const refundedAmount = totalAbsentDays * (invoiceData.mealPricePerDay || 0);
+  const totalRefundDays = totalAbsentDays;
+  const refundedAmount = totalRefundDays * (invoiceData.mealPricePerDay || 0);
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
@@ -262,12 +262,26 @@ export default function InvoiceDetailPage() {
                     {formatCurrency(invoiceData.mealPricePerDay)} / ngày
                   </span>
                 </div>
+                <div className="flex justify-between items-center text-gray-500">
+                  <span>Số ngày ăn thực tế (tháng trước):</span>
+                  <span className="font-medium text-gray-900">
+                    {invoiceData.totalMealLastMonth} ngày
+                  </span>
+                </div>
                 {invoiceData.holiday > 0 && (
                   <div className="flex justify-between items-center text-gray-500">
                     <span>Nghỉ lễ/trường (tháng trước):</span>
                     <span>{invoiceData.holiday} ngày</span>{" "}
                   </div>
                 )}
+                <div className="flex justify-between items-center border-t pt-2 mt-2">
+                  <span className="text-gray-600">
+                    Tiền cố định (trọn gói):
+                  </span>
+                  <span className="text-gray-900">
+                    {formatCurrency(invoiceData.amountTotal)}
+                  </span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Số ngày nghỉ có phép:</span>
                   <span

@@ -4,7 +4,12 @@ import { Invoice, PayOSLinkResponse } from "@/types/invoices";
 export const billService = {
   getUnpaidInvoices: async (studentId: string): Promise<Invoice[]> => {
     const res = await axiosInstance.get(
-      `/Invoice/invoices-unpaid?studentId=${studentId}`
+      `/Invoice/invoices-unpaid?studentId=${studentId}`,
+      {
+        params: {
+          studentId,
+        },
+      }
     );
     return res.data;
   },
@@ -27,7 +32,7 @@ export const billService = {
   getInvoiceDetail: async (invoiceId: number, studentId: string) => {
     const res = await axiosInstance.get(`/Invoice/${invoiceId}`, {
       params: {
-        studentId: studentId,
+        studentId,
       },
     });
     return res.data;

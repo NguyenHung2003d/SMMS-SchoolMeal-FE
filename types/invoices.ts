@@ -9,13 +9,15 @@ export interface Invoice {
   holiday: number;
   status: string;
   amountToPay: number;
-  totalPrice: number
-  mealPricePerDay: number
+  totalPrice: number;
+  mealPricePerDay: number;
 }
 export interface InvoiceDetails extends Invoice {
   className: string;
   schoolName: string;
   mealPricePerDay: number;
+  totalMealLastMonth: number;
+  amountTotal: number;
   settlementBankCode: string;
   settlementAccountNo: string;
   settlementAccountName: string;

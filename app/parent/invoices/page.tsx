@@ -136,8 +136,9 @@ export default function InvoicePage() {
             >
               {invoicesList.map((inv) => (
                 <option key={inv.invoiceId} value={inv.invoiceId}>
-                  Hóa đơn #{inv.invoiceId} - Tháng {inv.monthNo} (
-                  {new Date(inv.dateFrom).getFullYear()}) - {inv.status}
+                  Hóa đơn #{inv.invoiceCode || inv.invoiceId} - Tháng{" "}
+                  {inv.monthNo}(
+                  {inv.status === "Paid" ? "Đã thanh toán" : "Chưa thanh toán"})
                 </option>
               ))}
             </select>

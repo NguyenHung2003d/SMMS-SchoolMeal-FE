@@ -23,10 +23,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Refs để điều khiển animation
   const containerRef = useRef(null);
   const leftSideRef = useRef(null);
-  const formRef = useRef(null);
   const imageRef = useRef(null);
 
   useLayoutEffect(() => {

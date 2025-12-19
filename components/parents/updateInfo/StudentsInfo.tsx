@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import {
   Camera,
   User,
@@ -29,7 +29,8 @@ export function StudentsInfo({
   isSaving,
   onStudentAvatarChange,
 }: StudentsInfoProps) {
-  const Icon = selectedStudent?.avatar || User;
+  const [otherValue, setOtherValue] = React.useState("");
+  const [allergyNote, setAllergyNote] = React.useState<string>("");
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,11 +60,19 @@ export function StudentsInfo({
     onUpdateStudent({ ...selectedStudent, allergies: next });
   };
 
-  const otherAllergy = useMemo(() => {
-    if (!selectedStudent) return "";
-    const found = selectedStudent.allergies.find((a) => a.startsWith("Khác:"));
-    return found ? found.replace("Khác:", "").trim() : "";
-  }, [selectedStudent]);
+  useEffect(() => {
+    if (selectedStudent) {
+      const found = selectedStudent.allergies.find((a) =>
+        a.startsWith("Khác:")
+      );
+      const valueFromServer = found ? found.replace("Khác:", "").trim() : "";
+      if (valueFromServer !== otherValue.trim()) {
+        setOtherValue(valueFromServer);
+      }
+    } else {
+      setOtherValue("");
+    }
+  }, [selectedStudent?.studentId]);
 
   const hasOtherChecked = useMemo(() => {
     if (!selectedStudent) return false;
@@ -87,17 +96,17 @@ export function StudentsInfo({
   const handleOtherAllergyChange = (value: string) => {
     if (!selectedStudent) return;
 
+    setOtherValue(value);
+
     let nextAllergies = selectedStudent.allergies.filter(
       (a) => a !== "Khác" && !a.startsWith("Khác:")
     );
 
-    if (value.trim()) {
+    if (value.length > 0) {
       nextAllergies.push("Khác");
-      nextAllergies.push(`Khác: ${value}`);
-    } else {
-      if (hasOtherChecked) {
-        nextAllergies.push("Khác");
-      }
+      nextAllergies.push(`Khác:${value}`);
+    } else if (hasOtherChecked) {
+      nextAllergies.push("Khác");
     }
 
     onUpdateStudent({
@@ -111,6 +120,8 @@ export function StudentsInfo({
     if (!selectedStudent) return;
 
     try {
+      const currentAllergyIds = allergyList.map((a) => a.allergenId);
+
       const uniqueAllergies = Array.from(new Set(selectedStudent.allergies));
 
       const apiCalls = uniqueAllergies.map((item) => {
@@ -121,14 +132,18 @@ export function StudentsInfo({
           return parentService.addStudentAllergy(selectedStudent.studentId, {
             allergenId: null,
             allergenName: customName,
-            allergenInfo: "Dị ứng khác",
+            allergenInfo: allergyNote || "Dị ứng khác",
           });
         }
 
         const existingAllergen = allergyList.find(
           (a) => a.allergenName === item
         );
-        if (existingAllergen) {
+
+        if (
+          existingAllergen &&
+          !currentAllergyIds.includes(existingAllergen.allergenId)
+        ) {
           return parentService.addStudentAllergy(selectedStudent.studentId, {
             allergenId: existingAllergen.allergenId,
             allergenName: null,
@@ -139,10 +154,9 @@ export function StudentsInfo({
       });
 
       await Promise.all(apiCalls.filter(Boolean));
-      toast.success("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật thành công!");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi lưu thông tin.");
-      console.error(error);
+      toast.error("Có lỗi xảy ra.");
     }
   };
 
@@ -428,14 +442,21 @@ export function StudentsInfo({
                           : "grid-rows-[0fr] opacity-0"
                       }`}
                     >
-                      <div className="overflow-hidden">
+                      <div className="overflow-hidden space-y-3">
                         <input
-                          value={otherAllergy}
+                          value={otherValue}
                           onChange={(e) =>
                             handleOtherAllergyChange(e.target.value)
                           }
                           className="w-full p-3 border border-orange-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-200 outline-none bg-white"
-                          placeholder="Nhập tên thực phẩm bé bị dị ứng..."
+                          placeholder="Tên thực phẩm (VD: Quả hạch)..."
+                        />
+                        <textarea
+                          value={allergyNote}
+                          onChange={(e) => setAllergyNote(e.target.value)}
+                          className="w-full p-3 border border-blue-100 rounded-xl focus:border-blue-500 outline-none bg-blue-50/30 text-sm"
+                          placeholder="Ghi chú biểu hiện (VD: nổi mẩn đỏ sau khi ăn)..."
+                          rows={2}
                         />
                       </div>
                     </div>

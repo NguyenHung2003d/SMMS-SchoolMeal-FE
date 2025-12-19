@@ -68,7 +68,9 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                 <p className="font-bold text-gray-800 text-lg">
                   Học phí bán trú
                 </p>
-
+                <p className="text-xs text-gray-500 italic">
+                    Đơn giá: {formatCurrency(inv.mealPricePerDay)}/ngày
+                  </p>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Calendar size={14} />

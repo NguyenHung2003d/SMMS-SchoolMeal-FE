@@ -10,6 +10,7 @@ export interface Invoice {
   status: string;
   amountToPay: number;
   totalPrice: number
+  mealPricePerDay: number
 }
 export interface InvoiceDetails extends Invoice {
   className: string;

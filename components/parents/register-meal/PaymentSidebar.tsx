@@ -22,6 +22,12 @@ export const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
         <div className="space-y-4">
           <InfoRow label="Mã hóa đơn" value={`#${selectedInvoice.invoiceId}`} />
           <InfoRow label="Tháng" value={selectedInvoice.monthNo} />
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Đơn giá tiền ăn:</span>
+            <span className="font-semibold text-blue-700">
+              {formatCurrency(selectedInvoice.mealPricePerDay)}/ngày
+            </span>
+          </div>
           <InfoRow label="Số ngày nghỉ" value={selectedInvoice.absentDay} />
           <InfoRow
             label="Số ngày nghỉ lễ/trường"

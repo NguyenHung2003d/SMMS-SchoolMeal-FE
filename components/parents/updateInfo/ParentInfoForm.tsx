@@ -43,6 +43,22 @@ export function ParentInfoForm({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
 
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      timerRef.current = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [countdown]);
+
   useEffect(() => {
     if (!recaptchaVerifierRef.current && typeof window !== "undefined") {
       recaptchaVerifierRef.current = new RecaptchaVerifier(
@@ -63,6 +79,11 @@ export function ParentInfoForm({
   const handleSendOtp = async () => {
     if (!parentInfo.phone) return toast.error("Vui lòng nhập số điện thoại");
 
+    if (countdown > 0) {
+      toast.error(`Vui lòng đợi ${countdown} giây nữa để gửi lại yêu cầu.`);
+      return;
+    }
+
     try {
       setIsVerifying(true);
 
@@ -72,14 +93,12 @@ export function ParentInfoForm({
       if (window.recaptchaVerifier) {
         try {
           window.recaptchaVerifier.clear();
-        } catch (e) {
-          /* ignore */
-        }
+        } catch (e) {}
       }
 
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
-        "recaptcha-element", // Dùng ID của element con
+        "recaptcha-element",
         {
           size: "invisible",
           callback: () => {
@@ -99,18 +118,20 @@ export function ParentInfoForm({
       );
       setConfirmationResult(result);
       setIsOtpSent(true);
+      setCountdown(60);
       toast.success("Mã OTP đã được gửi");
     } catch (err: any) {
       console.error("Lỗi gửi OTP:", err);
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
-        } catch (e) {
-          console.error("Không thể clear reCAPTCHA", e);
-        }
+      if (err.code === "auth/too-many-requests") {
+        setCountdown(120);
+        toast.error(
+          "Bạn đã gửi yêu cầu quá nhiều lần. Vui lòng đợi 2 phút để thử lại."
+        );
+      } else if (err.code === "auth/invalid-phone-number") {
+        toast.error("Số điện thoại không hợp lệ.");
+      } else {
+        toast.error(`Lỗi: ${err.code || err.message}`);
       }
-      toast.error(`Lỗi: ${err.code || err.message}`);
     } finally {
       setIsVerifying(false);
     }
@@ -241,9 +262,14 @@ export function ParentInfoForm({
                   <button
                     type="button"
                     onClick={handleSendOtp}
-                    className="absolute right-2 top-9 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                    disabled={countdown > 0 || isVerifying}
+                    className={`absolute right-2 top-9 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      countdown > 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                    }`}
                   >
-                    Gửi mã
+                    {countdown > 0 ? `Gửi lại sau (${countdown}s)` : "Gửi mã"}
                   </button>
                 )}
                 {isPhoneVerified && (

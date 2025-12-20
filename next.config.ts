@@ -12,14 +12,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*", 
-        destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*",
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/api/:path*", 
+  //       destination: "https://outragedly-guidebookish-mitzie.ngrok-free.dev/api/:path*",
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;

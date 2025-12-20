@@ -18,43 +18,33 @@ import {
   History,
   XCircle,
 } from "lucide-react";
+import { attendanceService } from "@/services/parent/attendance.service";
 
 export default function LeaveApplication() {
   const { selectedStudent } = useSelectedStudent();
 
-  // State quản lý form
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
 
-  // State trạng thái
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [history, setHistory] = useState<AttendanceResponseDto[]>([]);
 
-  // Effect load lịch sử khi chọn học sinh
   useEffect(() => {
     if (selectedStudent?.studentId) {
       fetchHistory(selectedStudent.studentId);
-      // Reset form
       setStartDate("");
       setEndDate("");
       setReason("");
     }
   }, [selectedStudent]);
 
-  // Hàm gọi API lấy lịch sử nghỉ
   const fetchHistory = async (studentId: string) => {
     setIsLoadingHistory(true);
     try {
-      // Gọi API: GET /api/Attendance/student/{studentId}
-      const response = await axiosInstance.get<{
-        records: AttendanceResponseDto[];
-      }>(`/Attendance/student/${studentId}`);
-
-      // Xử lý dữ liệu trả về từ BE (theo cấu trúc AttendanceHistoryDto)
-      const records = response.data?.records || [];
-      setHistory(records);
+      const data = await attendanceService.getHistory(studentId);
+      setHistory(data?.records || []);
     } catch (error) {
       console.error("Lỗi tải lịch sử:", error);
       toast.error("Không thể tải lịch sử nghỉ học.");
@@ -64,7 +54,6 @@ export default function LeaveApplication() {
     }
   };
 
-  // Hàm xử lý gửi form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) {
@@ -72,7 +61,6 @@ export default function LeaveApplication() {
       return;
     }
 
-    // Validate cơ bản
     if (!startDate || !endDate) {
       toast.error("Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc.");
       return;
@@ -90,7 +78,6 @@ export default function LeaveApplication() {
 
     setIsSubmitting(true);
 
-    // Payload chuẩn theo BE DTO: AttendanceRequestDto
     const payload: AttendanceRequestDto = {
       studentId: selectedStudent.studentId,
       startDate: startDate,
@@ -99,12 +86,9 @@ export default function LeaveApplication() {
     };
 
     try {
-      // Gọi API: POST /api/Attendance
-      await axiosInstance.post("/Attendance", payload);
-
+      await attendanceService.submitLeave(payload);
       toast.success("Gửi đơn xin nghỉ thành công!");
 
-      // Reset form và load lại lịch sử
       setStartDate("");
       setEndDate("");
       setReason("");

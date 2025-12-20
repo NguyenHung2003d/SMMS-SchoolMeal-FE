@@ -10,6 +10,12 @@ export interface IngredientDto {
   isActive?: boolean;
 }
 
+export enum AllergyRiskStatus {
+  Green = 0,
+  Orange = 1,
+  Red = 2,
+}
+
 export interface FoodItemIngredientDto {
   ingredientId: number;
   ingredientName?: string;
@@ -24,6 +30,8 @@ export interface FoodItemDto {
   imageUrl?: string;
   isMainDish: boolean;
   ingredients: FoodItemIngredientDto[];
+  allergyStatus: AllergyRiskStatus;
+  totalAllergyPercent: number;
 }
 
 export interface CreateIngredientRequest {

@@ -45,8 +45,7 @@ export default function InvoiceManager() {
     isUpdating,
   } = useInvoices(filter);
 
-  const canExport = filter.year && filter.monthNo && filter.classId;
-
+  const canExport = filter.year && filter.monthNo;
   const onRequestDelete = (id: number) => {
     setDeleteId(id);
   };
@@ -57,7 +56,7 @@ export default function InvoiceManager() {
     try {
       setIsDeleting(true);
       await deleteInvoice(deleteId);
-      setDeleteId(null); 
+      setDeleteId(null);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -82,13 +81,17 @@ export default function InvoiceManager() {
         <div className="flex gap-3">
           <button
             onClick={() => exportFeeBoard()}
-            disabled={isExporting || !filter.monthNo}
+            disabled={isExporting || !canExport}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors border shadow-sm ${
               !canExport
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-white text-green-700 border-green-200 hover:bg-green-50"
             }`}
-            title={!canExport ? "Chọn đủ Năm, Tháng và Lớp để xuất" : ""}
+            title={
+              !canExport
+                ? "Vui lòng chọn Năm và Tháng để xuất"
+                : "Xuất báo cáo Excel"
+            }
           >
             {isExporting ? (
               <Loader2 className="animate-spin" size={18} />

@@ -53,8 +53,44 @@ export const kitchenNutritionService = {
     return res.data;
   },
 
-  updateFood: async (id: number, data: any) => {
-    const res = await axiosInstance.put(`/nutrition/FoodItems/${id}`, data);
+  updateFood: async (
+    id: number,
+    data: {
+      foodName: string;
+      foodType: string;
+      foodDesc: string;
+      isMainDish: boolean;
+      imageFile?: File | null;
+      ingredients: { ingredientId: number; quantityGram: number }[];
+    }
+  ) => {
+    const formData = new FormData();
+    formData.append("FoodName", data.foodName);
+    formData.append("FoodType", data.foodType);
+    formData.append("FoodDesc", data.foodDesc);
+    formData.append("IsMainDish", data.isMainDish.toString());
+
+    if (data.imageFile) {
+      formData.append("ImageFile", data.imageFile);
+    }
+
+    data.ingredients.forEach((ing, index) => {
+      formData.append(
+        `Ingredients[${index}].IngredientId`,
+        ing.ingredientId.toString()
+      );
+      formData.append(
+        `Ingredients[${index}].QuantityGram`,
+        ing.quantityGram.toString()
+      );
+    });
+    const res = await axiosInstance.put<FoodItemDto>(
+      `/nutrition/FoodItems/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return res.data;
   },
 

@@ -7,6 +7,7 @@ import HealthChart from "@/components/parents/health/HealthChart";
 import { formatMonth } from "@/helpers";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
 import { HeartPulse, Activity, Baby } from "lucide-react";
+import { studentHealthService } from "@/services/parent/studentHealth.service";
 
 export default function HealthPage() {
   const { selectedStudent } = useSelectedStudent();
@@ -29,18 +30,13 @@ export default function HealthPage() {
       setError(null);
 
       try {
-        const [currentRes, historyRes] = await Promise.all([
-          axiosInstance.get<StudentBMIResultDto>(
-            `/StudentHealth/current/${selectedStudent.studentId}`
-          ),
-          axiosInstance.get<StudentBMIResultDto[]>(
-            `/StudentHealth/history/${selectedStudent.studentId}`
-          ),
+        const [currentData, historyDataRes] = await Promise.all([
+          studentHealthService.getCurrentHealth(selectedStudent.studentId),
+          studentHealthService.getHealthHistory(selectedStudent.studentId),
         ]);
+        setCurrentHealth(currentData);
 
-        setCurrentHealth(currentRes.data);
-
-        const formattedHistory: HealthPoint[] = (historyRes.data || []).map(
+        const formattedHistory: HealthPoint[] = (historyDataRes || []).map(
           (item) => ({
             month: formatMonth(item.recordAt),
             height: item.heightCm,
@@ -50,9 +46,14 @@ export default function HealthPage() {
         );
 
         setHistoryData(formattedHistory);
-      } catch (err) {
-        console.error("Lỗi tải dữ liệu sức khỏe:", err);
-        setError("Không thể tải dữ liệu sức khỏe. Vui lòng thử lại sau.");
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setCurrentHealth(null);
+          setHistoryData([]);
+        } else {
+          console.error("Lỗi tải dữ liệu sức khỏe:", err);
+          setError("Không thể tải dữ liệu sức khỏe. Vui lòng thử lại sau.");
+        }
       } finally {
         setLoading(false);
       }
@@ -130,7 +131,8 @@ export default function HealthPage() {
             </h3>
             <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
               Cập nhật lần cuối:{" "}
-              {currentHealth ? new Date().toLocaleDateString("vi-VN") : "N/A"}
+              {currentHealth?.recordAt &&
+                new Date(currentHealth.recordAt).toLocaleDateString("vi-VN")}
             </span>
           </div>
 

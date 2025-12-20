@@ -8,6 +8,7 @@ import { billService } from "@/services/bill.service"; // Import service thanh t
 import { Invoice, InvoiceDetails } from "@/types/invoices";
 import { useSelectedStudent } from "@/context/SelectedChildContext";
 import { InvoiceDetail } from "@/components/parents/invoice/InvoiceDetail";
+import { invoiceService } from "@/services/parent/invoice.service";
 
 export default function InvoicePage() {
   const { selectedStudent } = useSelectedStudent();
@@ -36,16 +37,14 @@ export default function InvoicePage() {
     const fetchInvoicesList = async () => {
       try {
         setIsListLoading(true);
-        const res = await axiosInstance.get<Invoice[]>("/Invoice/my-invoices", {
-          params: { studentId: selectedStudent.studentId },
-        });
-        setInvoicesList(res.data);
-
-        if (res.data && res.data.length > 0) {
-          setSelectedInvoiceId(res.data[0].invoiceId);
+        const data = await invoiceService.getMyInvoices(
+          selectedStudent.studentId
+        );
+        setInvoicesList(data);
+        if (data && data.length > 0) {
+          setSelectedInvoiceId(data[0].invoiceId);
         } else {
           setSelectedInvoiceId(null);
-          setInvoiceDetail(null);
         }
       } catch (error: any) {
         if (error.response?.status !== 404) {
@@ -65,15 +64,17 @@ export default function InvoicePage() {
     const fetchDetail = async () => {
       try {
         setIsDetailLoading(true);
-        const res = await axiosInstance.get<InvoiceDetails>(
-          `/Invoice/${selectedInvoiceId}`,
-          {
-            params: { studentId: selectedStudent.studentId },
-          }
+        const data = await invoiceService.getInvoiceDetail(
+          selectedInvoiceId,
+          selectedStudent.studentId
         );
-        setInvoiceDetail(res.data);
+        setInvoiceDetail(data);
       } catch (error: any) {
-        toast.error("Lỗi tải chi tiết hóa đơn.");
+        if (error.response?.status !== 404) {
+          toast.error("Lỗi tải chi tiết hóa đơn.");
+        } else {
+          setInvoiceDetail(null);
+        }
       } finally {
         setIsDetailLoading(false);
       }
@@ -150,7 +151,7 @@ export default function InvoicePage() {
             <select
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 outline-none bg-gray-50 font-medium"
               value={selectedInvoiceId || ""}
-              onChange={(e) => setSelectedInvoiceId(Number(e.target.value))}
+              onChange={(e) => setSelectedInvoiceId((e.target.value))}
             >
               {invoicesList.map((inv) => (
                 <option key={inv.invoiceId} value={inv.invoiceId}>

@@ -52,7 +52,11 @@ export const useInvoices = (filter: InvoiceFilter) => {
       if (!filter.monthNo) {
         throw new Error("Vui lòng chọn tháng để xuất báo cáo.");
       }
-      return managerInvoiceService.exportFeeBoard(filter.monthNo, filter.year);
+      return managerInvoiceService.exportFeeBoard(
+        filter.monthNo,
+        filter.year,
+        filter.classId
+      );
     },
     onSuccess: (res) => {
       try {

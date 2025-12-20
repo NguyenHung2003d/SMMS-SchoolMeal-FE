@@ -106,33 +106,30 @@ export const DishModal: React.FC<Props> = ({
     }));
 
     try {
+      const commonData = {
+        foodName: dishForm.foodName,
+        foodType: dishForm.foodType,
+        foodDesc: dishForm.foodDesc,
+        isMainDish: dishForm.isMainDish,
+        imageFile: dishForm.imageFile,
+        ingredients: payloadIngredients,
+      };
       if (initialData) {
-        await kitchenNutritionService.updateFood(initialData.foodId, {
-          foodId: initialData.foodId,
-          foodName: dishForm.foodName,
-          foodType: dishForm.foodType,
-          foodDesc: dishForm.foodDesc,
-          isMainDish: dishForm.isMainDish,
-          imageUrl: dishForm.imageUrlPreview,
-          ingredients: payloadIngredients,
-        });
+        await kitchenNutritionService.updateFood(
+          initialData.foodId,
+          commonData
+        );
         toast.success("Cập nhật món ăn thành công");
       } else {
-        await kitchenNutritionService.createFood({
-          foodName: dishForm.foodName,
-          foodType: dishForm.foodType,
-          foodDesc: dishForm.foodDesc,
-          isMainDish: dishForm.isMainDish,
-          imageFile: dishForm.imageFile,
-          ingredients: payloadIngredients,
-        });
+        await kitchenNutritionService.createFood(commonData);
         toast.success("Tạo món ăn thành công");
       }
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Có lỗi xảy ra");
+      const msg = error.response?.data?.error || "Có lỗi xảy ra";
+      toast.error(msg);
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ChangeEvent, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   Camera,
   User,
@@ -11,9 +11,16 @@ import {
   X,
   UploadCloud,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { UpdatedParentInfoFormProps } from "@/types/parent";
 import { toast } from "react-hot-toast";
+import {
+  ConfirmationResult,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
+import { auth } from "@/configs/firebaseConfig";
 
 export function ParentInfoForm({
   parentInfo,
@@ -25,6 +32,105 @@ export function ParentInfoForm({
 }: UpdatedParentInfoFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+
+  const initialPhone = useRef(parentInfo.phone);
+
+  const [otp, setOtp] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] =
+    useState<ConfirmationResult | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+
+  useEffect(() => {
+    if (!recaptchaVerifierRef.current && typeof window !== "undefined") {
+      recaptchaVerifierRef.current = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+        }
+      );
+    }
+
+    return () => {
+      recaptchaVerifierRef.current?.clear();
+      recaptchaVerifierRef.current = null;
+    };
+  }, []);
+
+  const handleSendOtp = async () => {
+    if (!parentInfo.phone) return toast.error("Vui lòng nhập số điện thoại");
+
+    try {
+      setIsVerifying(true);
+
+      const container = document.getElementById("recaptcha-container");
+      if (container) container.innerHTML = '<div id="recaptcha-element"></div>';
+
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-element", // Dùng ID của element con
+        {
+          size: "invisible",
+          callback: () => {
+            console.log("reCAPTCHA solved");
+          },
+        }
+      );
+
+      const formattedPhone = parentInfo.phone.startsWith("0")
+        ? `+84${parentInfo.phone.slice(1)}`
+        : parentInfo.phone;
+
+      const result = await signInWithPhoneNumber(
+        auth,
+        formattedPhone,
+        window.recaptchaVerifier
+      );
+      setConfirmationResult(result);
+      setIsOtpSent(true);
+      toast.success("Mã OTP đã được gửi");
+    } catch (err: any) {
+      console.error("Lỗi gửi OTP:", err);
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        } catch (e) {
+          console.error("Không thể clear reCAPTCHA", e);
+        }
+      }
+      toast.error(`Lỗi: ${err.code || err.message}`);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || !confirmationResult) return;
+
+    try {
+      setIsVerifying(true);
+      await confirmationResult.confirm(otp);
+      setIsPhoneVerified(true);
+      setIsOtpSent(false);
+      toast.success("Xác minh số điện thoại thành công!");
+    } catch (error) {
+      toast.error("Mã OTP không chính xác hoặc đã hết hạn.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,6 +144,14 @@ export function ParentInfoForm({
       setPreviewUrl(localPreviewUrl);
     }
   };
+
+  const hasPhoneChanged = parentInfo.phone !== initialPhone.current;
+
+  useEffect(() => {
+    if (parentInfo.phone && !initialPhone.current) {
+      initialPhone.current = parentInfo.phone;
+    }
+  }, [parentInfo.phone]);
 
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6 md:p-10 border border-gray-100">
@@ -113,14 +227,32 @@ export function ParentInfoForm({
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <InputField
-                icon={<Phone size={18} />}
-                label="Số điện thoại"
-                name="phone"
-                value={parentInfo.phone || ""}
-                onChange={onInfoChange}
-                placeholder="0912..."
-              />
+              <div className="relative">
+                <InputField
+                  icon={<Phone size={18} />}
+                  label="Số điện thoại"
+                  name="phone"
+                  value={parentInfo.phone || ""}
+                  onChange={onInfoChange}
+                  placeholder="0912..."
+                  disabled={isPhoneVerified}
+                />
+                {hasPhoneChanged && !isPhoneVerified && !isOtpSent && (
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="absolute right-2 top-9 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                  >
+                    Gửi mã
+                  </button>
+                )}
+                {isPhoneVerified && (
+                  <div className="absolute right-2 top-10 text-green-500 flex items-center gap-1">
+                    <CheckCircle2 size={16} />
+                    <span className="text-xs font-bold">Đã xác minh</span>
+                  </div>
+                )}
+              </div>
               <InputField
                 icon={<Calendar size={18} />}
                 label="Ngày sinh"
@@ -135,6 +267,44 @@ export function ParentInfoForm({
               />
             </div>
 
+            {isOtpSent && (
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 space-y-3 animate-in fade-in zoom-in duration-300">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-blue-800">
+                    Nhập mã xác minh (OTP)
+                  </label>
+                  <button
+                    onClick={() => setIsOtpSent(false)}
+                    className="text-gray-400 hover:text-red-500"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="flex-1 px-4 py-2 rounded-xl border-none focus:ring-2 focus:ring-blue-500 text-center tracking-[0.5em] font-bold"
+                    placeholder="000000"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={isVerifying || otp.length < 6}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-all"
+                  >
+                    {isVerifying ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      "Xác nhận"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-gray-100">
               <button
                 type="button"
@@ -146,7 +316,7 @@ export function ParentInfoForm({
               </button>
               <button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || (hasPhoneChanged && !isPhoneVerified)}
                 className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0"
               >
                 {isSaving ? (
@@ -160,6 +330,7 @@ export function ParentInfoForm({
           </div>
         </div>
       </form>
+      <div id="recaptcha-container"></div>
     </div>
   );
 }

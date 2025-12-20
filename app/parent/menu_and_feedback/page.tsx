@@ -195,6 +195,19 @@ export default function MenuAndFeedbackPage() {
           selectedDateInWeek={selectedDateInWeek}
           onSelectDate={setSelectedDateInWeek}
         />
+        {menuData && menuData.notes && (
+          <div className="mx-4 mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl flex items-center gap-3">
+            <div className="text-blue-600 mt-1">
+              <AlertTriangle size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-blue-800">
+                Lưu ý chung của tuần:
+              </h4>
+              <p className="text-sm text-blue-700">{menuData.notes}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="px-4 mt-6">
@@ -231,6 +244,7 @@ export default function MenuAndFeedbackPage() {
                 ...primaryMealInfo,
                 foods: allFoods,
                 items: allFoods,
+                notes: primaryMealInfo.notes || (primaryMealInfo as any).Notes,
               };
 
               const hasAllergyWarning = allFoods.some(
@@ -238,7 +252,7 @@ export default function MenuAndFeedbackPage() {
               );
 
               return (
-                <div key={date} className="flex flex-col gap-4">
+                <div key={date} className="flex flex-col gap-4 mb-6">
                   <div
                     key={
                       combinedMeal.dailyMealId ||
@@ -260,6 +274,14 @@ export default function MenuAndFeedbackPage() {
                       meal={combinedMeal}
                       onOpenModal={handleOpenModal}
                     />
+                    {combinedMeal.notes && (
+                      <div className="mt-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                        <p className="text-xs text-gray-500 italic">
+                          <span className="font-bold">Lưu ý:</span>{" "}
+                          {combinedMeal.notes}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

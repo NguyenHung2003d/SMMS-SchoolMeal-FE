@@ -119,6 +119,16 @@ export default function MealDetailModal({
               className="p-0 m-0 bg-gray-50/50 rounded-b-2xl"
             >
               <div className="p-6 space-y-4">
+                {selectedMeal.notes && (
+                  <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 shadow-sm">
+                    <h4 className="text-sm font-bold text-orange-800 mb-1 flex items-center gap-2">
+                      <ChefHat size={16} /> Ghi chú từ nhà bếp:
+                    </h4>
+                    <p className="text-gray-700 text-sm italic">
+                      "{selectedMeal.notes}"
+                    </p>
+                  </div>
+                )}
                 {selectedMeal.foods && selectedMeal.foods.length > 0 ? (
                   selectedMeal.foods.map((food: MenuFoodItemDto) => {
                     const foodImage = food.imageUrl || food.ImageUrl;

@@ -11,6 +11,8 @@ export interface Invoice {
   amountToPay: number;
   totalPrice: number;
   mealPricePerDay: number;
+  amountTotal: number;
+  mealPricePerDayLastMonth: number;
 }
 export interface InvoiceDetails extends Invoice {
   className: string;

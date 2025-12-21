@@ -12,11 +12,10 @@ export const PaymentSidebar = ({
   onPay,
 }: PaymentSidebarProps) => {
   if (!selectedInvoice) return null;
-
+  const unitPriceLastMonth = selectedInvoice.mealPricePerDayLastMonth || 0;
   const totalOffDays =
     (selectedInvoice.holiday || 0) + (selectedInvoice.absentDay || 0);
-  const totalDeduction = totalOffDays * (selectedInvoice.mealPricePerDay || 0);
-
+  const totalDeduction = totalOffDays * unitPriceLastMonth;
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
       <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
@@ -31,7 +30,7 @@ export const PaymentSidebar = ({
               Tiền ăn tháng {selectedInvoice.monthNo}:
             </span>
             <span className="font-bold text-gray-900">
-              {formatCurrency(selectedInvoice.amountToPay)}
+              {formatCurrency(selectedInvoice.amountTotal)}
             </span>
           </div>
           <div className="flex justify-between text-xs text-gray-400 italic">

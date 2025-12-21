@@ -51,7 +51,6 @@ export interface AttendanceResponseDto {
   notifiedBy: string;
   createdAt: string;
 }
-import { Student } from "./student";
 
 export type StudentBMIResultDto = {
   studentId: string;
@@ -172,4 +171,12 @@ export interface MealDetailModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   existingFeedback?: FeedbackDto | null;
+}
+
+export interface AllergenDTO {
+  allergenId: number;
+  allergenName: string;
+  allergenMatter?: string;
+  allergenInfo?: string;
+  createdAt: string;
 }

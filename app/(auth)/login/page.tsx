@@ -14,11 +14,7 @@ import Image from "next/image";
 
 export default function LoginPage() {
   const { login, isLoginLoading } = useAuth({ enabled: false });
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useLoginForm();
+  const { register, handleSubmit } = useLoginForm();
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);

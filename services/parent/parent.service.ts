@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { AllergenDTO } from "@/types/parent-nutrition";
+import { AllergenDTO } from "@/types/parent";
 
 export const parentService = {
   getAllergensByStudent: async (studentId: string): Promise<AllergenDTO[]> => {

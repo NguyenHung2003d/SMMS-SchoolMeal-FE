@@ -1,5 +1,5 @@
 import React from "react";
-import { Building2, Calendar, User } from "lucide-react";
+import { Building2, Calendar, User, Calculator, Info } from "lucide-react";
 import { InvoiceDetails } from "@/types/invoices";
 import { formatCurrency, formatDate } from "@/helpers";
 
@@ -8,110 +8,166 @@ interface Props {
 }
 
 export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
+  const mealPrice = invoice.mealPricePerDay || 0;
+  const packagePrice = invoice.amountTotal || 0;
+  const absentDays = invoice.absentDay || 0;
+  const holidayDays = invoice.holiday || 0;
+  const actualMealDays = invoice.totalMealLastMonth || 0;
+  const totalRefund = (absentDays + holidayDays) * mealPrice;
+
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300 border border-gray-100">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
+      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h3 className="font-bold text-2xl flex items-center gap-2">
+            <div className="flex items-center gap-2 opacity-80 text-xs font-bold uppercase tracking-widest mb-1">
+              <Calculator size={14} /> Chi tiết thanh toán
+            </div>
+            <h3 className="font-extrabold text-2xl tracking-tight">
               Tháng {invoice.monthNo}
             </h3>
-            <p className="text-blue-100 text-sm mt-1">
-              Mã hóa đơn: #{invoice.invoiceId}
+            <p className="text-blue-100 text-xs font-mono mt-1 opacity-70">
+              ID: #{invoice.invoiceId}
             </p>
           </div>
-          <div className="text-right bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
-            <p className="text-xs font-medium text-blue-100 uppercase">
+          <div className="text-right bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
+            <p className="text-[10px] font-bold text-blue-200 uppercase tracking-tighter">
               Học sinh
             </p>
             <p className="font-bold text-lg">{invoice.studentName}</p>
-            <p className="text-xs text-blue-100">Lớp: {invoice.className}</p>
+            <p className="text-xs text-blue-100 opacity-80">
+              Lớp: {invoice.className}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 md:p-8 space-y-8">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-bold text-blue-800 flex items-center gap-2 mb-3">
-              <Calendar size={18} /> Kỳ thanh toán
-            </h4>
-            <div className="space-y-2 text-sm text-gray-700">
-              <div className="flex justify-between">
-                <span>Từ ngày:</span>
-                <span className="font-medium">
-                  {formatDate(invoice.dateFrom)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Đến ngày:</span>
-                <span className="font-medium">
-                  {formatDate(invoice.dateTo)}
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="p-6 space-y-8">
+        <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 shadow-inner">
+          <h4 className="font-bold text-amber-900 flex items-center gap-2 mb-6 text-base">
+            <Calculator size={18} className="text-amber-600" />
+            Quyết toán tiền ăn tháng trước
+          </h4>
 
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <h4 className="font-bold text-orange-800 flex items-center gap-2 mb-3">
-              <User size={18} /> Điểm danh
-            </h4>
-            <div className="flex justify-between items-center text-sm text-gray-700 mt-2">
-              <span>Số ngày nghỉ (có phép):</span>
-              <span className="font-bold text-lg text-orange-600">
-                {invoice.absentDay} ngày
+          <div className="space-y-4">
+            <div className="flex items-end gap-2">
+              <span className="text-gray-600 whitespace-nowrap text-sm">
+                Tiền ăn cố định (trọn gói)
+              </span>
+              <div className="flex-1 border-b border-dotted border-gray-400 mb-1.5"></div>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(packagePrice)}
               </span>
             </div>
-            <p className="text-xs text-orange-600/70 mt-2 italic">
-              * Đã được trừ vào tổng tiền
-            </p>
+
+            <div className="flex items-end gap-2 text-gray-500">
+              <span className="text-xs whitespace-nowrap italic">
+                Đơn giá: {formatCurrency(mealPrice)}/ngày
+              </span>
+              <div className="flex-1 border-b border-dotted border-gray-300 mb-1"></div>
+            </div>
+
+            <div className="flex items-end gap-2">
+              <span className="text-gray-600 whitespace-nowrap text-sm">
+                Số bữa đã ăn thực tế
+              </span>
+              <div className="flex-1 border-b border-dotted border-gray-400 mb-1.5"></div>
+              <span className="font-bold text-blue-700">
+                {actualMealDays} bữa
+              </span>
+            </div>
+
+            <div className="flex items-end gap-2 text-red-600">
+              <span className="text-sm whitespace-nowrap font-medium">
+                Khấu trừ nghỉ phép
+              </span>
+              <div className="flex-1 border-b border-dotted border-red-200 mb-1.5"></div>
+              <span className="font-bold">-{absentDays} bữa</span>
+            </div>
+
+            <div className="flex items-end gap-2 text-red-600">
+              <span className="text-sm whitespace-nowrap font-medium">
+                Khấu trừ nghỉ lễ/trường
+              </span>
+              <div className="flex-1 border-b border-dotted border-red-200 mb-1.5"></div>
+              <span className="font-bold">-{holidayDays} bữa</span>
+            </div>
+
+            <div className="pt-4 mt-2 border-t border-amber-200">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-amber-900">
+                  THÀNH TIỀN CẦN ĐÓNG:
+                </span>
+                <div className="text-right">
+                  <p className="text-3xl font-black text-blue-800 leading-none">
+                    {formatCurrency(invoice.amountToPay)}
+                  </p>
+                  {totalRefund > 0 && (
+                    <p className="text-[10px] text-green-600 font-bold mt-2 uppercase tracking-tighter">
+                      (Đã trừ {formatCurrency(totalRefund)} tiền cơm nghỉ)
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="border rounded-xl p-5">
-          <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
-            <Building2 size={18} /> Thông tin chuyển khoản (Trường)
+        <div className="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm">
+          <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-4 text-sm">
+            <Building2 size={18} className="text-gray-400" /> Đơn vị thụ hưởng
+            (Trường)
           </h4>
-          <div className="grid md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-500">Trường học</p>
-              <p className="font-medium text-gray-900">{invoice.schoolName}</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">
+                  Tên trường
+                </p>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {invoice.schoolName}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">
+                  Ngân hàng
+                </p>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {invoice.settlementBankCode}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-gray-500">Ngân hàng</p>
-              <p className="font-medium text-gray-900">
-                {invoice.settlementBankCode}
+            <div className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+              <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">
+                Số tài khoản
               </p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-gray-500">Số tài khoản thụ hưởng</p>
-              <p className="font-mono font-bold text-gray-900 text-lg tracking-wide">
+              <p className="font-mono font-bold text-gray-900 text-xl tracking-wider select-all">
                 {invoice.settlementAccountNo}
               </p>
+              <p className="text-[10px] text-gray-400 mt-2 italic">
+                * Vui lòng kiểm tra kỹ số tài khoản khi chuyển khoản
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl gap-4">
-          <div className="text-center md:text-left">
-            <span
-              className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold border ${
-                invoice.status === "Paid" || invoice.status === "Đã thanh toán"
-                  ? "bg-green-100 text-green-700 border-green-200"
-                  : "bg-red-100 text-red-700 border-red-200"
-              }`}
-            >
-              {invoice.status === "Paid" || invoice.status === "Đã thanh toán"
-                ? "✓ ĐÃ THANH TOÁN"
-                : "⏳ CHƯA THANH TOÁN"}
-            </span>
-          </div>
-
-          <div className="text-center md:text-right">
-            <p className="text-gray-500 text-sm mb-1">Tổng tiền phải đóng</p>
-            <p className="text-3xl font-bold text-blue-600">
-              {formatCurrency(invoice.amountToPay)}
-            </p>
+        {/* Trạng thái cuối */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
+          <span
+            className={`inline-flex items-center px-6 py-2 rounded-full text-xs font-black tracking-widest border shadow-sm ${
+              invoice.status === "Paid"
+                ? "bg-green-50 text-green-600 border-green-200"
+                : "bg-orange-50 text-orange-600 border-orange-200"
+            }`}
+          >
+            {invoice.status === "Paid"
+              ? "✓ ĐÃ THANH TOÁN"
+              : "⏳ CHỜ THANH TOÁN"}
+          </span>
+          <div className="flex items-center gap-2 text-gray-400 text-xs">
+            <Info size={14} />
+            Hóa đơn từ {formatDate(invoice.dateFrom)} -{" "}
+            {formatDate(invoice.dateTo)}
           </div>
         </div>
       </div>

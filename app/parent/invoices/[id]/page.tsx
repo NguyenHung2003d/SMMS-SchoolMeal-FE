@@ -148,8 +148,12 @@ export default function InvoiceDetailPage() {
   const isPaid = invoiceData.status === "Paid";
 
   const totalAbsentDays = invoiceData.absentDay || 0;
-  const totalRefundDays = totalAbsentDays;
-  const refundedAmount = totalRefundDays * (invoiceData.mealPricePerDay || 0);
+  const totalHolidays = invoiceData.holiday || 0;
+  const mealPrice = invoiceData.mealPricePerDay || 0;
+
+  const refundedAbsentAmount = totalAbsentDays * mealPrice;
+  const refundedHolidayAmount = totalHolidays * mealPrice;
+  const totalRefund = refundedAbsentAmount + refundedHolidayAmount;
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
@@ -241,72 +245,70 @@ export default function InvoiceDetailPage() {
             <div className="bg-amber-50/50 p-5 rounded-xl border border-amber-100">
               <h2 className="font-bold text-amber-900 flex items-center gap-2 mb-4">
                 <div className="bg-amber-100 p-1.5 rounded-lg text-amber-600">
-                  <Calendar size={18} />
+                  <Calculator size={18} />
                 </div>
-                Kỳ thu tháng {invoiceData.monthNo}
+                Chi tiết quyết toán tháng trước
               </h2>
+
               <div className="space-y-3 pl-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Thời gian:</span>
+                <div className="flex items-end gap-2">
+                  <span className="text-gray-600 whitespace-nowrap">
+                    Tiền ăn tháng
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-gray-300 mb-1"></div>
                   <span className="font-medium text-gray-900">
-                    {new Date(invoiceData.dateFrom).toLocaleDateString("vi-VN")}{" "}
-                    - {new Date(invoiceData.dateTo).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
-                <div className="border-t border-amber-200/50 my-2"></div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <Coins size={14} /> Đơn giá ngày ăn:
-                  </span>{" "}
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(invoiceData.mealPricePerDay)} / ngày
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-gray-500">
-                  <span>Số ngày ăn thực tế (tháng trước):</span>
-                  <span className="font-medium text-gray-900">
-                    {invoiceData.totalMealLastMonth} ngày
-                  </span>
-                </div>
-                {invoiceData.holiday > 0 && (
-                  <div className="flex justify-between items-center text-gray-500">
-                    <span>Nghỉ lễ/trường (tháng trước):</span>
-                    <span>{invoiceData.holiday} ngày</span>{" "}
-                  </div>
-                )}
-                <div className="flex justify-between items-center border-t pt-2 mt-2">
-                  <span className="text-gray-600">
-                    Tiền cố định (trọn gói):
-                  </span>
-                  <span className="text-gray-900">
                     {formatCurrency(invoiceData.amountTotal)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Số ngày nghỉ có phép:</span>
-                  <span
-                    className={`font-bold ${
-                      invoiceData.absentDay > 0
-                        ? "text-green-600"
-                        : "text-gray-900"
-                    }`}
-                  >
-                    {invoiceData.absentDay > 0
-                      ? `-${invoiceData.absentDay}`
-                      : 0}{" "}
-                    ngày
+
+                <div className="flex items-end gap-2 text-gray-500">
+                  <span className="text-gray-600 whitespace-nowrap">
+                    Tiền cơm mỗi ngày
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-gray-300 mb-1"></div>
+                  <span>{formatCurrency(invoiceData.mealPricePerDay)}</span>
+                </div>
+
+                <div className="flex items-end gap-2">
+                  <span className="text-gray-600 whitespace-nowrap">
+                    Số bữa đã ăn tháng trước
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-gray-300 mb-1"></div>
+                  <span className="font-semibold text-blue-700">
+                    {invoiceData.totalMealLastMonth} bữa
                   </span>
                 </div>
-                {refundedAmount > 0 && (
-                  <div className="flex justify-between items-center bg-green-50 px-3 py-2 rounded-lg border border-green-100 mt-2">
-                    <span className="text-green-700 text-xs font-semibold flex items-center gap-1">
-                      <Calculator size={14} /> Khấu trừ ngày nghỉ:
+
+                <div className="flex items-end gap-2">
+                  <span className="text-gray-600 whitespace-nowrap">
+                    Số ngày nghỉ phép tháng trước
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-gray-300 mb-1"></div>
+                  <span className="text-red-600">
+                    {invoiceData.absentDay} ngày
+                  </span>
+                </div>
+
+                <div className="flex items-end gap-2">
+                  <span className="text-gray-600 whitespace-nowrap">
+                    Số ngày nghỉ lễ tháng trước
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-gray-300 mb-1"></div>
+                  <span className="text-red-600">
+                    {invoiceData.holiday} ngày
+                  </span>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-amber-200">
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-amber-200 shadow-sm">
+                    <span className="font-bold text-amber-900">
+                      Tổng tiền cần thanh toán
                     </span>
-                    <span className="font-bold text-green-700">
-                      -{formatCurrency(refundedAmount)}
+                    <span className="text-xl font-black text-blue-800">
+                      {formatCurrency(invoiceData.amountToPay)}
                     </span>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 

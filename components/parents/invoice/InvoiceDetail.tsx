@@ -8,13 +8,15 @@ interface Props {
 }
 
 export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
-  const mealPrice = invoice.mealPricePerDay || 0;
-  const packagePrice = invoice.amountTotal || 0;
+  const currentPackagePrice = invoice.amountTotal || 0;
+  const mealPriceLastMonth = invoice.mealPricePerDayLastMonth || 0;
   const absentDays = invoice.absentDay || 0;
   const holidayDays = invoice.holiday || 0;
   const actualMealDays = invoice.totalMealLastMonth || 0;
-  const totalRefund = (absentDays + holidayDays) * mealPrice;
 
+  const refundAbsent = absentDays * mealPriceLastMonth;
+  const refundHoliday = holidayDays * mealPriceLastMonth;
+  const totalRefund = refundAbsent + refundHoliday;
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
       <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6">
@@ -46,23 +48,24 @@ export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
         <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 shadow-inner">
           <h4 className="font-bold text-amber-900 flex items-center gap-2 mb-6 text-base">
             <Calculator size={18} className="text-amber-600" />
-            Quyết toán tiền ăn tháng trước
+            Chi tiết quyết toán & Khấu trừ{" "}
           </h4>
 
           <div className="space-y-4">
             <div className="flex items-end gap-2">
               <span className="text-gray-600 whitespace-nowrap text-sm">
-                Tiền ăn cố định (trọn gói)
+                Tiền ăn cố định tháng {invoice.monthNo}{" "}
               </span>
               <div className="flex-1 border-b border-dotted border-gray-400 mb-1.5"></div>
               <span className="font-semibold text-gray-900">
-                {formatCurrency(packagePrice)}
+                {formatCurrency(currentPackagePrice)}
               </span>
             </div>
 
             <div className="flex items-end gap-2 text-gray-500">
               <span className="text-xs whitespace-nowrap italic">
-                Đơn giá: {formatCurrency(mealPrice)}/ngày
+                Quyết toán tháng trước (Đơn giá:{" "}
+                {formatCurrency(mealPriceLastMonth)}/bữa){" "}
               </span>
               <div className="flex-1 border-b border-dotted border-gray-300 mb-1"></div>
             </div>
@@ -79,34 +82,34 @@ export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
 
             <div className="flex items-end gap-2 text-red-600">
               <span className="text-sm whitespace-nowrap font-medium">
-                Khấu trừ nghỉ phép
+                Khấu trừ nghỉ phép ({absentDays} bữa){" "}
               </span>
               <div className="flex-1 border-b border-dotted border-red-200 mb-1.5"></div>
-              <span className="font-bold">-{absentDays} bữa</span>
+              <span className="font-bold">-{formatCurrency(refundAbsent)}</span>{" "}
             </div>
 
             <div className="flex items-end gap-2 text-red-600">
               <span className="text-sm whitespace-nowrap font-medium">
-                Khấu trừ nghỉ lễ/trường
+                Khấu trừ nghỉ lễ/trường ({holidayDays} bữa){" "}
               </span>
               <div className="flex-1 border-b border-dotted border-red-200 mb-1.5"></div>
-              <span className="font-bold">-{holidayDays} bữa</span>
+              <span className="font-bold">
+                -{formatCurrency(refundHoliday)}
+              </span>{" "}
             </div>
 
             <div className="pt-4 mt-2 border-t border-amber-200">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-amber-900">
-                  THÀNH TIỀN CẦN ĐÓNG:
+                  SỐ TIỀN CẦN ĐÓNG:{" "}
                 </span>
                 <div className="text-right">
                   <p className="text-3xl font-black text-blue-800 leading-none">
                     {formatCurrency(invoice.amountToPay)}
                   </p>
-                  {totalRefund > 0 && (
-                    <p className="text-[10px] text-green-600 font-bold mt-2 uppercase tracking-tighter">
-                      (Đã trừ {formatCurrency(totalRefund)} tiền cơm nghỉ)
-                    </p>
-                  )}
+                  <p className="text-[10px] text-gray-500 mt-1 italic">
+                    (Đã bao gồm khấu trừ {formatCurrency(totalRefund)})
+                  </p>
                 </div>
               </div>
             </div>
@@ -151,7 +154,6 @@ export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
           </div>
         </div>
 
-        {/* Trạng thái cuối */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
           <span
             className={`inline-flex items-center px-6 py-2 rounded-full text-xs font-black tracking-widest border shadow-sm ${

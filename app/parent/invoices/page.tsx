@@ -187,16 +187,7 @@ export default function InvoicePage() {
               <InvoiceDetail invoice={invoiceDetail} />
 
               {invoiceDetail.status !== "Paid" && (
-                <div className="bottom-6 bg-white/80 backdrop-blur-lg border border-blue-200 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
-                  <div className="text-center md:text-left">
-                    <p className="text-blue-900 font-black text-lg leading-tight">
-                      Sẵn sàng thanh toán
-                    </p>
-                    <p className="text-blue-600/70 text-xs font-medium italic">
-                      Sử dụng cổng PayOS để thanh toán an toàn 24/7
-                    </p>
-                  </div>
-
+                <div className="bottom-6 bg-white/80 backdrop-blur-lg border border-blue-200 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-end gap-4 shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
                   <button
                     onClick={handlePayNow}
                     disabled={isProcessingPayment}

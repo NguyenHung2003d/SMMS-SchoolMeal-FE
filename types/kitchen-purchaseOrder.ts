@@ -1,7 +1,7 @@
 export interface PurchaseOrderSummaryDto {
   orderId: number;
   orderDate: string;
-  purchaseOrderStatus: string; // 'Draft', 'Confirmed'...
+  purchaseOrderStatus: string;
   supplierName: string;
   planId: number;
   linesCount: number;
@@ -16,31 +16,6 @@ export interface PurchaseOrderDetailDto {
   supplierName: string;
   note: string;
   planId: number;
-  staffInCharged: string; 
+  staffInCharged: string;
   lines: any[];
-}
-
-export interface KsPurchaseOrderDetailDto {
-  linesId: number;
-  ingredientId: number;
-  ingredientName: string;
-  quantityGram: number;
-  unitPrice?: number;
-  batchNo?: string;
-  origin?: string;
-  expiryDate?: string;
-}
-
-export interface CreatePurchaseOrderFromPlanRequest {
-  planId: number;
-  supplierName: string;
-  note?: string;
-  lines: {
-    ingredientId: number;
-    quantityOverrideGram?: number;
-    unitPrice: number;
-    batchNo?: string;
-    origin?: string;
-    expiryDate?: string;
-  }[];
 }

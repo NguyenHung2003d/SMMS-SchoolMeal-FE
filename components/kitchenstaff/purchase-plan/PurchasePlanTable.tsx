@@ -43,7 +43,7 @@ export default function PurchasePlanTable({
               <th className="px-4 py-3 text-left w-1/4">Tên mặt hàng</th>
               <th className="px-4 py-3 text-center">SL (g)</th>
               <th className="px-4 py-3 text-right bg-green-50/50 text-green-700 w-40">
-                Giá nhập (VNĐ)
+                Thành tiền (VNĐ)
               </th>
               <th className="px-4 py-3 text-left">Số lô (Batch)</th>
               <th className="px-4 py-3 text-left">Xuất xứ</th>

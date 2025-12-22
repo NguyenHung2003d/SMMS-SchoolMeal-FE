@@ -1,11 +1,15 @@
-import React, { useState } from "react";
-import { Truck, AlertTriangle } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Truck, AlertTriangle, ImageIcon, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface ConfirmOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (supplierName: string, note: string) => void;
+  onConfirm: (
+    supplierName: string,
+    note: string,
+    billImage: File | null
+  ) => void;
 }
 
 export default function ConfirmOrderModal({
@@ -15,13 +19,34 @@ export default function ConfirmOrderModal({
 }: ConfirmOrderModalProps) {
   const [supplierName, setSupplierName] = useState("");
   const [note, setNote] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB");
+        return;
+      }
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleConfirm = () => {
     if (!supplierName.trim()) {
       toast.error("Vui lòng nhập tên nhà cung cấp");
       return;
     }
-    onConfirm(supplierName, note);
+    onConfirm(supplierName, note, selectedFile);
   };
 
   if (!isOpen) return null;
@@ -33,9 +58,7 @@ export default function ConfirmOrderModal({
           <div className="bg-green-100 p-2 rounded-lg">
             <Truck size={28} />
           </div>
-          <h2 className="text-xl font-bold text-gray-800">
-            Tạo Đơn Hàng (Purchase Order)
-          </h2>
+          <h2 className="text-xl font-bold text-gray-800">Tạo Đơn Hàng</h2>
         </div>
 
         <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-lg mb-4 text-sm text-yellow-800 flex gap-2">
@@ -49,16 +72,60 @@ export default function ConfirmOrderModal({
         <div className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Nhà cung cấp <span className="text-red-500">*</span>
+              Nhà cung cấp *
             </label>
-            <div className="relative">
+            <input
+              className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500 outline-none"
+              value={supplierName}
+              onChange={(e) => setSupplierName(e.target.value)}
+              placeholder="VD: Siêu thị BigC..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Ảnh hóa đơn đi chợ
+            </label>
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                previewUrl
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300 hover:border-green-400"
+              }`}
+            >
               <input
-                className="w-full border border-gray-300 rounded-xl p-3 pl-10 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all"
-                placeholder="VD: Siêu thị BigC..."
-                value={supplierName}
-                onChange={(e) => setSupplierName(e.target.value)}
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*"
               />
-              <Truck className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
+              {previewUrl ? (
+                <div className="relative w-full">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="h-32 w-full object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile();
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <ImageIcon className="text-gray-400 mb-2" size={32} />
+                  <span className="text-xs text-gray-500 text-center">
+                    Nhấn để tải lên ảnh bill (JPG, PNG)
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <div>

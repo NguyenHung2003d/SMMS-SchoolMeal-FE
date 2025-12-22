@@ -11,7 +11,7 @@ interface AddItemModalProps {
     ingredientId: number;
     name: string;
     quantity: number;
-    type?: string; // Truyền thêm type ra ngoài nếu cần
+    type?: string;
   }) => void;
 }
 

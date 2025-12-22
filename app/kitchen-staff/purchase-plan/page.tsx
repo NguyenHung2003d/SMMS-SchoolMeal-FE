@@ -165,21 +165,37 @@ export default function KitchenStaffPurchasePlanPage() {
     setIsConfirmModalOpen(true);
   };
 
-  const handleConfirmOrder = async (supplierName: string, note: string) => {
+  const handleConfirmOrder = async (
+    supplierName: string,
+    note: string,
+    billImage: File | null
+  ) => {
     if (!plan) return;
-    const payload = {
-      planId: plan.planId,
-      supplierName: supplierName,
-      note: note,
-      lines: plan.lines.map((l) => ({
-        ingredientId: l.ingredientId,
-        quantityOverrideGram: l.rqQuanityGram,
-        unitPrice: l.actualPrice || 0,
-        batchNo: l.batchNo,
-        origin: l.origin,
-      })),
-    };
-    await toast.promise(kitchenPurchaseOrderService.createFromPlan(payload), {
+    const formData = new FormData();
+    formData.append("PlanId", plan.planId.toString());
+    formData.append("SupplierName", supplierName);
+    formData.append("Note", note);
+
+    if (billImage) {
+      formData.append("BillImage", billImage);
+    }
+    plan.lines.forEach((l, index) => {
+      formData.append(
+        `Lines[${index}].IngredientId`,
+        l.ingredientId.toString()
+      );
+      formData.append(
+        `Lines[${index}].QuantityOverrideGram`,
+        l.rqQuanityGram.toString()
+      );
+      formData.append(
+        `Lines[${index}].UnitPrice`,
+        (l.actualPrice || 0).toString()
+      );
+      formData.append(`Lines[${index}].BatchNo`, l.batchNo || "");
+      formData.append(`Lines[${index}].Origin`, l.origin || "");
+    });
+    await toast.promise(kitchenPurchaseOrderService.createFromPlan(formData), {
       loading: "Đang tạo đơn hàng...",
       success: () => {
         setIsConfirmModalOpen(false);
@@ -222,7 +238,7 @@ export default function KitchenStaffPurchasePlanPage() {
 
   const isPlanDraft = plan.planStatus === "Draft";
   const totalActual = plan.lines.reduce(
-    (sum, item) => sum + (item.actualPrice || 0) * item.rqQuanityGram,
+    (sum, item) => sum + (item.actualPrice || 0),
     0
   );
 

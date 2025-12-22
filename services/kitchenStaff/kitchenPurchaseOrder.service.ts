@@ -1,7 +1,5 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import {
-  CreatePurchaseOrderFromPlanRequest,
-  KsPurchaseOrderDetailDto,
   PurchaseOrderDetailDto,
   PurchaseOrderSummaryDto,
 } from "@/types/kitchen-purchaseOrder";
@@ -11,7 +9,7 @@ export const kitchenPurchaseOrderService = {
     const params = new URLSearchParams();
     if (fromDate) params.append("fromDate", fromDate);
     if (toDate) params.append("toDate", `${toDate}T23:59:59`);
-    
+
     const response = await axiosInstance.get<PurchaseOrderSummaryDto[]>(
       `/kitchen/purchase-orders?${params.toString()}`
     );
@@ -25,10 +23,15 @@ export const kitchenPurchaseOrderService = {
     return response.data;
   },
 
-  createFromPlan: async (payload: CreatePurchaseOrderFromPlanRequest) => {
-    const response = await axiosInstance.post<KsPurchaseOrderDetailDto>(
+  createFromPlan: async (formData: FormData) => {
+    const response = await axiosInstance.post(
       "/kitchen/purchase-orders/from-plan",
-      payload
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   },

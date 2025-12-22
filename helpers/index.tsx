@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
-import {
-  AlertCircle,
-  CheckCircle2,
-  ChefHat,
-  Clock,
-  GraduationCap,
-  Users,
-} from "lucide-react";
+import { ChefHat, GraduationCap, Users } from "lucide-react";
 import { ManagerNotification } from "@/types/notification";
 import axios from "axios";
+import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/lib/utils";
 
 export const formatNumber = (num: number) => {
   return num?.toLocaleString("vi-VN");
@@ -58,31 +53,6 @@ export const getDayName = (dateString: string) => {
     return format(parseISO(dateString), "EEEE", { locale: vi });
   } catch {
     return "";
-  }
-};
-
-export const renderStatusBadge = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case "approved":
-    case "đã duyệt":
-      return (
-        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-          <CheckCircle2 size={12} /> Đã duyệt
-        </span>
-      );
-    case "rejected":
-    case "từ chối":
-      return (
-        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-          <AlertCircle size={12} /> Từ chối
-        </span>
-      );
-    default:
-      return (
-        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-          <Clock size={12} /> Chờ duyệt
-        </span>
-      );
   }
 };
 
@@ -216,36 +186,6 @@ export const formatDate = (dateString?: string | null) => {
   }
 };
 
-export const StudentAvatar = ({
-  src,
-  alt,
-  gender,
-}: {
-  src?: string;
-  alt: string;
-  gender?: string;
-}) => {
-  const [imgSrc, setImgSrc] = useState<string>(src || "");
-  const [hasError, setHasError] = useState(false);
-
-  const fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    alt
-  )}&background=random&color=fff`;
-
-  const displaySrc = hasError || !imgSrc ? fallbackSrc : imgSrc;
-
-  return (
-    <div className="h-12 w-12 rounded-full overflow-hidden mr-4 ring-2 ring-orange-100 bg-gray-100">
-      <img
-        src={displaySrc}
-        alt={alt}
-        className="h-full w-full object-cover"
-        onError={() => setHasError(true)} // Quan trọng: Bắt lỗi khi ảnh die
-      />
-    </div>
-  );
-};
-
 export const getNormalizedCategory = (type: string | undefined | null) => {
   const t = (type || "").toLowerCase();
   if (t.includes("kitchen") || t.includes("food") || t.includes("meal"))
@@ -327,6 +267,49 @@ export const DAY_MAP: Record<number, string> = {
   7: "Thứ 7",
   8: "Chủ Nhật",
 };
+
+export const StudentCard = ({
+  student,
+  onClick,
+}: {
+  student: any;
+  onClick: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    className="p-5 bg-white border rounded-2xl cursor-pointer hover:shadow-lg transition-all group"
+  >
+    <div className="flex items-center gap-4">
+      <img
+        src={getImageUrl(student.avatarUrl)}
+        className="w-16 h-16 rounded-full object-cover"
+      />
+      <div>
+        <h3 className="font-bold group-hover:text-blue-600">
+          {student.fullName}
+        </h3>
+        <p className="text-sm text-gray-500">Lớp: {student.className}</p>
+      </div>
+    </div>
+  </div>
+);
+
+export const InputReadonly = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) => (
+  <div className="space-y-1.5">
+    <label className="text-sm font-semibold text-gray-700">{label}</label>
+    <input
+      value={value}
+      disabled
+      className="w-full p-3 bg-gray-50 border rounded-xl text-gray-500 cursor-not-allowed"
+    />
+  </div>
+);
 
 export const getAxiosErrorMessage = (
   err: unknown,

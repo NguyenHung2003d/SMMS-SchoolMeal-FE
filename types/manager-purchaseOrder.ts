@@ -10,12 +10,13 @@ export interface PurchaseOrderLineDto {
 }
 
 export interface PurchaseOrderDetail {
-  orderId: number; // Có thể cần lấy từ context hoặc props khác nếu API không trả về
+  orderId: number;
   supplierName: string;
   note: string | null;
   planId: number | null;
   staffInCharged: string | null;
-  purchaseOrderStatus: string; // Cần đảm bảo có trường này để hiện trạng thái
-  orderDate: string; // Cần đảm bảo có trường này
-  lines: PurchaseOrderLineDto[]; // Map dữ liệu API vào mảng này
+  purchaseOrderStatus: string;
+  orderDate: string;
+  billImageUrl: string
+  lines: PurchaseOrderLineDto[];
 }

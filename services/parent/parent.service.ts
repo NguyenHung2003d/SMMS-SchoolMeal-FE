@@ -9,13 +9,9 @@ export const parentService = {
     return response.data;
   },
 
-  addStudentAllergy: async (
+  addStudentAllergy: (
     studentId: string,
-    data: {
-      allergenId: string | number | null;
-      allergenName: string | null;
-      allergenInfo?: string;
-    }
+    data: { ingredientId: number; reactionNotes?: string }
   ) => {
     return axiosInstance.post(
       `/ParentViewAllergen/by-student/${studentId}`,

@@ -4,7 +4,7 @@ export interface InventoryItemDto {
   ingredientId: number;
   ingredientName?: string;
   quantityGram: number;
-  expirationDate?: string; // DateOnly trả về string "yyyy-mm-dd"
+  expirationDate?: string;
   batchNo?: string;
   origin?: string;
 }
@@ -22,27 +22,4 @@ export interface UpdateInventoryItemRequest {
   expirationDate?: string;
   batchNo?: string;
   origin?: string;
-}
-
-export interface IngredientDto {
-  ingredientId: number;
-  ingredientName: string;
-  unit: string;        // Đơn vị tính (kg, g, lít...)
-  kcal100g?: number;   // Calo trên 100g
-  isActive: boolean;
-}
-
-export interface CreateIngredientRequest {
-  ingredientName: string;
-  unit: string;
-  kcal100g?: number;
-  // ...
-}
-
-export interface UpdateIngredientRequest {
-  ingredientId: number;
-  ingredientName: string;
-  unit: string;
-  kcal100g?: number;
-  isActive: boolean;
 }

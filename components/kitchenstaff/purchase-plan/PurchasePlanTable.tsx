@@ -54,7 +54,6 @@ export default function PurchasePlanTable({
           <tbody className="bg-white divide-y divide-gray-200 text-sm">
             {filteredLines.map((item, index) => {
                const realIndex = lines.indexOf(item);
-
                return (
               <tr
                 key={realIndex} 

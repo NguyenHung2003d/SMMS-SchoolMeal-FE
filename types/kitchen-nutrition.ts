@@ -42,3 +42,11 @@ export interface CreateIngredientRequest {
   fatG: number;
   carbG: number;
 }
+
+export interface UpdateIngredientRequest {
+  ingredientId: number;
+  ingredientName: string;
+  unit: string;
+  kcal100g?: number;
+  isActive: boolean;
+}

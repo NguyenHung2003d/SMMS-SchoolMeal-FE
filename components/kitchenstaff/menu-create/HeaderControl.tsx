@@ -25,7 +25,7 @@ export default function HeaderControl({
         </button>
         <button
           onClick={onOpenAi}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 font-medium border border-purple-200"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium border border-blue-200"
         >
           <Sparkles size={18} /> AI Gợi ý & Thêm nhanh
         </button>

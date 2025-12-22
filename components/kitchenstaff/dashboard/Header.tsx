@@ -32,10 +32,6 @@ export function Header({ user, logout, toggleSidebar }: any) {
             <Menu size={20} />
           </button>
           <div className="hidden md:block">
-            <div className="flex items-center text-sm text-gray-400 space-x-1">
-              <span>Bếp ăn</span> <ChevronRight size={14} />{" "}
-              <span>Tổng quan</span>
-            </div>
             <h2 className="text-lg font-bold text-gray-800 leading-none">
               Quản lý bữa trưa
             </h2>

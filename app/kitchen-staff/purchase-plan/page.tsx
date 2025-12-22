@@ -215,7 +215,9 @@ export default function KitchenStaffPurchasePlanPage() {
         setPlan(null);
         return "Đã xóa kế hoạch";
       },
-      error: "Lỗi khi xóa",
+      error: (err: any) => {
+        return "Lỗi khi xóa" + err.message;
+      },
     });
   };
 

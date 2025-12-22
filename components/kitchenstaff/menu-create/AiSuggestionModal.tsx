@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { X, Sparkles, Filter, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AiMenuResponse, AiDishDto } from "@/types/kitchen-menu-create";
-import { IngredientDto } from "@/types/kitchen-inventory";
 import { kitchenInventoryService } from "@/services/kitchenStaff/kitchenInventory.service";
 import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
 import IngredientSelector from "./IngredientSelector";
 import AiDishCard from "./AiDishCard";
+import { IngredientDto } from "@/types/kitchen-nutrition";
 
 interface AiSuggestionModalProps {
   isOpen: boolean;

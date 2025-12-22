@@ -1,12 +1,14 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { 
-  InventoryItemDto, 
-  PagedResult, 
+import {
+  InventoryItemDto,
+  PagedResult,
   UpdateInventoryItemRequest,
-  IngredientDto,
-  CreateIngredientRequest,
-  UpdateIngredientRequest
 } from "@/types/kitchen-inventory";
+import {
+  CreateIngredientRequest,
+  IngredientDto,
+  UpdateIngredientRequest,
+} from "@/types/kitchen-nutrition";
 
 export const kitchenInventoryService = {
   getInventoryItems: async (pageIndex = 1, pageSize = 10) => {
@@ -32,11 +34,10 @@ export const kitchenInventoryService = {
     return response.data;
   },
 
-
   getActiveIngredients: async (keyword?: string) => {
     const params = keyword ? { keyword } : {};
     const response = await axiosInstance.get<IngredientDto[]>(
-      "/nutrition/Ingredients", 
+      "/nutrition/Ingredients",
       { params }
     );
     return response.data;
@@ -45,7 +46,7 @@ export const kitchenInventoryService = {
   getAllIngredients: async (keyword?: string) => {
     const params = keyword ? { keyword } : {};
     const response = await axiosInstance.get<IngredientDto[]>(
-      "/nutrition/Ingredients/all", 
+      "/nutrition/Ingredients/all",
       { params }
     );
     return response.data;
@@ -60,7 +61,7 @@ export const kitchenInventoryService = {
 
   createIngredient: async (data: CreateIngredientRequest) => {
     const response = await axiosInstance.post<IngredientDto>(
-      "/nutrition/Ingredients", 
+      "/nutrition/Ingredients",
       data
     );
     return response.data;
@@ -68,7 +69,7 @@ export const kitchenInventoryService = {
 
   updateIngredient: async (id: number, data: UpdateIngredientRequest) => {
     const response = await axiosInstance.put<IngredientDto>(
-      `/nutrition/Ingredients/${id}`, 
+      `/nutrition/Ingredients/${id}`,
       data
     );
     return response.data;
@@ -76,7 +77,7 @@ export const kitchenInventoryService = {
 
   deleteIngredient: async (id: number, hardDelete = false) => {
     const response = await axiosInstance.delete(
-      `/nutrition/Ingredients/${id}`, 
+      `/nutrition/Ingredients/${id}`,
       { params: { hardDelete } }
     );
     return response.data;

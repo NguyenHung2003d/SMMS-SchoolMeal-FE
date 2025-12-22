@@ -1,6 +1,6 @@
 import React from "react";
 import { Search, X, Carrot } from "lucide-react";
-import { IngredientDto } from "@/types/kitchen-inventory";
+import { IngredientDto } from "@/types/kitchen-nutrition";
 
 interface IngredientSelectorProps {
   label: string;

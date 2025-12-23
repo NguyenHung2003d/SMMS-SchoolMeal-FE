@@ -243,6 +243,7 @@ export default function KitchenStaffPurchasePlanPage() {
     (sum, item) => sum + (item.actualPrice || 0),
     0
   );
+  const totalItemsToBuy = plan.lines.length;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen relative pb-32">
@@ -255,7 +256,10 @@ export default function KitchenStaffPurchasePlanPage() {
         onOpenAddModal={() => setIsAddItemModalOpen(true)}
       />
 
-      <PurchasePlanStats total={totalActual} />
+      <PurchasePlanStats
+        totalCost={totalActual}
+        totalItems={plan.lines.length}
+      />
 
       <PurchasePlanTable
         lines={plan.lines}

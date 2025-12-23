@@ -10,6 +10,7 @@ export interface ManagerNotification {
   totalRecipients: number;
   isSent: boolean;
   targetRoles: string[];
+  offDate?: string | null;
 }
 
 export interface CreateNotificationRequest {
@@ -21,6 +22,7 @@ export interface CreateNotificationRequest {
   sendToKitchenStaff: boolean;
   sendType: string;
   scheduleCron?: string;
+  offDate?: string | null;
 }
 
 export interface PaginatedNotificationResponse {

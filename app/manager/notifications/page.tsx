@@ -27,6 +27,7 @@ export default function ManagerNotifications() {
     sendToKitchenStaff: false,
     sendType: "Immediate",
     scheduleCron: "",
+    offDate: null
   });
 
   const handleEditClick = (item: ManagerNotification) => {
@@ -42,6 +43,7 @@ export default function ManagerNotifications() {
       sendToKitchenStaff: item.targetRoles?.includes("KitchenStaff") || false,
       sendType: item.sendType || "Immediate",
       scheduleCron: "",
+      offDate: item.offDate ? new Date(item.offDate).toISOString().split('T')[0] : null,
     });
     setEditingId(item.notificationId);
     setIsEditing(true);
@@ -61,6 +63,7 @@ export default function ManagerNotifications() {
       sendToKitchenStaff: false,
       sendType: "Immediate",
       scheduleCron: "",
+      offDate: null,
     });
   };
 

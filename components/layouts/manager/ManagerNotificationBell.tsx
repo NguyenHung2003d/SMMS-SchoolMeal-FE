@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Bell, Check } from "lucide-react";
 import {
+  HttpTransportType,
   HubConnection,
   HubConnectionBuilder,
   LogLevel,
@@ -57,7 +58,10 @@ export default function ManagerNotificationBell() {
       process.env.NEXT_PUBLIC_HUB_URL ||
       "http://localhost:5000/hubs/notifications";
     const newConnection = new HubConnectionBuilder()
-      .withUrl(HUB_URL, { withCredentials: true })
+      .withUrl(HUB_URL, {
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets,
+      })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

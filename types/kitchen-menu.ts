@@ -39,5 +39,19 @@ export interface DayMenuRow {
   dayName: string;
   mainDishes: DisplayFoodItem[];
   sideDishes: DisplayFoodItem[];
-  // dateObj?: Date; // Có thể giữ hoặc bỏ tùy nhu cầu
+}
+
+export interface DailyMealActualIngredient {
+  ingredientId: number;
+  ingredientName: string;
+  actualQtyGram: number;
+  estimatedQtyGram: number;
+  notes: string | null;
+}
+
+export interface DailyMealDetailPopupDto {
+  dailyMealId: number;
+  mealDate: string;
+  evidences: any[];
+  actualIngredients: DailyMealActualIngredient[];
 }

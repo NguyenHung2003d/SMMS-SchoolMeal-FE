@@ -1,10 +1,12 @@
 import React from "react";
-import { Utensils, Coffee, AlertCircle, ImageOff } from "lucide-react";
+import { Utensils, Coffee, AlertCircle, ImageOff, Camera } from "lucide-react";
 import { DayMenuRow, DisplayFoodItem } from "@/types/kitchen-menu";
 
 interface Props {
   data: DayMenuRow[];
+  onOpenEvidence: (id: number) => void;
 }
+
 const DishItem = ({
   dish,
   dotColorClass,
@@ -57,7 +59,7 @@ const DishItem = ({
     </div>
   );
 };
-export const WeeklyMenuTable: React.FC<Props> = ({ data }) => {
+export const WeeklyMenuTable: React.FC<Props> = ({ data, onOpenEvidence }) => {
   return (
     <div className="overflow-hidden border border-gray-200 rounded-lg shadow-sm">
       <table className="w-full border-collapse">
@@ -105,6 +107,13 @@ export const WeeklyMenuTable: React.FC<Props> = ({ data }) => {
                     <span className="text-sm text-gray-500 font-medium mt-1">
                       {row.dateStr}
                     </span>
+                    <button
+                      onClick={() => onOpenEvidence(row.dailyMealId)}
+                      className="mt-3 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-lg text-xs font-semibold hover:bg-orange-600 hover:text-white transition-all shadow-sm w-fit"
+                    >
+                      <Camera size={14} />
+                      Lưu mẫu
+                    </button>
                   </div>
                 </td>
 

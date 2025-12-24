@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Loader2,
   Receipt,
-  CreditCard,
-  ExternalLink,
   AlertCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -184,27 +182,11 @@ export default function InvoicePage() {
             </div>
           ) : invoiceDetail ? (
             <div className="space-y-6">
-              <InvoiceDetail invoice={invoiceDetail} />
-
-              {invoiceDetail.status !== "Paid" && (
-                <div className="bottom-6 bg-white/80 backdrop-blur-lg border border-blue-200 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-end gap-4 shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
-                  <button
-                    onClick={handlePayNow}
-                    disabled={isProcessingPayment}
-                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-10 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale"
-                  >
-                    {isProcessingPayment ? (
-                      <Loader2 className="animate-spin" size={20} />
-                    ) : (
-                      <>
-                        <CreditCard size={22} />
-                        THANH TOÁN NGAY
-                        <ExternalLink size={16} className="opacity-50" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
+              <InvoiceDetail
+                invoice={invoiceDetail}
+                onPayNow={handlePayNow}
+                isProcessingPayment={isProcessingPayment}
+              />
             </div>
           ) : (
             <div className="py-20 text-center text-gray-400 italic">

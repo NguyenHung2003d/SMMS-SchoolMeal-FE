@@ -1,13 +1,28 @@
 import React from "react";
-import { Building2, Calendar, User, Calculator, Info } from "lucide-react";
+import {
+  Building2,
+  Calendar,
+  User,
+  Calculator,
+  Info,
+  Loader2,
+  CreditCard,
+  ExternalLink,
+} from "lucide-react";
 import { InvoiceDetails } from "@/types/invoices";
 import { formatCurrency, formatDate } from "@/helpers";
 
 interface Props {
   invoice: InvoiceDetails;
+  onPayNow?: () => void;
+  isProcessingPayment?: boolean;
 }
 
-export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
+export const InvoiceDetail: React.FC<Props> = ({
+  invoice,
+  onPayNow,
+  isProcessingPayment,
+}) => {
   const currentPackagePrice = invoice.amountTotal || 0;
   const mealPriceLastMonth = invoice.mealPricePerDayLastMonth || 0;
   const absentDays = invoice.absentDay || 0;
@@ -19,14 +34,15 @@ export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
   const totalRefund = refundAbsent + refundHoliday;
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
-      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6">
+      <div className="bg-linear-to-r from-blue-700 to-indigo-800 text-white p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 opacity-80 text-xs font-bold uppercase tracking-widest mb-1">
               <Calculator size={14} /> Chi tiết thanh toán
             </div>
             <h3 className="font-extrabold text-2xl tracking-tight">
-              Tháng {invoice.monthNo}
+              Tháng {invoice.monthNo} ({formatDate(invoice.dateFrom)} -{" "}
+              {formatDate(invoice.dateTo)})
             </h3>
             <p className="text-blue-100 text-xs font-mono mt-1 opacity-70">
               ID: #{invoice.invoiceId}
@@ -166,11 +182,23 @@ export const InvoiceDetail: React.FC<Props> = ({ invoice }) => {
               ? "✓ ĐÃ THANH TOÁN"
               : "⏳ CHỜ THANH TOÁN"}
           </span>
-          <div className="flex items-center gap-2 text-gray-400 text-xs">
-            <Info size={14} />
-            Hóa đơn từ {formatDate(invoice.dateFrom)} -{" "}
-            {formatDate(invoice.dateTo)}
-          </div>
+          {invoice.status !== "Paid" && onPayNow && (
+            <button
+              onClick={onPayNow}
+              disabled={isProcessingPayment}
+              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-8 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+              {isProcessingPayment ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <>
+                  <CreditCard size={18} />
+                  THANH TOÁN NGAY
+                  <ExternalLink size={14} className="opacity-50" />
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

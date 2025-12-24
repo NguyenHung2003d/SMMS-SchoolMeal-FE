@@ -59,8 +59,7 @@ export default function ManagerNotificationBell() {
       "http://localhost:5000/hubs/notifications";
     const newConnection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {
-        skipNegotiation: true,
-        transport: HttpTransportType.WebSockets,
+        withCredentials: true,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)

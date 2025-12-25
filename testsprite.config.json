@@ -1,0 +1,20 @@
+{
+  "project": "SSMS-SchoolMeal-Frontend",
+  "mode": "frontend",
+  "scope": "codebase",
+  "runner": "playwright",
+  "baseUrl": "http://localhost:3000",
+  "startCommand": "npm run dev",
+  "testCommand": "npx playwright test --reporter=json",
+  "testsDir": "tests/e2e",
+  "reportFile": "tests/results/playwright-results.json",
+  "reporter": {
+    "type": "playwright-json",
+    "output": "tests/results/playwright-results.json"
+  },
+  "upload": {
+    "enabled": true,
+    "apiKeyEnv": "TESTSPRITE_API_KEY",
+    "endpoint": "https://api.testsprite.example/upload"
+  }
+}

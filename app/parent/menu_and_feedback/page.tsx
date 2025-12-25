@@ -45,7 +45,9 @@ export default function MenuAndFeedbackPage() {
     const fetchAllMenus = async () => {
       setLoadingMenu(true);
       try {
-        const data = await menuService.getAllWeekMenus(selectedStudent.studentId);
+        const data = await menuService.getAllWeekMenus(
+          selectedStudent.studentId
+        );
         setAllMenus(data);
       } catch (error) {
         console.error("Lỗi tải toàn bộ menu:", error);
@@ -116,29 +118,38 @@ export default function MenuAndFeedbackPage() {
                 key={`${week.yearNo}-${week.weekNo}`}
                 className="animate-in fade-in duration-500"
               >
-                <div className="flex items-center justify-between mb-4 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-orange-500 text-white px-3 py-1 rounded-lg font-bold">
-                      Tuần {week.weekNo}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-700">
-                        Năm học {week.yearNo}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Từ{" "}
-                        {new Date(week.weekStart).toLocaleDateString("vi-VN")}{" "}
-                        đến {new Date(week.weekEnd).toLocaleDateString("vi-VN")}
-                      </p>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-px flex-1 bg-linear-to-r from-transparent via-gray-200 to-transparent"></div>
+                  <div className="flex items-center gap-3 px-6 py-2 bg-white rounded-full border border-orange-100 shadow-sm">
+                    <CalendarDays size={18} className="text-orange-500" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-700">
+                        {new Date(week.weekStart).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })}
+                      </span>
+                      <span className="text-gray-300 font-light">—</span>
+                      <span className="text-sm font-bold text-gray-700">
+                        {new Date(week.weekEnd).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
+                      </span>
                     </div>
                   </div>
-                  {week.notes && (
-                    <div className="hidden md:flex items-center gap-2 text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-xs">
-                      <AlertTriangle size={14} />
-                      <span className="max-w-xs truncate">{week.notes}</span>
-                    </div>
-                  )}
+                  <div className="h-px flex-1 bg-linear-to-r from-transparent via-gray-200 to-transparent"></div>
                 </div>
+
+                {week.notes && (
+                  <div className="flex items-center gap-2 text-blue-700 bg-blue-50/80 backdrop-blur-sm px-4 py-2 rounded-2xl text-xs border border-blue-100 shadow-sm self-start md:self-center">
+                    <div className="p-1 bg-blue-500 rounded-full">
+                      <AlertTriangle size={10} className="text-white" />
+                    </div>
+                    <span className="font-medium">Lưu ý: {week.notes}</span>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {week.days.map((dayMenu) => {

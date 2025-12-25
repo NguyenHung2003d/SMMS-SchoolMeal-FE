@@ -33,13 +33,11 @@ export const ClassAlbum: React.FC<ClassAlbumProps> = ({ classInfo, onBack }) => 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
 
-  // 1. Query: Lấy danh sách ảnh
   const { data: images = [], isLoading } = useQuery({
     queryKey: ["classImages", classInfo.classId],
     queryFn: () => wardenGalleryService.getImagesByClass(classInfo.classId),
   });
 
-  // 2. Mutation: Upload ảnh
   const uploadMutation = useMutation({
     mutationFn: wardenGalleryService.uploadImage,
     onSuccess: () => {
@@ -49,7 +47,6 @@ export const ClassAlbum: React.FC<ClassAlbumProps> = ({ classInfo, onBack }) => 
     onError: () => toast.error("Tải ảnh thất bại."),
   });
 
-  // 3. Mutation: Xóa ảnh
   const deleteMutation = useMutation({
     mutationFn: wardenGalleryService.deleteImage,
     onSuccess: () => {
@@ -74,7 +71,6 @@ export const ClassAlbum: React.FC<ClassAlbumProps> = ({ classInfo, onBack }) => 
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-      {/* Header Album */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <button
@@ -115,7 +111,6 @@ export const ClassAlbum: React.FC<ClassAlbumProps> = ({ classInfo, onBack }) => 
         </div>
       </div>
 
-      {/* Grid Ảnh */}
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="animate-spin text-orange-500" size={40} />
@@ -147,7 +142,6 @@ export const ClassAlbum: React.FC<ClassAlbumProps> = ({ classInfo, onBack }) => 
         </div>
       )}
 
-      {/* Dialog Xóa Ảnh */}
       <Dialog open={!!imageToDelete} onOpenChange={(open) => !open && setImageToDelete(null)}>
         <DialogContent>
           <DialogHeader>

@@ -95,10 +95,10 @@ export const DailyMealEvidenceModal = ({
       const original = data?.actualIngredients.find(
         (i: any) => i.ingredientId === item.ingredientId
       );
-      const estimated = original?.estimatedQtyGram || 0;
-      if (item.actualQtyGram > estimated && !item.notes?.trim()) {
+      const isChanged = item.actualQtyGram !== original?.actualQtyGram;
+      if (isChanged && !item.notes?.trim()) {
         toast.error(
-          `Vui lòng nhập lý do tăng định lượng cho "${item.ingredientName}"`
+          `Vui lòng nhập lý do thay đổi định lượng cho "${item.ingredientName}"`
         );
         return;
       }
@@ -147,7 +147,6 @@ export const DailyMealEvidenceModal = ({
           </button>
         </div>
 
-        {/* Body: flex-1 và overflow-y-auto để chỉ cuộn nội dung bên trong */}
         <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
           {loading ? (
             <div className="flex flex-col items-center py-20">
@@ -156,7 +155,6 @@ export const DailyMealEvidenceModal = ({
             </div>
           ) : (
             <div className="space-y-10">
-              {/* PHẦN 1: QUẢN LÝ ẢNH MẪU */}
               <section>
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
@@ -215,7 +213,6 @@ export const DailyMealEvidenceModal = ({
                 </div>
               </section>
 
-              {/* PHẦN 2: BẢNG ĐỊNH LƯỢNG */}
               <section>
                 <div className="flex justify-between items-center mb-5 gap-4">
                   <div className="flex items-center gap-2">
@@ -255,23 +252,21 @@ export const DailyMealEvidenceModal = ({
                         const original = data?.actualIngredients.find(
                           (i: any) => i.ingredientId === item.ingredientId
                         );
-                        const estimated = original?.estimatedQtyGram || 0;
-                        const isIncreased = item.actualQtyGram > estimated;
+                        const isChanged =
+                          item.actualQtyGram !== original?.actualQtyGram;
 
                         return (
                           <tr
                             key={item.ingredientId}
                             className={`transition-colors ${
-                              isIncreased
-                                ? "bg-orange-50/30"
-                                : "hover:bg-gray-50"
+                              isChanged ? "bg-blue-50/30" : "hover:bg-gray-50"
                             }`}
                           >
                             <td className="px-6 py-4 font-semibold text-gray-700">
                               {item.ingredientName}
                             </td>
                             <td className="px-6 py-4 text-center text-gray-500 font-medium">
-                              {estimated}g
+                              {original?.estimatedQtyGram || 0}g
                             </td>
                             <td className="px-6 py-4">
                               <input
@@ -284,8 +279,8 @@ export const DailyMealEvidenceModal = ({
                                   )
                                 }
                                 className={`w-full text-center px-3 py-2 border rounded-xl font-bold focus:ring-2 focus:ring-orange-200 outline-none transition-all ${
-                                  isIncreased
-                                    ? "border-orange-300 text-orange-700"
+                                  isChanged
+                                    ? "border-blue-300 text-blue-700"
                                     : "border-gray-200 text-gray-700"
                                 }`}
                               />
@@ -295,8 +290,8 @@ export const DailyMealEvidenceModal = ({
                                 <input
                                   type="text"
                                   placeholder={
-                                    isIncreased
-                                      ? "Bắt buộc nhập lý do..."
+                                    isChanged
+                                      ? "Bắt buộc nhập lý do thay đổi ..."
                                       : "Ghi chú..."
                                   }
                                   value={item.notes || ""}
@@ -307,12 +302,12 @@ export const DailyMealEvidenceModal = ({
                                     )
                                   }
                                   className={`w-full px-4 py-2 border rounded-xl text-sm outline-none transition-all ${
-                                    isIncreased && !item.notes?.trim()
+                                    isChanged && !item.notes?.trim()
                                       ? "border-red-300 bg-red-50"
                                       : "border-gray-100 focus:ring-orange-100"
                                   }`}
                                 />
-                                {isIncreased && !item.notes?.trim() && (
+                                {isChanged && !item.notes?.trim() && (
                                   <AlertCircle
                                     size={18}
                                     className="text-red-500 animate-pulse shrink-0"

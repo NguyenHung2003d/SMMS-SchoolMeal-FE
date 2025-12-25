@@ -12,30 +12,46 @@ export default function DailyMenuCard({
   const foodsList = meal?.items || meal?.foods || [];
   const hasFood = meal && foodsList.length > 0;
 
-  const isToday = new Date().toISOString().split('T')[0] === date;
+  const isToday = new Date().toISOString().split("T")[0] === date;
 
   return (
-    <div className={`
+    <div
+      className={`
         group relative flex flex-col rounded-2xl border transition-all duration-300 h-full overflow-hidden
-        ${isToday
-        ? "bg-white border-orange-400 shadow-lg ring-2 ring-orange-100 scale-[1.02]"
-        : "bg-white border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200"
-      }
-    `}>
-      <div className={`
+        ${
+          isToday
+            ? "bg-white border-orange-400 shadow-lg ring-2 ring-orange-100 scale-[1.02]"
+            : "bg-white border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200"
+        }
+    `}
+    >
+      <div
+        className={`
         p-4 border-b flex justify-between items-center
         ${isToday ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-700"}
-      `}>
+      `}
+      >
         <div>
-          <p className={`font-bold text-lg capitalize ${isToday ? "text-white" : "text-gray-800"}`}>
+          <p
+            className={`font-bold text-lg capitalize ${
+              isToday ? "text-white" : "text-gray-800"
+            }`}
+          >
             {getDayName(date)}
           </p>
-          <p className={`text-xs ${isToday ? "text-orange-100" : "text-gray-500"}`}>
+          <p
+            className={`text-xs ${
+              isToday ? "text-orange-100" : "text-gray-500"
+            }`}
+          >
             {formatDate(date)}
           </p>
         </div>
         {isToday && (
-          <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm" title="Hôm nay">
+          <div
+            className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm"
+            title="Hôm nay"
+          >
             <CalendarCheck size={20} className="text-white" />
           </div>
         )}
@@ -55,18 +71,27 @@ export default function DailyMenuCard({
 
             <div className="space-y-3 mb-4">
               {foodsList.slice(0, 3).map((food: any) => (
-                <div key={food.foodId || food.FoodId} className="flex gap-3 items-center group/item">
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 relative shadow-sm">
-                    <Image
-                      src={food.imageUrl || food.ImageUrl || "/placeholder.png"}
-                      alt={food.foodName || food.FoodName}
-                      fill
-                      className="object-cover group-hover/item:scale-110 transition-transform duration-300"
-                    />
+                <div
+                  key={food.foodId || food.FoodId}
+                  className="flex gap-3 items-center group/item"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-100 relative shadow-sm">
+                    {food.imageUrl ? (
+                      <Image
+                        src={food.imageUrl}
+                        alt={food.foodName}
+                        fill
+                        className="object-cover group-hover/item:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Utensils size={24} />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-700 line-clamp-2 group-hover/item:text-orange-600 transition-colors">
-                      {food.foodName || food.FoodName}
+                      {food.foodName}
                     </p>
                   </div>
                 </div>

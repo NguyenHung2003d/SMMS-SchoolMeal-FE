@@ -37,12 +37,6 @@ export const PurchaseDetailModal = ({
   const [showFullImage, setShowFullImage] = useState(false);
   if (!isOpen) return null;
 
-  const totalAmount =
-    order?.lines?.reduce(
-      (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
-      0
-    ) || 0;
-
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div
@@ -220,22 +214,6 @@ export const PurchaseDetailModal = ({
                         </tr>
                       ))}
                     </tbody>
-
-                    <tfoot className="bg-gray-50 border-t border-gray-200">
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="px-6 py-4 text-right font-bold text-gray-600 uppercase text-xs tracking-wider"
-                        >
-                          Tổng Tiền Dự Kiến
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-xl font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg border border-orange-100 whitespace-nowrap">
-                            {totalAmount.toLocaleString()} ₫
-                          </span>
-                        </td>
-                      </tr>
-                    </tfoot>
                   </table>
                 </div>
               </div>

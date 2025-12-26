@@ -266,7 +266,7 @@ export const DailyMealEvidenceModal = ({
                               {item.ingredientName}
                             </td>
                             <td className="px-6 py-4 text-center text-gray-500 font-medium">
-                              {original?.estimatedQtyGram || 0}g
+                              {original?.actualQtyGram || 0}g
                             </td>
                             <td className="px-6 py-4">
                               <input

@@ -19,15 +19,12 @@ export const PurchaseOrderDetailModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   const calculateOrderTotal = (lines: any[]) =>
-    lines.reduce(
-      (sum, line) => sum + (line.unitPrice || 0) * line.quantityGram,
-      0
-    );
+    lines.reduce((sum, line) => sum + (line.unitPrice ?? 0), 0);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 pt-10">
+        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
           <div>
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               Chi tiết đơn hàng{" "}
@@ -45,8 +42,7 @@ export const PurchaseOrderDetailModal: React.FC<Props> = ({
             <X size={24} />
           </button>
         </div>
-
-        <div className="flex-1 overflow-auto p-6 bg-white">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 bg-white custom-scrollbar">
           {loading || !order ? (
             <div className="flex flex-col justify-center items-center h-40 text-gray-500">
               <Loader2 className="animate-spin mb-2 w-8 h-8 text-orange-500" />
@@ -106,14 +102,13 @@ export const PurchaseOrderDetailModal: React.FC<Props> = ({
                   </span>
                 </div>
 
-                <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="border border-gray-200 rounded-xl overflow-x-auto shadow-sm">
                   <table className="w-full">
                     <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
                       <tr>
                         <th className="py-3 px-4 text-left">Tên hàng</th>
                         <th className="py-3 px-4 text-center">Số lượng</th>
                         <th className="py-3 px-4 text-right">Đơn giá</th>
-                        <th className="py-3 px-4 text-right">Thành tiền</th>
                         <th className="py-3 px-4 text-left pl-6">
                           Thông tin lô / Xuất xứ
                         </th>
@@ -133,13 +128,6 @@ export const PurchaseOrderDetailModal: React.FC<Props> = ({
                           <td className="py-3 px-4 text-right text-gray-600">
                             {line.unitPrice
                               ? formatCurrency(line.unitPrice)
-                              : "-"}
-                          </td>
-                          <td className="py-3 px-4 text-right font-bold text-gray-800">
-                            {line.unitPrice
-                              ? formatCurrency(
-                                  line.unitPrice * line.quantityGram
-                                )
                               : "-"}
                           </td>
                           <td className="py-3 px-4 pl-6 text-xs text-gray-500 space-y-1">
@@ -184,7 +172,6 @@ export const PurchaseOrderDetailModal: React.FC<Props> = ({
             </div>
           )}
         </div>
-
         <div className="p-5 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
           <button
             onClick={onClose}

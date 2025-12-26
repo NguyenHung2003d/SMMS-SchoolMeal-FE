@@ -42,13 +42,14 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen, isMobile }: any) {
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6">
         {KITCHEN_MENU_ITEMS.map((group, idx) => (
           <div key={idx}>
-            <p
-              className={`text-[11px] font-bold text-gray-400 uppercase mb-3 px-2 ${
-                !isSidebarOpen && "lg:text-center lg:text-[10px]"
-              }`}
-            >
-              {isSidebarOpen ? group.category : group.category.slice(0, 3)}
-            </p>
+            {isSidebarOpen && (
+              <p className="text-[11px] font-bold text-gray-400 uppercase mb-3 px-2">
+                {group.category}
+              </p>
+            )}
+            {!isSidebarOpen && (
+              <div className="border-t border-gray-100 my-4 mx-4" />
+            )}
             <ul className="space-y-1">
               {group.items.map((item) => (
                 <NavItem

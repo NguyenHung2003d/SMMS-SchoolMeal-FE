@@ -29,6 +29,11 @@ export default function Menu() {
   const handleConsumeInventory = async () => {
     if (!currentSchedule?.scheduleMealId) return;
 
+    if (currentSchedule.isInventoryDeducted) {
+      toast.error("Thực đơn tuần này đã được quyết toán kho trước đó.");
+      return;
+    }
+
     const confirmAction = window.confirm(
       "Xác nhận khấu trừ nguyên liệu thực tế đã sử dụng của cả tuần này vào kho? Thao tác này không thể hoàn tác."
     );
@@ -43,6 +48,11 @@ export default function Menu() {
 
       if (res.isSuccess) {
         toast.success("Đã khấu trừ nguyên liệu vào kho thành công!");
+        setSchedules((pre) =>
+          pre.map((s, idx) =>
+            idx === currentIndex ? { ...s, isInventoryDeducted: true } : s
+          )
+        );
         if (res.warning) {
           toast(res.warning, {
             icon: "⚠️",
@@ -211,26 +221,32 @@ export default function Menu() {
               cả các bữa ăn trong tuần và trừ vào số dư kho hiện tại.
             </p>
           </div>
-
-          <button
-            onClick={handleConsumeInventory}
-            disabled={isConsuming}
-            className={`
-              flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md
-              ${
-                isConsuming
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-orange-600 text-white hover:bg-orange-700 hover:shadow-orange-200 active:scale-95"
-              }
-            `}
-          >
-            {isConsuming ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : (
+          {currentSchedule.isInventoryDeducted ? (
+            <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-gray-50 text-green-600 border border-green-200 shadow-inner">
               <PackageMinus size={18} />
-            )}
-            XÁC NHẬN KHẤU TRỪ KHO CẢ TUẦN
-          </button>
+              ĐÃ QUYẾT TOÁN KHO TUẦN NÀY
+            </div>
+          ) : (
+            <button
+              onClick={handleConsumeInventory}
+              disabled={isConsuming}
+              className={`
+                flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md
+                ${
+                  isConsuming
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-orange-600 text-white hover:bg-orange-700 hover:shadow-orange-200 active:scale-95"
+                }
+              `}
+            >
+              {isConsuming ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <PackageMinus size={18} />
+              )}
+              XÁC NHẬN KHẤU TRỪ KHO CẢ TUẦN
+            </button>
+          )}
         </div>
       )}
 

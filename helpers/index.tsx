@@ -1,10 +1,8 @@
-import React, { useState } from "react";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ChefHat, GraduationCap, Users } from "lucide-react";
 import { ManagerNotification } from "@/types/notification";
 import axios from "axios";
-import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/lib/utils";
 
 export const formatNumber = (num: number) => {

@@ -24,6 +24,7 @@ export interface WeeklyScheduleDto {
   yearNo: number;
   status: string;
   notes?: string;
+  isInventoryDeducted: boolean;
   dailyMeals: DailyMealDto[];
 }
 

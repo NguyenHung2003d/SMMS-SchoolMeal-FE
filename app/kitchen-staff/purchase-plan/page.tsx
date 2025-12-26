@@ -15,6 +15,7 @@ import PurchasePlanTable from "@/components/kitchenstaff/purchase-plan/PurchaseP
 import PurchasePlanFooter from "@/components/kitchenstaff/purchase-plan/PurchasePlanFooter";
 import AddItemModal from "@/components/kitchenstaff/purchase-plan/AddItemModal";
 import ConfirmOrderModal from "@/components/kitchenstaff/purchase-plan/ConfirmOrderModal";
+import { useRouter } from "next/navigation";
 
 export default function KitchenStaffPurchasePlanPage() {
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ export default function KitchenStaffPurchasePlanPage() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const router = useRouter();
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -199,8 +201,12 @@ export default function KitchenStaffPurchasePlanPage() {
       loading: "Đang tạo đơn hàng...",
       success: () => {
         setIsConfirmModalOpen(false);
-        setTimeout(() => fetchPlanByDate(selectedDate), 1000);
-        return "Đã tạo đơn hàng thành công!";
+
+        setTimeout(() => {
+          router.push("/kitchen-staff/purchase-history");
+        }, 1000);
+
+        return "Đã tạo đơn hàng thành công! Đang chuyển hướng...";
       },
       error: (err) => err?.response?.data?.error || "Có lỗi xảy ra.",
     });
@@ -243,7 +249,6 @@ export default function KitchenStaffPurchasePlanPage() {
     (sum, item) => sum + (item.actualPrice || 0),
     0
   );
-  const totalItemsToBuy = plan.lines.length;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen relative pb-32">

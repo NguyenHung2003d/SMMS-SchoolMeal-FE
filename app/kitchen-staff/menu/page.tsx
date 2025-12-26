@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, PackageMinus } from "lucide-react";
 import { format, parseISO, startOfDay, isWithinInterval } from "date-fns";
 import { vi } from "date-fns/locale";
 import { kitchenMenuService } from "@/services/kitchenStaff/kitchenMenu.service";
@@ -12,12 +12,62 @@ import {
 import { WeeklyMenuTable } from "@/components/kitchenstaff/menu/WeeklyMenuTable";
 import { WeeklyMenuHeader } from "@/components/kitchenstaff/menu/WeeklyMenuHeader";
 import { WeeklyMenuNote } from "@/components/kitchenstaff/menu/WeeklyMenuNote";
+import { DailyMealEvidenceModal } from "@/components/kitchenstaff/menu/DailyMealEvidenceModal";
+import toast from "react-hot-toast";
 
 export default function Menu() {
   const [schedules, setSchedules] = useState<WeeklyScheduleDto[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [tableData, setTableData] = useState<DayMenuRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDailyMealId, setSelectedDailyMealId] = useState<number | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConsuming, setIsConsuming] = useState(false);
+
+  const handleConsumeInventory = async () => {
+    if (!currentSchedule?.scheduleMealId) return;
+
+    const confirmAction = window.confirm(
+      "Xác nhận khấu trừ nguyên liệu thực tế đã sử dụng của cả tuần này vào kho? Thao tác này không thể hoàn tác."
+    );
+
+    if (!confirmAction) return;
+
+    try {
+      setIsConsuming(true);
+      const res = await kitchenMenuService.consumeInventory(
+        currentSchedule.scheduleMealId
+      );
+
+      if (res.isSuccess) {
+        toast.success("Đã khấu trừ nguyên liệu vào kho thành công!");
+        if (res.warning) {
+          toast(res.warning, {
+            icon: "⚠️",
+            duration: 5000,
+            style: {
+              background: "#FFFBEB",
+              color: "#92400E",
+              border: "1px solid #F59E0B",
+            },
+          });
+        }
+      }
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message || "Lỗi khi thực hiện khấu trừ kho";
+      toast.error(errorMsg);
+    } finally {
+      setIsConsuming(false);
+    }
+  };
+
+  const handleOpenEvidence = (id: number) => {
+    setSelectedDailyMealId(id);
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     const fetfetchAllScheduleschMenu = async () => {
@@ -73,7 +123,9 @@ export default function Menu() {
       foodName: f.foodName,
       imageUrl: f.imageUrl || f.image || "",
       ingredientNames: Array.isArray(f.ingredients)
-        ? f.ingredients.map((i: any) => (typeof i === "string" ? i : i.ingredientName))
+        ? f.ingredients.map((i: any) =>
+            typeof i === "string" ? i : i.ingredientName
+          )
         : [],
     });
 
@@ -144,9 +196,54 @@ export default function Menu() {
         </div>
       )}
 
-      <WeeklyMenuTable data={tableData} />
+      <WeeklyMenuTable data={tableData} onOpenEvidence={handleOpenEvidence} />
 
       <WeeklyMenuNote note={currentSchedule?.notes} />
+
+      {currentSchedule && currentSchedule.scheduleMealId !== 0 && (
+        <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col items-end">
+          <div className="max-w-md text-right mb-4">
+            <h4 className="text-sm font-bold text-gray-700">
+              Quyết toán nguyên liệu
+            </h4>
+            <p className="text-xs text-gray-500 mt-1">
+              Hệ thống sẽ tính toán tổng định lượng thực tế (Actual Qty) của tất
+              cả các bữa ăn trong tuần và trừ vào số dư kho hiện tại.
+            </p>
+          </div>
+
+          <button
+            onClick={handleConsumeInventory}
+            disabled={isConsuming}
+            className={`
+              flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md
+              ${
+                isConsuming
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-orange-600 text-white hover:bg-orange-700 hover:shadow-orange-200 active:scale-95"
+              }
+            `}
+          >
+            {isConsuming ? (
+              <Loader2 className="animate-spin" size={18} />
+            ) : (
+              <PackageMinus size={18} />
+            )}
+            XÁC NHẬN KHẤU TRỪ KHO CẢ TUẦN
+          </button>
+        </div>
+      )}
+
+      {selectedDailyMealId && (
+        <DailyMealEvidenceModal
+          dailyMealId={selectedDailyMealId}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedDailyMealId(null);
+          }}
+        />
+      )}
     </div>
   );
 }

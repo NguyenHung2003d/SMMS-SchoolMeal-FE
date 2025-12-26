@@ -118,4 +118,52 @@ export const kitchenMenuService = {
     const res = await axiosInstance.get(`/Menus/${id}`);
     return res.data;
   },
+
+  getDailyMealDetail: async (dailyMealId: number) => {
+    const res = await axiosInstance.get(
+      `/meal/daily-meals/${dailyMealId}/detail`
+    );
+    return res.data;
+  },
+
+  uploadEvidence: async (dailyMealId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("File", file);
+    formData.append("Caption", "Ảnh mẫu thực phẩm");
+
+    const response = await axiosInstance.post(
+      `/meal/daily-meals/${dailyMealId}/evidences`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return response.data;
+  },
+
+  deleteEvidence: async (evidenceId: number) => {
+    await axiosInstance.delete(`/meal/daily-meals/evidences/${evidenceId}`);
+  },
+
+  updateActualIngredients: async (dailyMealId: number, items: any[]) => {
+    const response = await axiosInstance.put(
+      `/meal/daily-meals/${dailyMealId}/actual-ingredients`,
+      {
+        items: items,
+      }
+    );
+    return response.data;
+  },
+
+  consumeInventory: async (scheduleMealId: number) => {
+    const response = await axiosInstance.post(
+      `/inventory/consume-from-schedule/${scheduleMealId}`
+    );
+    return response.data;
+  },
+
+  checkOffDates: async (fromDate: string, toDate: string) => {
+    const response = await axiosInstance.get(`/meal/ScheduleMeals/check`, {
+      params: { fromDate, toDate },
+    });
+    return response.data;
+  },
 };

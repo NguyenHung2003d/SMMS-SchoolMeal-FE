@@ -1,6 +1,6 @@
 import React from "react";
 import { Search, X, Carrot } from "lucide-react";
-import { IngredientDto } from "@/types/kitchen-inventory";
+import { IngredientDto } from "@/types/kitchen-nutrition";
 
 interface IngredientSelectorProps {
   label: string;
@@ -62,7 +62,7 @@ export default function IngredientSelector({
         <input
           type="text"
           placeholder="Tìm & thêm nguyên liệu..."
-          className="w-full pl-8 pr-3 py-1.5 text-sm border rounded-md focus:ring-2 focus:ring-purple-300 outline-none"
+          className="w-full pl-8 pr-3 py-1.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-300 outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

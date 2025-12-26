@@ -13,8 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { wardenDashboardService } from "@/services/wardens/wardenDashborad.service";
 import { wardenClassService } from "@/services/wardens/wardenClassView.service";
-import { formatDate, StudentAvatar } from "@/helpers";
+import { formatDate } from "@/helpers";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 
 export default function TeacherClassView() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +23,7 @@ export default function TeacherClassView() {
   const { data: classes, isLoading: isLoadingClasses } = useQuery({
     queryKey: ["wardenClasses"],
     queryFn: wardenDashboardService.getClasses,
-    staleTime: 1000 * 60 * 30, // 30 phút
+    staleTime: 1000 * 60 * 30,
   });
 
   const selectedClassId =
@@ -201,11 +202,20 @@ export default function TeacherClassView() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <StudentAvatar
-                            src={student.avatarUrl}
-                            alt={student.fullName}
-                            gender={student.gender}
-                          />
+                          {student.avatarUrl ? (
+                            <div className="relative w-10 h-10 mr-3 overflow-hidden rounded-full border border-gray-100 shadow-sm">
+                              <Image
+                                src={student.avatarUrl}
+                                alt={student.fullName}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 mr-3 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-sm border border-orange-200 shadow-sm">
+                              {student.fullName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <div className="font-semibold text-gray-900">
                               {student.fullName}

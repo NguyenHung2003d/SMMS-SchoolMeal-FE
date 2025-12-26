@@ -5,7 +5,7 @@ import { Grid, List, Loader2, Folder, Image as ImageIcon } from "lucide-react";
 import { ClassDto } from "@/types/warden";
 import { wardenDashboardService } from "@/services/wardens/wardenDashborad.service";
 import { useQuery } from "@tanstack/react-query";
-import { ClassAlbum } from "@/components/warden/gallery/ClassAlbum"; // Import component con
+import { ClassAlbum } from "@/components/warden/gallery/ClassAlbum"; 
 
 export default function TeacherGalleryPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -14,7 +14,7 @@ export default function TeacherGalleryPage() {
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ["wardenClasses"],
     queryFn: wardenDashboardService.getClasses,
-    staleTime: 1000 * 60 * 30, // 30 phút
+    staleTime: 1000 * 60 * 30,
   });
 
   if (selectedClass) {
@@ -29,7 +29,7 @@ export default function TeacherGalleryPage() {
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-orange-50 via-white to-blue-50 min-h-screen animate-in fade-in duration-500">
+    <div className="p-6 bg-linear-to-br from-orange-50 via-white to-blue-50 min-h-screen animate-in fade-in duration-500">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Thư viện ảnh</h1>
@@ -73,7 +73,6 @@ export default function TeacherGalleryPage() {
           </p>
         </div>
       ) : viewMode === "grid" ? (
-        // Grid View
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {classes.map((cls: any) => (
             <div
@@ -81,7 +80,7 @@ export default function TeacherGalleryPage() {
               onClick={() => setSelectedClass(cls)}
               className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer border border-gray-100 group"
             >
-              <div className="h-40 bg-gradient-to-br from-orange-100 to-yellow-50 flex items-center justify-center group-hover:from-orange-200 group-hover:to-yellow-100 transition-colors relative">
+              <div className="h-40 bg-linear-to-br from-orange-100 to-yellow-50 flex items-center justify-center group-hover:from-orange-200 group-hover:to-yellow-100 transition-colors relative">
                 <Folder
                   size={64}
                   className="text-orange-300 group-hover:scale-110 transition-transform duration-300"
@@ -104,7 +103,6 @@ export default function TeacherGalleryPage() {
           ))}
         </div>
       ) : (
-        // List View
         <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

@@ -3,9 +3,9 @@ export interface PurchasePlanLine {
   ingredientName: string;
   category: string;
   rqQuanityGram: number;
-  estimatedPrice: number; // Đơn giá dự kiến
-  actualPrice?: number; // Đơn giá thực tế (User nhập)
-  supplierName?: string; // Tạm thời để ở item hoặc gom chung
+  estimatedPrice: number
+  actualPrice?: number;
+  supplierName?: string;
   batchNo?: string;
   origin?: string;
   status: "Pending" | "Purchased" | "OutOfStock";

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import {
   XCircle,
@@ -8,9 +8,12 @@ import {
   Package,
   CalendarDays,
   MapPin,
+  Maximize2,
+  ImageIcon,
 } from "lucide-react";
 import { PurchaseOrderDetail } from "@/types/manager-purchaseOrder";
 import { getStatusBadge } from "@/helpers";
+import Image from "next/image";
 
 interface Props {
   isOpen: boolean;
@@ -31,13 +34,13 @@ export const PurchaseDetailModal = ({
   onConfirm,
   onReject,
 }: Props) => {
+  const [showFullImage, setShowFullImage] = useState(false);
   if (!isOpen) return null;
 
-  const totalAmount =
-    order?.lines?.reduce(
-      (acc, curr) => acc + (curr.quantityGram / 1000) * curr.unitPrice,
-      0
-    ) || 0;
+  const totalAmount = order?.lines.reduce(
+    (sum, line) => sum + line.unitPrice,
+    0
+  );
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -108,21 +111,60 @@ export const PurchaseDetailModal = ({
                 </div>
               </div>
 
-              {order.note && (
-                <div className="bg-amber-50 px-6 py-4 rounded-xl border border-amber-200/60 flex gap-3 items-start shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div
+                  className={`${
+                    order.billImageUrl ? "" : "md:col-span-2"
+                  } bg-amber-50 px-6 py-4 rounded-xl border border-amber-200/60 flex gap-3 items-start shadow-sm`}
+                >
                   <div className="mt-0.5 text-amber-600 shrink-0">
                     <FileText size={18} />
                   </div>
                   <div>
-                    <span className="font-bold text-amber-800 text-sm block mb-0.5">
+                    <span className="font-bold text-amber-800 text-sm block mb-1">
                       Ghi chú đơn hàng:
                     </span>
-                    <p className="text-sm text-amber-800/90 leading-relaxed">
-                      {order.note}
+                    <p className="text-sm text-amber-800/90 leading-relaxed italic">
+                      {order.note || "Không có ghi chú cho đơn hàng này."}
                     </p>
                   </div>
                 </div>
-              )}
+                {order.billImageUrl && (
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                    <div
+                      onClick={() => setShowFullImage(true)}
+                      className="relative w-20 h-20 shrink-0 overflow-hidden rounded-lg cursor-pointer group"
+                    >
+                      <Image
+                        src={order.billImageUrl}
+                        alt="Bill"
+                        fill
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Maximize2 size={16} className="text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-800 text-sm flex mb-1 items-center gap-1.5">
+                        <ImageIcon size={16} className="text-orange-500" /> Minh
+                        chứng hóa đơn
+                      </span>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Nhấn vào ảnh để xem kích thước lớn
+                      </p>
+                      <a
+                        href={order.billImageUrl}
+                        className="text-xs font-semibold text-orange-300 hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Tải ảnh xuống
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
@@ -188,7 +230,7 @@ export const PurchaseDetailModal = ({
                         </td>
                         <td className="px-6 py-4 text-right">
                           <span className="text-xl font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg border border-orange-100 whitespace-nowrap">
-                            {totalAmount.toLocaleString()} ₫
+                            {totalAmount?.toLocaleString()} ₫
                           </span>
                         </td>
                       </tr>
@@ -200,10 +242,26 @@ export const PurchaseDetailModal = ({
           )}
         </div>
 
+        {showFullImage && order?.billImageUrl && (
+          <div
+            className="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-10 animate-in fade-in duration-300"
+            onClick={() => setShowFullImage(false)}
+          >
+            <button className="absolute top-5 right-5 text-white/70 hover:text-white">
+              <XCircle size={40} />
+            </button>
+            <img
+              src={order.billImageUrl}
+              alt="Full Bill"
+              className="max-w-full max-h-full object-contain shadow-2xl rounded-sm"
+            />
+          </div>
+        )}
+
         {order && (
           <div className="p-6 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
             {order.purchaseOrderStatus === "Draft" ||
-              order.purchaseOrderStatus === "Pending" ? (
+            order.purchaseOrderStatus === "Pending" ? (
               <>
                 <button
                   onClick={onReject}
@@ -220,7 +278,7 @@ export const PurchaseDetailModal = ({
                 <button
                   onClick={onConfirm}
                   disabled={isProcessing}
-                  className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl shadow-lg shadow-orange-200 transition-all flex items-center gap-2 font-bold disabled:opacity-50 active:scale-95 hover:-translate-y-0.5"
+                  className="px-6 py-3 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl shadow-lg shadow-orange-200 transition-all flex items-center gap-2 font-bold disabled:opacity-50 active:scale-95 hover:-translate-y-0.5"
                 >
                   {isProcessing ? (
                     <Loader2 className="animate-spin" size={20} />

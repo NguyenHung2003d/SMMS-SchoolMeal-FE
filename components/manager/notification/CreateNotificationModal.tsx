@@ -154,6 +154,23 @@ export default function CreateNotificationModal({
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-2">
+                  Ngày nghỉ lễ (nếu có)
+                </label>
+                <input
+                  type="date"
+                  className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-800 font-semibold transition-all hover:shadow-md"
+                  value={formData.offDate || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, offDate: e.target.value })
+                  }
+                />
+                <p className="text-[10px] text-blue-600 mt-1 italic">
+                  * Dùng cho các thông báo về ngày nghỉ cụ thể
+                </p>
+              </div>
+
               {formData.sendType === "Scheduled" && (
                 <div className="animate-in fade-in slide-in-from-left-2 duration-300">
                   <label className="block text-sm font-bold text-gray-800 mb-2">

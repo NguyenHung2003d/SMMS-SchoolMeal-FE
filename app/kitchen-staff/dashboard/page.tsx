@@ -110,7 +110,7 @@ export default function KitchenStaffDashboard() {
           }
           icon={<AlertTriangle size={24} className="text-red-600" />}
           bgColor="bg-red-100"
-          subText={`${todaySummary.lowStockItemCount} sắp hết hạn, ${todaySummary.nearExpiryItemCount} sắp hết hạn`}
+          subText={`${todaySummary.lowStockItemCount} sắp hết hàng, ${todaySummary.nearExpiryItemCount} sắp hết hạn`}
           highlight={
             todaySummary.lowStockItemCount > 0 ||
             todaySummary.nearExpiryItemCount > 0

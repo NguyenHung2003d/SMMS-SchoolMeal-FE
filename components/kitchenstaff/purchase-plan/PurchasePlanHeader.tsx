@@ -1,6 +1,6 @@
 import React from "react";
 import { Calendar, Trash2, Plus } from "lucide-react";
-import { renderStatusBadge } from "@/helpers";
+import { getStatusBadge } from "@/helpers";
 
 interface PurchasePlanHeaderProps {
   status: string;
@@ -24,7 +24,7 @@ export default function PurchasePlanHeader({
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h1 className="text-2xl font-bold text-gray-800">Kế hoạch mua sắm</h1>
-          {renderStatusBadge(status)}
+          {getStatusBadge(status)}
         </div>
         <div className="flex items-center gap-2 mt-2">
           <Calendar size={16} className="text-gray-500" />

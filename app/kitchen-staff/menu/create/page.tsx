@@ -1,6 +1,13 @@
 "use client";
-import React, { useState } from "react";
-import { format, startOfWeek, addDays, parseISO, isMonday } from "date-fns";
+import React, { useEffect, useState } from "react";
+import {
+  format,
+  startOfWeek,
+  addDays,
+  parseISO,
+  isMonday,
+  isValid,
+} from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -15,19 +22,12 @@ import ManualDishModal from "@/components/kitchenstaff/menu-create/ManualDishMod
 import AiSuggestionModal from "@/components/kitchenstaff/menu-create/AiSuggestionModal";
 import MenuTemplateModal from "@/components/kitchenstaff/menu/MenuTemplateModal";
 import HeaderControl from "@/components/kitchenstaff/menu-create/HeaderControl";
-import MissingNotesModal from "@/components/kitchenstaff/menu-create/MissingNotesModal";
 import WeeklyGrid from "@/components/kitchenstaff/menu-create/WeeklyGrid";
 import { DAYS_OF_WEEK, MEAL_TYPES } from "@/constants";
 import FooterControl from "@/components/kitchenstaff/menu-create/FooterControl";
 
 export default function KitchenStaffMenuCreationPage() {
   const router = useRouter();
-
-  const [missingSlots, setMissingSlots] = useState<
-    { day: number; meal: string; label: string }[]
-  >([]);
-  const [isMissingNoteModalOpen, setIsMissingNoteModalOpen] = useState(false);
-  const [mealNotes, setMealNotes] = useState<Record<string, string>>({});
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(
@@ -40,6 +40,7 @@ export default function KitchenStaffMenuCreationPage() {
     )
   );
 
+  const [offDates, setOffDates] = useState<string[]>([]);
   const [gridData, setGridData] = useState<Record<string, FoodItemDto[]>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,6 +51,52 @@ export default function KitchenStaffMenuCreationPage() {
     mealType: "Lunch",
   });
   const [aiSelectedDay, setAiSelectedDay] = useState(2);
+
+  useEffect(() => {
+    const fetchOffDates = async () => {
+      try {
+        const res = await kitchenMenuService.checkOffDates(weekStart, weekEnd);
+        const rawDates = res?.offDates || [];
+
+        const formattedDates = rawDates
+          .map((dateItem: any) => {
+            if (!dateItem) return null;
+
+            const targetDate =
+              typeof dateItem === "object" ? dateItem.date : dateItem;
+
+            if (!targetDate) return null;
+
+            const dateStr =
+              typeof targetDate === "string"
+                ? targetDate.replace(" ", "T")
+                : targetDate;
+
+            const parsed = new Date(dateStr);
+            if (!isValid(parsed)) return null;
+
+            return format(parsed, "yyyy-MM-dd HH:mm:ss");
+          })
+          .filter(Boolean) as string[];
+
+        setOffDates(formattedDates);
+      } catch (error) {
+        console.error("Lỗi khi check ngày nghỉ:", error);
+      }
+    };
+    fetchOffDates();
+  }, [weekStart, weekEnd]);
+
+  const isOffDay = (dayValue: number) => {
+    if (!weekStart || offDates.length === 0) return false;
+
+    const start = parseISO(weekStart);
+    if (!isValid(start)) return false;
+
+    const dateOfSlot = format(addDays(start, dayValue - 2), "yyyy-MM-dd");
+
+    return offDates.some((offDate) => offDate.startsWith(dateOfSlot));
+  };
 
   const handleWeekStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -62,18 +109,16 @@ export default function KitchenStaffMenuCreationPage() {
       setWeekEnd(format(addDays(parseISO(val), 6), "yyyy-MM-dd"));
     }
   };
-
-  const handleNoteChange = (day: number, mealType: string, note: string) => {
-    const key = `${day}_${mealType}`;
-    setMealNotes((pre) => ({ ...pre, [key]: note }));
-  };
-
   const openManualAdd = (day: number, mealType: string) => {
     setContext({ day, mealType });
     setIsManualModalOpen(true);
   };
 
   const addDishToGrid = (dish: FoodItemDto, day: number, mealType: string) => {
+    if (isOffDay(day)) {
+      toast.error("Không thể thêm món vào ngày nghỉ học!");
+      return;
+    }
     const key = `${day}_${mealType}`;
     const currentItems = gridData[key] || [];
 
@@ -109,21 +154,19 @@ export default function KitchenStaffMenuCreationPage() {
     }));
   };
 
-  const submitFinalData = async () => {
+  const handleSubmit = async () => {
     const startDate = parseISO(weekStart);
-    setSubmitting(true);
+    if (!isMonday(startDate))
+      return toast.error("Vui lòng chọn ngày bắt đầu là Thứ 2!");
+
     try {
       const dailyMealsPayload: DailyMealRequestDto[] = [];
-
       for (const dayItem of DAYS_OF_WEEK) {
+        if (isOffDay(dayItem.value)) continue;
         for (const mealItem of MEAL_TYPES) {
           const key = `${dayItem.value}_${mealItem.key}`;
           const foods = gridData[key] || [];
-          const rawNote = mealNotes[key] || "";
-          const hasFood = foods.length > 0;
-
-          if (mealItem.key === "SideDish" && !hasFood) continue;
-          if (!hasFood && !rawNote.trim()) continue;
+          if (foods.length === 0) continue;
 
           dailyMealsPayload.push({
             mealDate: format(
@@ -131,14 +174,13 @@ export default function KitchenStaffMenuCreationPage() {
               "yyyy-MM-dd"
             ),
             mealType: mealItem.key,
-            notes: hasFood ? "" : rawNote.trim(),
-            foodIds: hasFood ? foods.map((f) => f.foodId) : [],
+            notes: "",
+            foodIds: foods.map((f) => f.foodId),
           });
         }
       }
-
-      if (dailyMealsPayload.length === 0) {
-        toast.error("Chưa có dữ liệu bữa ăn nào để lưu!");
+      if (dailyMealsPayload.length === 0 && offDates.length < 5) {
+        toast.error("Chưa có món ăn nào được chọn!");
         setSubmitting(false);
         return;
       }
@@ -154,66 +196,49 @@ export default function KitchenStaffMenuCreationPage() {
           res.scheduleMealId || res.data?.scheduleMealId
         );
         toast.success("Tạo kế hoạch thành công!");
-        setIsMissingNoteModalOpen(false);
         router.push("/kitchen-staff/purchase-plan");
       }
-    } catch (e: any) {
-      console.error(e);
-      const errorMsg = e.response?.data?.errors
-        ? Object.values(e.response.data.errors).flat()[0]
-        : e.response?.data?.title || e.response?.data?.error || "Lỗi khi lưu!";
-      toast.error(errorMsg as string);
+    } catch (error: any) {
+      if (error.response) {
+        const { data, status } = error.response;
+
+        if (status === 400) {
+          if (data.errors) {
+            const validationErrors = Object.values(data.errors).flat();
+            toast.error(validationErrors[0] as string);
+          } else if (data.error) {
+            toast.error(data.error);
+          } else if (data.title) {
+            toast.error(data.title);
+          } else {
+            toast.error("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!");
+          }
+        } else if (status >= 500) {
+          toast.error("Lỗi hệ thống từ máy chủ. Vui lòng thử lại sau!");
+        }
+      } else if (error.request) {
+        toast.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng!");
+      } else {
+        toast.error("Đã có lỗi xảy ra: " + error.message);
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleSubmit = async () => {
-    const startDate = parseISO(weekStart);
-    if (!isMonday(startDate))
-      return toast.error("Vui lòng chọn ngày bắt đầu là Thứ 2!");
-
-    const missing = DAYS_OF_WEEK.reduce((acc, dayItem) => {
-      const mealKey = "Lunch";
-      const key = `${dayItem.value}_${mealKey}`;
-      const foods = gridData[key] || [];
-      const savedNote = mealNotes[key] || "";
-
-      if (foods.length === 0 && !savedNote.trim()) {
-        acc.push({
-          day: dayItem.value,
-          meal: mealKey,
-          label: `${dayItem.label} - Bữa Trưa`,
-        });
-      }
-      return acc;
-    }, [] as typeof missingSlots);
-
-    if (missing.length > 0) {
-      setMissingSlots(missing);
-      setIsMissingNoteModalOpen(true);
-      return;
-    }
-
-    await submitFinalData();
-  };
-
-  const handleConfirmMissingNotes = () => {
-    const stillMissing = missingSlots.some(
-      (s) => !mealNotes[`${s.day}_${s.meal}`]?.trim()
-    );
-    if (stillMissing) {
-      toast.error("Vui lòng điền lý do cho tất cả các ngày nghỉ!");
-      return;
-    }
-    submitFinalData();
-  };
-
   const handleTemplateSelect = (templateData: any) => {
     if (templateData && Array.isArray(templateData.days)) {
       const newGridData = { ...gridData };
+      let skippedOffDays = false;
+
       templateData.days.forEach((dayItem: any) => {
         const { dayOfWeek, mealType, foodItems } = dayItem;
+
+        if (isOffDay(dayOfWeek)) {
+          skippedOffDays = true;
+          return;
+        }
+
         if (dayOfWeek && mealType && foodItems?.length) {
           newGridData[`${dayOfWeek}_${mealType}`] = foodItems.map((f: any) => ({
             foodId: f.foodId,
@@ -223,8 +248,14 @@ export default function KitchenStaffMenuCreationPage() {
           }));
         }
       });
+
       setGridData(newGridData);
-      toast.success("Đã điền menu mẫu vào lịch!");
+
+      if (skippedOffDays) {
+        toast.success("Đã điền menu mẫu (đã tự động bỏ qua các ngày nghỉ)");
+      } else {
+        toast.success("Đã điền menu mẫu vào lịch!");
+      }
     } else {
       toast.error("Dữ liệu menu mẫu không hợp lệ");
     }
@@ -239,8 +270,12 @@ export default function KitchenStaffMenuCreationPage() {
 
       <WeeklyGrid
         gridData={gridData}
+        offDates={offDates}
+        weekStart={weekStart}
         onRemoveDish={removeDish}
-        onOpenManualAdd={openManualAdd}
+        onOpenManualAdd={(day, meal) => {
+          if (!isOffDay(day)) openManualAdd(day, meal);
+        }}
       />
 
       <FooterControl
@@ -274,16 +309,6 @@ export default function KitchenStaffMenuCreationPage() {
         daysOfWeek={DAYS_OF_WEEK}
         selectedDay={aiSelectedDay}
         onDayChange={setAiSelectedDay}
-      />
-
-      <MissingNotesModal
-        isOpen={isMissingNoteModalOpen}
-        onClose={() => setIsMissingNoteModalOpen(false)}
-        missingSlots={missingSlots}
-        mealNotes={mealNotes}
-        onNoteChange={handleNoteChange}
-        onConfirm={handleConfirmMissingNotes}
-        submitting={submitting}
       />
     </div>
   );

@@ -10,7 +10,7 @@ export const getImageUrl = (path: string | null | undefined) => {
   if (path.startsWith("http") || path.startsWith("https")) {
     return path;
   }
-  const baseUrl ="http://localhost:5000";
+  const baseUrl ="https://localhost:59542";
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   return `${baseUrl}${cleanPath}`;
 };

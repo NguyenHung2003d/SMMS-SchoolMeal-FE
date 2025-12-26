@@ -14,6 +14,9 @@ const merriweather = Merriweather({
 export const metadata: Metadata = {
   title: "SchoolMeal",
   description: "SchoolMeal - Dinh dưỡng cho bé yêu",
+  icons: {
+    icon: "burger-huge-svgrepo-com.svg",
+  }
 };
 
 export default function RootLayout({

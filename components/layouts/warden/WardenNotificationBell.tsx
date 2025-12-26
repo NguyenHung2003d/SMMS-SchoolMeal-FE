@@ -74,7 +74,7 @@ export function WardenNotificationBell() {
 
     const HUB_URL =
       process.env.NEXT_PUBLIC_HUB_URL ||
-      "http://localhost:5000/hubs/notifications";
+      "https://localhost:59542/hubs/notifications";
 
     const connection = new HubConnectionBuilder()
       .withUrl(HUB_URL, {

@@ -2,6 +2,7 @@ import React from "react";
 import { Calendar, Save, Loader2 } from "lucide-react";
 
 interface FooterControlProps {
+  id?: string;
   weekStart: string;
   weekEnd: string;
   submitting: boolean;
@@ -10,6 +11,7 @@ interface FooterControlProps {
 }
 
 export default function FooterControl({
+  id,
   weekStart,
   weekEnd,
   submitting,
@@ -17,7 +19,10 @@ export default function FooterControl({
   onSubmit,
 }: FooterControlProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-20 md:pl-72 shadow-2xl">
+    <div
+      id={id}
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-20 md:pl-72 shadow-2xl"
+    >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-200">
           <div className="flex items-center gap-2">
